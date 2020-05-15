@@ -541,11 +541,11 @@ export class Dictionary<V, K extends string = string> implements Enumerable<[K, 
 	}
 	static fromProjection<K extends string, V, T = any>(
 		items: Iterable<T>,
-		keysProjector?: Projector<T, K>,
-		valuesProjector?: Projector<T, V>) {
-		return new Dictionary<T>([...items].map(item => {
-			let key = (keysProjector ? keysProjector(item) : item) as string
-			let value = (valuesProjector ? valuesProjector(item) : item) as T
+		keysProjector: Projector<T, K>,
+		valuesProjector: Projector<T, V>) {
+		return new Dictionary<V, K>([...items].map(item => {
+			let key = keysProjector(item) //as K
+			let value = valuesProjector(item) //as V
 			return new Tuple(key, value)
 		}))
 	}
