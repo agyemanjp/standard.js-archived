@@ -9,7 +9,7 @@
 	],
 	"scripts": {
 		"build": "ts-node --transpile-only ./tooling/build.ts",
-		"test": "mocha dist/test",
+		"test": "mocha dist/index",
 		"prepare": "echo 'Preparing StdLib' && npm run build"
 	},
 	"repository": {
