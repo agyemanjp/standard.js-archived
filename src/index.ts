@@ -1351,11 +1351,14 @@ export function getComparer<T>(projector: Projector<T, any>, tryNumeric: boolean
 
 
 //#region Tests
-describe("String", () => {
-	it("should check whether is a whitespace or not", () => {
-		const inputString = "";
-
-		assert.equal(new String__(inputString).isWhiteSpace(), true);
-	});
-})
+console.log(process.argv)
+if(typeof global.describe === 'function'){
+	describe("String", () => {
+		it("should check whether is a whitespace or not", () => {
+			const inputString = "";
+	
+			assert.equal(new String__(inputString).isWhiteSpace(), true);
+		});
+	})
+}
 //#endregion
