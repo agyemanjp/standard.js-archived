@@ -813,32 +813,40 @@ export class Object__ extends global.Object {
 		return Object__.keys(obj).map((key, index) => new Tuple(key, obj[key]))
 	}
 
-	static merge<X>(target: X, source: Types.RecursivePartial<X> | undefined | null): X
-	static merge<X>(target: X, source: Partial<X> | undefined | null): X
-	static merge<X>(target: Partial<X> | undefined | null, source: X): X
-	static merge<X>(target: X, source: undefined | null): X
-	static merge<X>(target: undefined | null, source: X): X
-	static merge<X, Y>(target: X, source: Y): X & Y
-	/** Merges source onto target; Returns new object only if resulting content different from both target and source */
-	static merge<X, Y>(target: X, source: Y): X | Y | X & Y {
+	static merge<X>(target: X, source: Types.RecursivePartial<X> | undefined | null, allowMutation?: boolean): X
+	static merge<X>(target: X, source: Partial<X> | undefined | null, allowMutation?: boolean): X
+	static merge<X>(target: Partial<X> | undefined | null, source: X, allowMutation?: boolean): X
+	static merge<X>(target: X, source: undefined | null, allowMutation?: boolean): X
+	static merge<X>(target: undefined | null, source: X, allowMutation?: boolean): X
+	static merge<X, Y>(target: X, source: Y, allowMutation?: boolean): X & Y
+	/** Merges source onto target without modifying target; Returns new object only if resulting content different from both target and source
+	 * @param allowMutation If true, the objects passed won't be cloned inside the function, and will therefore be affected by the merge. It makes the merge faster */
+	static merge<X, Y>(target: X, source: Y, allowMutation?: boolean): X | Y | X & Y {
 		if (target === null || target === undefined)
-			return source as Y
-		//return Object__.clone(source) as Y
+			return allowMutation === true
+				? source
+				: Object__.clone(source) as Y
 		else if (source === null || source === undefined)
-			// return target as X
-			return Object__.clone(target) as X
+			return allowMutation === true
+				? target
+				: Object__.clone(target) as X
 		else if (typeof source !== "object" || typeof target !== "object")
-			// return source as Y
-			return Object__.clone(source) as Y
+			return allowMutation === true
+				? source
+				: Object__.clone(source) as Y
 		else {
-			let result = Object__.clone(target)
-			// let result = { ...target as any as object } as X
+			let result = allowMutation === true
+				? target
+				: Object__.clone(target) as X
 			return mergeWith(result, source, (objValue: any, srcValue: any) => {
 				if (global.Array.isArray(objValue)) {
 					if (srcValue === undefined)
 						return objValue
 					else
 						return srcValue
+				}
+				if (source === undefined) {
+					return undefined
 				}
 			})
 
