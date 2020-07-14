@@ -191,8 +191,23 @@ export class Array__<T> implements Ordered<T> {
 		let index = 0
 		return this.filter(item => !indices.includes(index++))
 	}
-	removeSliceCounted(index: number, count: number) { return this.ctor([...this].splice(index, count)) }
-	removeSliceDelimited(fromIndex: number, toIndex: number): Array__<T> { return this.ctor([...this].splice(fromIndex, toIndex - fromIndex + 1)) }
+	/** Returns a slice of the array, starting from 'index' and for 'count' element */
+	removeSliceCounted(index: number, count: number) {
+		if (index > this.length - 1) {
+			throw new Error(`Starting index is out of bounds (array contains only ${this.length} elements)`)
+		}
+		return this.ctor([...this].splice(index, count))
+	}
+
+	/** Returns a slice of the array */
+	removeSliceDelimited(fromIndex: number, toIndex: number): Array__<T> {
+		if (fromIndex > this.length - 1) {
+			throw new Error(`Starting index is out of bounds (array contains only ${this.length} elements)`)
+		} else if (fromIndex > toIndex) {
+			throw new Error(`end index is higher than starting index`)
+		}
+		return this.ctor([...this].splice(fromIndex, toIndex - fromIndex + 1))
+	}
 
 	insert(index: number, ...items: T[]): Array__<T> {
 		let arr = [...this]
@@ -694,7 +709,7 @@ export class Map__<K = any, V = any> extends global.Map<K, V> /*implements Colle
 		return _map
 	}
 	sort(projection: Projector<V, Primitive>): Map__<K, V> {
-		return new Map__([...this.getArray()]
+		return new Map__([...this]
 			.sort((x, y) =>
 				compare(x[1], y[1], value => projection(value))
 			))
@@ -702,7 +717,7 @@ export class Map__<K = any, V = any> extends global.Map<K, V> /*implements Colle
 
 	/*async mapAsync<T>(projection: AsyncProjector<V, T, K>): Promise<Map__<K, T>> {
 		var _map = new Map__<K, T>();
-		let promisesArr = this.getArray()
+		let promisesArr = this
 			.map(entry => projection(entry[1]!, entry[0]))
 
 		let resolvedArr = await Promise.all(promisesArr)
@@ -912,6 +927,22 @@ export class Number__ extends global.Number {
 			: Number.parseFloat(value);
 		return (!Number.isNaN(parsed)) ? parsed : undefined
 	}
+
+	static smartRounding(value: number) {
+		let val: string
+		if (value !== undefined && value % 1 !== 0) {
+			const powers = Math.floor(Math.log(Math.abs(value)) / Math.LN10)
+			const decimals = powers > -1
+				? Math.max(0, 2 - powers) // Above 1, we show a decreasing number of decimal (> 100 we show none)
+				: Math.max(-powers + 1) // Below 1, we show at least 2 decimals and perhaps more
+			val = value.toFixed(decimals)
+		}
+		else {
+			val = value !== undefined ? value.toString() : ""
+		}
+
+		return val //`${value !== parseFloat(val) ? "~ " : ""}${val}`
+	}
 }
 
 export class String__ extends global.String {
@@ -951,10 +982,10 @@ export class String__ extends global.String {
 
 	isURL(): boolean {
 		var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-			'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+			'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.+)+[a-z]{2,}|' + // domain name
 			'((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
 			'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-			'(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+			'(\\?[;&a-z\\d%_.~+=\\*-]*)?' + // query string
 			'(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
 		return pattern.test(this.toString());
 	}
@@ -1351,22 +1382,400 @@ export function getComparer<T>(projector: Projector<T, any>, tryNumeric: boolean
 
 
 //#region Tests
-console.log(process.argv)
-if (typeof global.describe === 'function') {
-	describe("String", () => {
+
+if (process.env.HYPOTESTING) {
+	describe("Array object", () => {
+
+		describe("constructor()", () => {
+			it("should create an Array__ with the same elements as that of an input array", () => {
+				const testArray = new Array__([0, 1, 1.5, 2, 2, 4, 4, 6, 14, 15, 18])
+				assert.deepStrictEqual([...testArray], [0, 1, 1.5, 2, 2, 4, 4, 6, 14, 15, 18])
+			})
+
+			it("should create an empty Array__ when passed no arguments", () => {
+				const testArray = new Array__()
+				assert.deepStrictEqual([...testArray], [])
+			})
+
+			it("should create an Array__ whose elements have the same type as those of an input array", () => {
+				const testArray = new Array__([0, 1, "blue", 3])
+				assert.deepStrictEqual([...testArray], [0, 1, "blue", 3])
+			})
+
+			it("should create an Array__ with the elements contained in an iterable object", () => {
+				const iterableObject = Map__.fromObject({
+					first: 0,
+					second: 1,
+					third: 2
+				})
+				const testArray = new Array__(iterableObject)
+				assert.deepStrictEqual([...testArray], [["first", 0], ["second", 1], ["third", 2]])
+			})
+		})
+		describe("flatten", () => {
+
+			it("should flatten native JS arrays", () => {
+				const nestedArray = [[1, 2, 3], [4, 5, 6]]
+				const flattenedArray = Array__.flatten(nestedArray)
+				assert.equal(flattenedArray.length, 6);
+			})
+
+			it("should flatten Array__ objects", () => {
+				const nestedArray = new Array__([new Array__([1, 2, 3]), new Array__([4, 5, 6])])
+				const flattenedArray = Array__.flatten(nestedArray)
+				assert.equal(flattenedArray.length, 6);
+			})
+
+			it("should flatten mixes of Array__ objects and native JS arrays", () => {
+				const nestedArray = [new Array__([1, 2, 3]), new Array__([4, 5, 6])]
+				const flattenedArray = Array__.flatten(nestedArray)
+				assert.equal(flattenedArray.length, 6);
+			})
+
+			it("should flatten arrays nested several times, with mixes of Array__ objects and native JS arrays ", () => {
+				const nestedArray = [new Array__([1, 2, 3]), new Array__([4, 5, 6]), [7, 8, new Array__([9, 10, 11])]]
+				const flattenedArray = Array__.flatten(nestedArray)
+				assert.equal(flattenedArray.length, 11);
+			})
+		})
+
+		describe("merge()", () => {
+
+			it("should ignore the values whose index is out of bounds", () => {
+				const testArray = new Array__([0, 1, 2]).merge({ value: 34, index: 5 })
+				assert.deepStrictEqual([...testArray], [0, 1, 2])
+			})
+
+			it("should enrich the array with the desired values, overriding some if their index already exists", () => {
+				const testArray = new Array__([0, 1, 2]).merge({ value: 99, index: 0 })
+				assert.deepStrictEqual([...testArray], [99, 1, 2])
+			})
+			it("should merge a passed object with an object in the array, if they are at the same index", () => {
+				const testArray = new Array__<{} | number>([{ alpha: 3 }, 1, 2]).merge({ value: { omega: 5 }, index: 0 })
+				assert.deepStrictEqual([...testArray], [{ alpha: 3, omega: 5 }, 1, 2])
+			})
+		})
+
+		describe("removeItems()", () => {
+			it("should remove the desired items if they are numbers", () => {
+				const testArray = new Array__([0, 1, 2]).removeItems(v => v, 2)
+				assert.deepStrictEqual([...testArray], [0, 1])
+			})
+			it("should remove the desired items if they are objects", () => {
+				const testArray = new Array__([{ color: "blue" }, { color: "green" }, { color: "red" }]).removeItems(v => v.color, { color: "red" })
+				assert.deepStrictEqual([...testArray], [{ color: "blue" }, { color: "green" }])
+			})
+		})
+
+		describe("removeIndices()", () => {
+			it("should remove a single index", () => {
+				const testArray = new Array__([0, 1, 2]).removeIndices([2])
+				assert.deepStrictEqual([...testArray], [0, 1])
+			})
+			it("should remove several indices at once", () => {
+				const testArray = new Array__([0, 1, 2]).removeIndices([2, 1])
+				assert.deepStrictEqual([...testArray], [0])
+			})
+		})
+
+		describe("removeSliceCounted", () => {
+			it("should throw is we want a slice that include out of bounds indices", () => {
+				assert.throws(() => {
+					new Array__([0, 1, 2, 3, 4, 5]).removeSliceCounted(12, 15)
+				}, "Error")
+			})
+			it("should return a slice until the end if the count goes above the array's length", () => {
+				const testArray = new Array__([0, 1, 2, 3, 4, 5]).removeSliceCounted(2, 15)
+				assert.deepStrictEqual([...testArray], [2, 3, 4, 5])
+			})
+			it("should return the slice starting from two and containing 2 elements", () => {
+				const testArray = new Array__([0, 1, 2, 3, 4, 5]).removeSliceCounted(2, 2)
+				assert.deepStrictEqual([...testArray], [2, 3])
+			})
+		})
+
+		describe("removeSliceDelimited", () => {
+			it("should throw is we want a slice whose start index is out of bound", () => {
+				assert.throws(() => {
+					new Array__([0, 1, 2, 3, 4, 5]).removeSliceDelimited(9, 13)
+				}, "Error")
+			})
+			it("should throw is the start index is bigger than the end index", () => {
+				assert.throws(() => {
+					new Array__([0, 1, 2, 3, 4, 5]).removeSliceDelimited(5, 2)
+				}, "Error")
+			})
+			it("should return a slice until the end, if the end index is above the array's length", () => {
+				const testArray = new Array__([0, 1, 2, 3, 4, 5, 6, 7]).removeSliceDelimited(4, 9)
+				assert.deepStrictEqual([...testArray], [4, 5, 6, 7])
+			})
+			it("should return the slice from 4 to 7", () => {
+				const testArray = new Array__([0, 1, 2, 3, 4, 5, 6, 7]).removeSliceDelimited(4, 7)
+				assert.deepStrictEqual([...testArray], [4, 5, 6, 7])
+			})
+		})
+
+		describe("unique()", () => {
+			it("should return an array were each number contained in the input appears once", () => {
+				const firstArray = new Array__([1, 1, 2, 2, 3, 4, 5, 5])
+				const testArray = firstArray.unique()
+				assert.deepStrictEqual([...testArray], [1, 2, 3, 4, 5])
+			})
+
+			it("should return an array were each string contained in the input appears once", () => {
+				const firstArray = new Array__(["car", "car", "bus", "train", "train", "train", "train", "train"])
+				const testArray = firstArray.unique()
+				assert.deepStrictEqual([...testArray], ["car", "bus", "train"])
+			})
+
+			it("should return an empty array if the input arary is empty", () => {
+				const firstArray = new Array__([])
+				const testArray = firstArray.unique()
+				assert.deepStrictEqual([...testArray], [])
+			})
+
+			it("should throw an error if the input array contains objects", () => {
+				const firstArray = new Array__([1, 1, 2, 2, 3, 4, 5, 5])
+				assert.throws(firstArray.unique, "Error")
+			})
+
+			it("should throw an error if the input array contains arrays", () => {
+				const firstArray = new Array__([[1], [1], [1], [2], [3], [4], [5], [5]])
+				assert.throws(firstArray.unique, "Error")
+			})
+
+			it("should throw an error if the input array contains undefined values", () => {
+				const firstArray = new Array__([1, 1, 2, undefined, 5, undefined, 2, 3, 4, 5, undefined])
+				assert.throws(firstArray.unique, "Error")
+			})
+
+		})
+
+		describe("union()", () => {
+			// it("should join series of arguments and return only the distincts ones", () => {
+			// 	const firstArray = new Array__([0, 1, 2])
+			// 	const testArray = firstArray.union([1, 2, 3, 4, 5])
+			// 	assert.deepStrictEqual([...testArray], [0, 1, 2, 3, 4, 5])
+			// })
+		})
+
+		describe("take()", () => {
+			it("should return the number of elements wanted", () => {
+				const firstArray = new Array__([0, 1, 2, 3, 4, 5])
+				const testArray = firstArray.take(2)
+				assert.deepStrictEqual([...testArray], [0, 1])
+			})
+		})
+
+		describe("skip()", () => {
+			it("should return all elements except the first Xth", () => {
+				const firstArray = new Array__([0, 1, 2, 3, 4, 5])
+				const testArray = firstArray.skip(2)
+				assert.deepStrictEqual([...testArray], [2, 3, 4, 5])
+			})
+		})
+
+		describe("mode()", () => {
+
+			it("should return 10 for the array [0, 10, 10, 10, 2, 2, 4, 4, 6, 14, 15, 18]", () => {
+				const testArray = new Array__([0, 10, 10, 10, 2, 2, 4, 4, 6, 14, 15, 18])
+				assert.equal(testArray.mode(), 10)
+			})
+
+			it("should return 'blue' for the array ['blue', 'blue', 'blue', 'blue', 'red', 'red', 'yellow']", () => {
+				const testArray = new Array__(['blue', 'blue', 'blue', 'blue', 'red', 'red', 'yellow'])
+				assert.equal(testArray.mode(), "blue")
+			})
+
+			it("should return false for the array [false, false, false, true]", () => {
+				const testArray = new Array__([false, false, false, true])
+				assert.equal(testArray.mode(), false)
+			})
+		})
+	})
+
+	describe("ArrayNumeric", () => {
+		describe("variance()", () => {
+			it("should return 41.004545454545465 for the array [0,1,1.5,2,2,4,4,6,14,15,18]", () => {
+				const testArray = new ArrayNumeric([0, 1, 1.5, 2, 2, 4, 4, 6, 14, 15, 18])
+				assert.equal(testArray.variance(), 41.004545454545465)
+			})
+
+			it("should return 0 for arrays of 1 elements", () => {
+				const testArray = new ArrayNumeric([18])
+				assert.equal(testArray.variance(), 0)
+			})
+
+			it("should return undefined for arrays of 0 elements", () => {
+				const testArray = new ArrayNumeric()
+				assert.throws(testArray.variance, "Tried to call getNumber() on an array including undefined values")
+			})
+
+			it("It should return NaN for an array containing only NaN element", () => {
+				const testArray = new ArrayNumeric([NaN, NaN])
+				assert.ok(Number.isNaN(testArray.variance()))
+			})
+
+			it("should return NaN if there is any NaN value in the array", () => {
+				const testArray = new ArrayNumeric([0, 1, 1.5, 2, 2, 4, 4, 6, 14, 15, 18, NaN])
+				assert.ok(Number.isNaN(testArray.variance()))
+			})
+		})
+	})
+
+	describe("String prototype", () => {
+
 		it("should check whether is a whitespace or not", () => {
 			const inputString = "";
-
 			assert.equal(new String__(inputString).isWhiteSpace(), true);
-		});
+		})
+
+		describe("shorten()", () => {
+			it(`should return an empty string when passing that same string with any max length input value`, (done) => {
+				const testData = ["", "", 20]
+				const maxLen = testData[2]
+				const expectedTitle = testData[1]
+				const newTitle = new String__(testData[0] as string).shorten(maxLen as number).toString()
+
+				assert.equal(newTitle, expectedTitle)
+				done()
+			})
+
+			it(`should return only the first character of the input string plus an ellipsis when passed a max length between 1 and 4 and the string length is greater than the max length`, (done) => {
+				const testData = ["Long Blink Experiment (1) Experiment", "L...", 1]
+				const maxLen = testData[2]
+				const expectedTitle = testData[1]
+				const newTitle = new String__(testData[0] as string).shorten(maxLen as number).toString()
+
+				assert.equal(newTitle, expectedTitle)
+				done()
+			})
+
+			it(`should return the start and end characters of the input string with an ellipsis between them when passed a max length equals to 5 and the string length is greater than the max length`, (done) => {
+				const testData = ["Feature discovery by competitive learning Release 2.1", "F...1", 5]
+				const maxLen = testData[2]
+				const expectedTitle = testData[1]
+				const newTitle = new String__(testData[0] as string).shorten(maxLen as number).toString()
+
+				assert.equal(newTitle, expectedTitle)
+				done()
+			})
+
+			it(`should return the same input string when its length is less than the max lenght input value`, (done) => {
+				const testData = ["Ignite Experiment", "Ignite Experiment", 20]
+				const maxLen = testData[2]
+				const expectedTitle = testData[1]
+				const newTitle = new String__(testData[0] as string).shorten(maxLen as number).toString()
+
+				assert.equal(newTitle, expectedTitle)
+				done()
+			})
+		})
+
+		describe("isUrl()", () => {
+			it(`should return true for valid URLs that start with 'www'`, () => {
+				const expected = true
+				const actual = new String__("www.data.com/table.csv").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return true for valid URLs that start with neither 'http', 'https' or 'www' `, () => {
+				const expected = true
+				const actual = new String__("gist.github.com").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return true for valid URLs that start with 'http'`, () => {
+				const expected = true
+				const actual = new String__("http://gist.github.com").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return false for invalid URLs that start with 'https'`, () => {
+				const expected = false
+				const actual = new String__("https:/gist.github.com").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return false for invalid URLs that start with 'http'`, () => {
+				const expected = false
+				const actual = new String__("http//gist.github.com").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return false for invalid URLs that have no domain extension`, () => {
+				const expected = false
+				const actual = new String__("http://test").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return false for empty URLs`, () => {
+				const expected = false
+				const actual = new String__("").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return false for invalid URLs that start with special characters`, () => {
+				const expected = false
+				const actual = new String__("http://www.*test.com").isURL()
+				assert.equal(actual, expected)
+			})
+
+			it(`should return true for urls that contain a * character in the query after the domain name`, () => {
+				const expected = true
+				const actual = new String__("https://en.wikipedia.org/w/api.php?format=json&origin=*&titles=P-value").isURL()
+				assert.equal(actual, expected)
+			})
+
+		})
 	})
 
-	describe("Array", () => {
-		it("should flatten arrays correctly", () => {
-			const nestedArray = new Array__([new Array__([1, 2, 3]), new Array__([4, 5, 6])])
-			const flattenedArray = Array__.flatten(nestedArray)
-			assert.equal(flattenedArray.length, 6);
-		});
+	describe("Number prototype", () => {
+		describe("smartRounding()", () => {
+
+			it(`should return an empty stirng when the input is undefined`, () => {
+				assert.equal(Number__.smartRounding(undefined as any), "")
+			})
+
+			it(`should not show any decimals when the input is an integer`, () => {
+				assert.equal(Number__.smartRounding(15), "15")
+			})
+
+			it(`should show decimals when the input is a float, without tilde if no rounding is done`, () => {
+				assert.equal(Number__.smartRounding(15.5), "15.5")
+			})
+
+			it(`should show decimals when the input is a float, with a tilde if rounding is done`, () => {
+				assert.equal(Number__.smartRounding(15.5006), "15.5")
+			})
+
+			it(`should not show any decimals when the input has 4 digits before the decimal`, () => {
+				assert.equal(Number__.smartRounding(-1500.60), "-1501")
+			})
+
+			it(`should show no decimal when the input has 3 digits before the decimal`, () => {
+				assert.equal(Number__.smartRounding(150.60), "151")
+			})
+
+			it(`should show one decimal when the input has 2 digits before the decimal`, () => {
+				assert.equal(Number__.smartRounding(15.605), "15.6")
+			})
+
+			it(`should show two decimal when the input has 1 digits before the decimal`, () => {
+				assert.equal(Number__.smartRounding(5.60), "5.60")
+			})
+
+			it(`should show two decimal when the input has no digits before the decimal`, () => {
+				assert.equal(Number__.smartRounding(0.622256), "0.62")
+			})
+
+			it(`should show enough decimals to have 2 significant digits if the input is less than 0`, () => {
+				assert.equal(Number__.smartRounding(0.000652387), "0.00065")
+			})
+		})
+
+
 	})
+
 }
 //#endregion
