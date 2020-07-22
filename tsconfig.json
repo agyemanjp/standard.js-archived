@@ -7,6 +7,10 @@
 			"DOM.Iterable",
 			"ScriptHost",
 			"ES5",
+			"ES2019.Array",
+			"ESNext.Array",
+			"ES2015.Generator",
+			"ES2017.TypedArrays",
 			"ES2015",
 			"ES2016",
 			"ES2017",
@@ -15,19 +19,30 @@
 			"ES2020",
 			"ESNext",
 			"ES2018.Promise",
-			"ES2018.AsyncIterable"
+			"ES2018.AsyncIterable",
+			"ES2015.Symbol.WellKnown",
+			"ES2020.Symbol.WellKnown",
+			"ESNext.Symbol",
+			"ES2015.Symbol"
 		],
-		"keyofStringsOnly": true,
-		"suppressImplicitAnyIndexErrors": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"noEmitOnError": true,
+		"declaration": true,
+		"incremental": true,
 		"strict": true,
 		"rootDirs": [
-			"./src",
+			"src",
+			"test"
 		],
-		"outDir": "./dist",
-		"noEmitOnError": true,
-		"declaration": true
+		"outDir": "./dist"
 	},
 	"include": [
-		"src"
+		"src",
+		"test"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
 	]
 }

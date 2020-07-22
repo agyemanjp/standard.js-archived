@@ -1,4 +1,4 @@
-const OFF = 0, WARN = 1, ERROR = 2;
+// const OFF = 0, WARN = 1, ERROR = 2;
 
 module.exports = {
 	"root": true,
@@ -35,7 +35,7 @@ module.exports = {
 		"fp/no-mutating-assign": "warn",
 		"fp/no-mutating-methods": "warn",
 		"fp/no-mutation": "warn",
-		"fp/no-nil": "warn",
+		// "fp/no-nil": "warn",
 		"fp/no-proxy": "warn",
 		"fp/no-rest-parameters": "warn",
 		//"fp/no-this": "warn",
