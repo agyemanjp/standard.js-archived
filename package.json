@@ -12,7 +12,8 @@
 		"lint": "eslint --ext ts,tsx --cache src/*",
 		"compile": "tsc && flatten dist",
 		"test": "mocha ./dist/*.test.js",
-		"build": "npm run lint && npm run compile && npm run test"
+		"build": "npm run lint && npm run compile && npm run test",
+		"prepare": "echo 'Preparing StdLib' && npm run build"
 	},
 	"repository": {
 		"type": "git",
