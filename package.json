@@ -1,33 +1,47 @@
 {
-  "name": "standard",
-  "version": "1.0.0",
-  "description": "Standard library for TypeScript/JavaScript",
-  "main": "dist/index.js",
-  "types": "dist/index",
-  "scripts": {
-    "build": "tsc",
-    "test": "mocha dist/test",
-    "prepare": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Hypothesize/standard.ts.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Hypothesize/standard.ts/issues"
-  },
-  "homepage": "https://github.com/Hypothesize/standard.ts#readme",
-  "dependencies": {
-    "@types/lodash": "^4.14.85",
-    "lodash": "^4.17.4"
-  },
-  "devDependencies": {
-    "@types/mocha": "^7.0.2",
-    "mocha": "^7.1.1",
-    "ts-node": "^8.9.0",
-    "typescript": "^3.6.4"
-  }
+	"name": "standard",
+	"version": "1.0.0",
+	"description": "Standard library for JavaScript/TypeScript",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"clean": "rm -rf ./dist",
+		"lint": "eslint --ext ts,tsx --cache src/*",
+		"compile": "tsc && flatten dist",
+		"test": "mocha ./dist/*.test.js",
+		"build": "npm run lint && npm run compile && npm run test"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Hypothesize/standard.ts.git"
+	},
+	"keywords": [],
+	"author": "",
+	"contributors": [],
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/Hypothesize/standard.ts/issues"
+	},
+	"homepage": "https://github.com/Hypothesize/standard.ts#readme",
+	"dependencies": {
+		"request": "^2.88.2"
+	},
+	"devDependencies": {
+		"@hutsoninc/flatten-dir-cli": "^1.0.2",
+		"@types/eslint": "^7.2.0",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^14.0.4",
+		"@types/request": "^2.48.5",
+		"@types/source-map-support": "^0.5.1",
+		"@typescript-eslint/eslint-plugin": "3.4.0",
+		"@typescript-eslint/parser": "3.4.0",
+		"eslint": "^7.3.1",
+		"eslint-plugin-fp": "2.3.0",
+		"mocha": "^7.1.1",
+		"source-map-support": "^0.5.19",
+		"typescript": "^3.9.3"
+	}
 }
