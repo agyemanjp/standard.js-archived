@@ -1,11 +1,14 @@
-//import * as assert from "assert"
-//import { stdChar, stdString } from "./string"
+/* eslint-disable fp/no-unused-expression */
+import * as assert from "assert"
+import { stdString } from "./string"
 
-// describe("", () => {
-// 	it("should ...", (done) => {
-// 		assert.strictEqual(new stdString())
-// 	})
-// })
+
+describe("plural", () => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+	it("should handles words ending in 'h' properly", () => {
+		assert.strictEqual(new stdString("batch").plural().toString(), "batches")
+	})
+})
 
 /*
 
