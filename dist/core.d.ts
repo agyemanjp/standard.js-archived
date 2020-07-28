@@ -9,6 +9,10 @@ export declare type ArrayElementType<T> = T extends (infer U)[] ? U : T;
 export declare type ExtractByType<TObj, TType> = Pick<TObj, {
     [k in keyof TObj]-?: TObj[k] extends TType ? k : never;
 }[keyof TObj]>;
+export declare type OptionalKeys<T extends Record<string, unknown>> = Exclude<{
+    [K in keyof T]: T extends Record<K, T[K]> ? never : K;
+}[keyof T], undefined>;
+export declare type ExtractOptional<T extends Record<string, unknown>, K extends OptionalKeys<T> = OptionalKeys<T>> = Record<K, T[K]>;
 declare type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T;
 declare type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T;
 declare type UnwrapIterable3<T> = T extends Iterable<infer X> ? UnwrapIterable2<X> : T;
@@ -22,6 +26,7 @@ export declare type Zip<A extends ReadonlyArray<unknown>> = {
 export declare type Ranker<X = unknown> = (a: X, b: X) => number;
 /** Returns true if a and b are equal, otherwise returne false */
 export declare type Comparer<X = unknown> = (a: X, b: X) => boolean;
+export declare type Hasher<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y;
 export declare type Projector<X = unknown, Y = unknown> = (value: X) => Y;
 export declare type ProjectorIndexed<X = unknown, Y = unknown, I = unknown> = (value: X, indexOrKey: I) => Y;
 export declare type Predicate<X = unknown> = (value: X) => boolean;

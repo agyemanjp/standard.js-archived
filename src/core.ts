@@ -9,6 +9,8 @@ export type ObjectLiteral<TValue = unknown, TKey extends string = string> = { [k
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
 export type ArrayElementType<T> = T extends (infer U)[] ? U : T
 export type ExtractByType<TObj, TType> = Pick<TObj, { [k in keyof TObj]-?: TObj[k] extends TType ? k : never }[keyof TObj]>
+export type OptionalKeys<T extends Record<string, unknown>> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
+export type ExtractOptional<T extends Record<string, unknown>, K extends OptionalKeys<T> = OptionalKeys<T>> = Record<K, T[K]>
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
 type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T
@@ -28,6 +30,7 @@ export type Zip<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] exten
 export type Ranker<X = unknown> = (a: X, b: X) => number
 /** Returns true if a and b are equal, otherwise returne false */
 export type Comparer<X = unknown> = (a: X, b: X) => boolean
+export type Hasher<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y
 export type Projector<X = unknown, Y = unknown> = (value: X) => Y
 export type ProjectorIndexed<X = unknown, Y = unknown, I = unknown> = (value: X, indexOrKey: I) => Y
 export type Predicate<X = unknown> = (value: X) => boolean
