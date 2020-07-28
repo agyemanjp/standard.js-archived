@@ -8,6 +8,7 @@ export type Primitive = number | string | bigint | boolean | symbol
 export type ObjectLiteral<TValue = unknown, TKey extends string = string> = { [key in TKey]: TValue }
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
 export type ArrayElementType<T> = T extends (infer U)[] ? U : T
+export type ExtractByType<TObj, TType> = Pick<TObj, { [k in keyof TObj]-?: TObj[k] extends TType ? k : never }[keyof TObj]>
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
 type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T

@@ -1,2 +1,2 @@
-# Standard.ts
+# Standard
 Standard library for TypeScript/JavaScript

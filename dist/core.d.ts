@@ -6,6 +6,9 @@ export declare type RecursivePartial<T> = {
     [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P];
 };
 export declare type ArrayElementType<T> = T extends (infer U)[] ? U : T;
+export declare type ExtractByType<TObj, TType> = Pick<TObj, {
+    [k in keyof TObj]-?: TObj[k] extends TType ? k : never;
+}[keyof TObj]>;
 declare type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T;
 declare type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T;
 declare type UnwrapIterable3<T> = T extends Iterable<infer X> ? UnwrapIterable2<X> : T;
