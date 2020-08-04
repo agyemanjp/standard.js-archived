@@ -1,48 +1,38 @@
 {
 	"compilerOptions": {
-		"target": "ES2015",
+		"target": "es2015",
 		"module": "commonjs",
-		"lib": [
-			"DOM",
-			"DOM.Iterable",
-			"ScriptHost",
-			"ES5",
-			"ES2019.Array",
-			"ESNext.Array",
-			"ES2015.Generator",
-			"ES2017.TypedArrays",
-			"ES2015",
-			"ES2016",
-			"ES2017",
-			"ES2018",
-			"ES2019",
-			"ES2020",
-			"ESNext",
-			"ES2018.Promise",
-			"ES2018.AsyncIterable",
-			"ES2015.Symbol.WellKnown",
-			"ES2020.Symbol.WellKnown",
-			"ESNext.Symbol",
-			"ES2015.Symbol"
-		],
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"noEmitOnError": true,
+		"moduleResolution": "node",
+		"traceResolution": false,
 		"declaration": true,
-		"incremental": true,
-		"strict": true,
-		"rootDirs": [
-			"src",
-			"test"
+		"lib": [
+			"es7",
+			"es6",
+			"es5",
+			"dom",
+			"es2015.promise",
+			"scripthost",
+			"dom.iterable",
+			"esnext.asynciterable"
 		],
-		"outDir": "./dist"
+		"strict": true,
+		"skipLibCheck": true,
+		"resolveJsonModule": true,
+		"incremental": true,
+		"rootDirs": [
+			"./src",
+			"./src/async",
+			"./src/containers",
+			"./src/http",
+			"./src/primitives",
+			"./test"
+		],
+		"sourceMap": true,
+		"outDir": "./dist",
 	},
 	"include": [
-		"src",
-		"test"
+		"./src",
+		"./test"
 	],
-	"exclude": [
-		"node_modules",
-		"dist"
-	]
+	"exclude": []
 }

@@ -23,13 +23,15 @@ module.exports = {
 				"requireLast": false
 			}
 		}],
+		"@typescript-eslint/explicit-module-boundary-types": "off",
+
 
 		/* functional */
 		"fp/no-arguments": "warn",
-		"fp/no-class": "warn",
+		// "fp/no-class": "warn",
 		"fp/no-delete": "warn",
 		"fp/no-events": "warn",
-		"fp/no-get-set": "warn",
+		// "fp/no-get-set": "warn",
 		"fp/no-let": "warn",
 		"fp/no-loops": "warn",
 		"fp/no-mutating-assign": "warn",
@@ -46,7 +48,7 @@ module.exports = {
 		/* general */
 		"no-var": "warn",
 		"no-console": "off",
-		"no-unused-vars": "error",
+		// "no-unused-vars": "error",
 		"no-unused-expressions": "error",
 		"no-unused-labels": "error",
 		"no-await-in-loop": "error",

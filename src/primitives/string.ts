@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable fp/no-mutating-methods */
 /* eslint-disable fp/no-unused-expression */
 /* eslint-disable fp/no-let */
@@ -9,8 +10,9 @@
 /* eslint-disable fp/no-mutation */
 /* eslint-disable fp/no-loops */
 
+import * as char from "./char"
 
-export class stdString extends global.String {
+export class String extends global.String {
 	constructor(str: string) {
 		super(str)
 	}
@@ -32,23 +34,23 @@ export class stdString extends global.String {
 	}
 	/** truncate this string by lopping a specified number of characters from the end */
 	truncate(numChars: number) {
-		return new stdString(this.substr(0, this.length - numChars))
+		return new String(this.substr(0, this.length - numChars))
 	}
 
 	toSnakeCase() {
-		return new stdString([...this.tokenizeWords()].join("_"))
+		return new String([...this.tokenizeWords()].join("_"))
 	}
 	toCamelCase() {
-		return new stdString([...this.tokenizeWords()].map(word => word.toTitleCase).join("_"))
+		return new String([...this.tokenizeWords()].map(word => word.toTitleCase).join("_"))
 	}
 	toSpace() {
-		return new stdString([...this.tokenizeWords({
+		return new String([...this.tokenizeWords({
 			separateCaseBoundary: "upper",
 			seperatorChars: ["-", "_", " ", "    ", "\t"]
 		})].join(" "))
 	}
 	toTitleCase() {
-		return new stdString(this.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase()))
+		return new String(this.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase()))
 	}
 
 	/** Transforms single or multiple consecutive white-space characters into single spaces
@@ -78,8 +80,8 @@ export class stdString extends global.String {
 		return pattern.test(this.toString())
 	}
 
-	getCharacters<C extends Iterable<stdString>>(container: { (items: Iterable<stdString>): C }) {
-		const arr = [...this].map(ch => new stdString(ch))
+	getCharacters<C extends Iterable<String>>(container: { (items: Iterable<String>): C }) {
+		const arr = [...this].map(ch => new String(ch))
 		return container(arr)
 	}
 
@@ -103,11 +105,11 @@ export class stdString extends global.String {
 		return str
 	}
 
-	tokenizeWords<C extends Iterable<stdString>>(args?:
+	tokenizeWords<C extends Iterable<String>>(args?:
 		{
 			separateCaseBoundary?: "upper" | "lower" | "all" | "none",
 			seperatorChars?: string[],
-			container?: { (items: Iterable<stdString>): C }
+			container?: { (items: Iterable<String>): C }
 		}) {
 		//console.log(`starting tokenizeWords for "${this.valueOf()}"`)
 		const separateCaseBoundary = args?.separateCaseBoundary ?? "upper"
@@ -143,7 +145,7 @@ export class stdString extends global.String {
 				//console.log(`separators do not include char tested, testing for case boundary`)
 
 				const nowCase = ch.getCase()
-				const lastCase = new stdString(lastChar).getCase()
+				const lastCase = new String(lastChar).getCase()
 
 				const test = (
 					(separateCaseBoundary === "none") ||
@@ -178,7 +180,7 @@ export class stdString extends global.String {
 		//let result = words.map(x => new String__(x))
 		//console.log(`result of tokenizeWords(${this.valueOf()}) = ${words}`)
 
-		return container(words.map(x => new stdString(x)))
+		return container(words.map(x => new String(x)))
 	}
 
 	/** Shorten a string by placing an ellipsis at the middle of it.
@@ -186,7 +188,7 @@ export class stdString extends global.String {
 	 */
 	shorten(maxLen: number) {
 		const title = this.toString()
-		if (title.length <= maxLen) return new stdString(title)
+		if (title.length <= maxLen) return new String(title)
 
 		let i = 0, j = title.length - 1
 		let left = "", right = ""
@@ -265,10 +267,10 @@ export class stdString extends global.String {
 			else if (thisLower.endsWith("lf")) { // e.g., elf -> elves
 				result = (this.truncate(2).concat("lves"))
 			}
-			else if (thisLower.endsWith("y") && new stdChar(this.charCodeAt(this.length - 2)).isConsonant()) {
+			else if (thisLower.endsWith("y") && char.isConsonant(char.from(this.charCodeAt(this.length - 2)))) {
 				result = this.truncate(1).concat("ies")
 			}
-			else if (thisLower.endsWith("y") && new stdChar(this.charCodeAt(this.length - 2)).isVowel()) {
+			else if (thisLower.endsWith("y") && char.isVowel(char.from(this.charCodeAt(this.length - 2)))) {
 				result = (this.concat("s"))
 			}
 			else if (thisLower.endsWith("o") && !["photo", "piano", "halo"].includes(this.toString())) {
@@ -282,7 +284,7 @@ export class stdString extends global.String {
 			}
 		}
 
-		return new stdString(this.isUpperCase() ? result.toUpperCase() : result)
+		return new String(this.isUpperCase() ? result.toUpperCase() : result)
 	}
 
 	split(arg: { [Symbol.split](string: string, limit?: number): string[]; } | string | RegExp | number) {
@@ -302,27 +304,3 @@ export class stdString extends global.String {
 	}
 }
 
-/** ASCII-only character functionality */
-export class stdChar {
-	protected readonly char: string
-
-	constructor(charCode: number) {
-		if (charCode < 0)
-			throw new Error(`Invalid argument: must be non-negative`)
-		if (charCode > 128)
-			throw new Error(`Invalid argument: must be less than 128`)
-
-		this.char = String.fromCharCode(charCode)
-		//assert.ok(this.char.length === 1, `CharASCII can't be initialized with string of length greater than 1`)
-	}
-
-	isDigit() {
-		return [...new Array(10).keys()].some(i => this.char === String(i))
-	}
-	isVowel() {
-		return ["a", "e", "i", "o", "u"].includes(this.char)
-	}
-	isConsonant() {
-		return !this.isVowel()
-	}
-}
