@@ -1,32 +1,35 @@
 {
-	"name": "standard",
+	"name": "@hypothesize/standard",
 	"version": "0.2.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
-		"dist"
+		"dist",
+		"!/dist/*.test.*"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
 		"clean": "rm -rf ./dist .eslintcache",
-		"lint": "eslint --ext ts,tsx --cache src/*",
-		"build": "tsc && flatten dist && rm -rf dist/*.test.js.map dist/*.test.d.ts",
-		"test": "mocha ./dist/*.test.js",
+		"lint": "eslint --ext ts --cache src/*",
+		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
+		"build": "tsc && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"test": "mocha dist/test/*.test.js",
+		"test-report": "mocha dist/test/*.test.js --reporter mocha-reporter-json-standard >| .test-report.json",
 		"ci": "npm run clean && npm run lint && npm run build && npm run test"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Hypothesize/standard.ts.git"
+		"url": "git+https://github.com/Hypothesize/standard.git"
 	},
 	"keywords": [],
 	"author": "",
 	"contributors": [],
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Hypothesize/standard.ts/issues"
+		"url": "https://github.com/Hypothesize/standard/issues"
 	},
-	"homepage": "https://github.com/Hypothesize/standard.ts#readme",
+	"homepage": "https://github.com/Hypothesize/standard#readme",
 	"dependencies": {
 		"request": "^2.88.2"
 	},
