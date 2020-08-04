@@ -21,6 +21,10 @@
 		"incremental": true,
 		"rootDirs": [
 			"./src",
+			"./src/async",
+			"./src/containers",
+			"./src/http",
+			"./src/primitives",
 			"./test"
 		],
 		"sourceMap": true,
