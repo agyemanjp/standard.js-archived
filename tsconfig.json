@@ -27,7 +27,6 @@
 			"./src/primitives",
 			"./test"
 		],
-		"sourceMap": true,
 		"outDir": "./dist",
 	},
 	"include": [
