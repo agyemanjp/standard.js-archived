@@ -23,16 +23,15 @@
 			"./src",
 			"./src/async",
 			"./src/containers",
+			"./src/core",
 			"./src/http",
 			"./src/primitives",
 			"./test"
 		],
-		"sourceMap": true,
 		"outDir": "./dist",
 	},
 	"include": [
 		"./src",
-		"./test"
 	],
 	"exclude": []
 }

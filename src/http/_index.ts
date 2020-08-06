@@ -4,7 +4,7 @@
 
 // import { Textual } from "@agyemanjp/textual"
 
-export * from "./types"
+export * from "./_types"
 export * from "./methods"
 export * from "./mime-types"
 export * from "./status-codes"

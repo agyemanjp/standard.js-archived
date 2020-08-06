@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { Response } from "request"
-import { RequestData } from "./types"
+import { RequestData } from "./_types"
 import { MimeType } from "./mime-types"
 import { HttpStatusCodes } from "./status-codes"
 

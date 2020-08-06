@@ -1,7 +1,7 @@
 
-export * from "./async/progress-generator-hof"
+export * from "./async/prog-gen-hof"
 
-export * from "./containers/_combinators"
+export * from "./containers/combinators"
 export * from "./containers/dictionary"
 export * from "./containers/sequence"
 export * from "./containers/table"

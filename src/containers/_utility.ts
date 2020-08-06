@@ -22,7 +22,9 @@ export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNume
 		return (_x || 0) - (_y || 0)
 	}
 	else if (_x instanceof Date && _y instanceof Date) {
+		// eslint-disable-next-line fp/no-mutation
 		_x = _x || new Date()
+		// eslint-disable-next-line fp/no-mutation
 		_y = _y || new Date()
 		if ((_x as Date) > (_y as Date))
 			return 1
