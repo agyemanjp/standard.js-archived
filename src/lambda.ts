@@ -1,4 +1,15 @@
-import { Projector, Ranker, Comparer } from "./_types"
+
+/** Returns -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
+export type Ranker<X = unknown> = (a: X, b: X) => number
+/** Returns true if a and b are equal, otherwise returne false */
+export type Comparer<X = unknown> = (a: X, b: X) => boolean
+export type Hasher<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y
+export type Projector<X = unknown, Y = unknown> = (value: X) => Y
+export type ProjectorIndexed<X = unknown, Y = unknown, I = unknown> = (value: X, indexOrKey: I) => Y
+export type Predicate<X = unknown> = (value: X) => boolean
+export type Reducer<X = unknown, Y = unknown> = (prev: Y, current: X) => Y
+export type ReducerIndexed<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, indexOrKey: I) => Y
+
 
 export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNumeric = false): number {
 	// eslint-disable-next-line fp/no-let

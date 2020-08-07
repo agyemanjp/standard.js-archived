@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable fp/no-class */
 
-import { Predicate, Projector, Reducer } from "./_types"
+import { Predicate, Projector, Reducer } from "./lambda"
 import { take, skip, first, last, map, filter, reduce, forEach } from "./combinators"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */

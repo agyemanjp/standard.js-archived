@@ -1,5 +1,6 @@
 /* eslint-disable brace-style */
-import { Tuple, ProjectorIndexed, ReducerIndexed, Predicate } from "./_types"
+import { Tuple } from "./types"
+import { ProjectorIndexed, ReducerIndexed, Predicate } from "./lambda"
 import { map } from "./combinators"
 import { Set } from "./set"
 

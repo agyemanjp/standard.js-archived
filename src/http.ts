@@ -1,7 +1,42 @@
+/* eslint-disable indent */
+import { Response, get, post, put, del } from "request"
+import { String } from "./string"
+
+export interface Json { [x: string]: string | number | boolean | Date | Json | JsonArray }
+type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
+type Obj<TValue = unknown, TKey extends string = string> = { [key in TKey]: TValue }
+
+interface EncodedUrlData { type: "url", body: Obj<string> }
+export interface JSONData { type: "json", body: Json }
+interface TextData { type: "text", body: string }
+interface RawData { type: "raw", body: Uint8Array[] }
+interface StreamData { type: "stream", body: NodeJS.ReadableStream }
+interface FileData { type: "file", name: string, body: NodeJS.ReadableStream }
+interface BufferData { type: "buffer", body: Buffer }
+interface MultiPartFormData { type: "multi", body: Obj<unknown> }
+interface MultiPartRelatedData { type: "related", body: BasicRequestData[] }
+interface ChunkedMultiPartRelatedData { chunked: true, type: "multi-related-chunked", body: RawData[] }
+
+export type BasicRequestData = EncodedUrlData | JSONData | RawData | StreamData | BufferData | FileData | TextData
+export type RequestData = BasicRequestData | MultiPartFormData | MultiPartRelatedData
+
+export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
+
+
+export enum MimeType {
+	Url = "x-www-form-urlencoded",
+	Json = "application/json",
+	Multi = "multipart/form-data",
+	Related = "multipart/related",
+	Octet = "application/octet-stream",
+	Binary = "application/binary",
+	Text = "text/plain"
+}
+
 /** Hypertext Transfer Protocol (HTTP) response status codes.
  * @see {@link https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}
  */
-export enum HttpStatusCodes {
+export enum StatusCodes {
 
     /** The server has received the request headers and the client should proceed to send the request body
      * (in the case of a request for which a body needs to be sent; for example, a POST request).
@@ -312,4 +347,152 @@ export enum HttpStatusCodes {
      * to require agreement to Terms of Service before granting full Internet access via a Wi-Fi hotspot).
      */
 	NETWORK_AUTHENTICATION_REQUIRED = 511
+}
+
+interface RequestBase {
+	uri: string,
+	//method?: "GET" | "POST" | DELETE | PATCH | PUT,
+	headers?: Obj<string | string[]>
+	auth?: { userName: string, passWord: string, sendImmediately?: boolean } | { bearer: string /* token */ },
+	security?: {
+		certificate: Buffer, // fs.readFileSync(certFile),
+		privateKey: Buffer, //fs.readFileSync(keyFile),
+		passphrase: string,
+		certAuthority: string | Buffer | string[] | Buffer[] // fs.readFileSync(caFile)
+	}
+}
+export interface GetRequest extends RequestBase {
+	query?: Obj<string>
+}
+export interface PostRequest extends RequestBase {
+	data: RequestData
+}
+
+export function asQueryParams<T extends Record<string, string> = Record<string, string>>(obj: T, excludedValues: unknown[] = [undefined, null]) {
+	return Object.keys(obj)
+		.filter(k => /*obj.hasOwnProperty(k) &&*/ !excludedValues.includes(obj[k]))
+		.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`)
+		.join("&")
+}
+export function getHttpData(data: RequestData): { "Content-Type"?: string, body: unknown } {
+	switch (data.type) {
+		case "url":
+			return {
+				"Content-Type": "x-www-form-urlencoded",
+				body: asQueryParams(data.body)
+			}
+		case "json":
+			return {
+				"Content-Type": "application/json",
+				body: JSON.stringify(data.body)
+			}
+
+		case "raw":
+			return {
+				//"Content-Type": HttpMimeType.Octet,
+				body: data.body
+			}
+		case "text":
+			return {
+				"Content-Type": MimeType.Text,
+				body: data.body.toString()
+			}
+
+		case "stream":
+			return {
+				//"Content-Type": HttpMimeType.Octet,
+				body: data.body
+			}
+
+		case "buffer":
+			return {
+				//"Content-Type": HttpMimeType.Octet,
+				body: data.body
+			}
+
+		case "multi":
+			return {
+				"Content-Type": MimeType.Multi,
+				body: data.body
+			}
+
+		default:
+			throw new Error("Unknown data")
+	}
+}
+
+
+type resolveFn = (x: Response | PromiseLike<Response> | undefined) => unknown
+type rejectFn = (x: Error | unknown) => unknown
+export const getResponseHandler = (resolve: resolveFn, reject: rejectFn, opts?: { badHttpCodeAsError: boolean }) => (
+	(err: Error, response: Response) => {
+		if (err) {
+			// eslint-disable-next-line fp/no-unused-expression
+			reject(err)
+		}
+		else {
+			if (opts?.badHttpCodeAsError === true && response.statusCode.toString().startsWith("2")) {
+				// eslint-disable-next-line fp/no-unused-expression
+				reject(new Error(`HTTP Get: ${StatusCodes[response.statusCode]}`))
+			}
+			else {
+				// eslint-disable-next-line fp/no-unused-expression
+				resolve(response)
+			}
+		}
+	}
+)
+export function checkStatusCode(response: Response, errMessage: string) {
+	if (!response.statusCode.toString().startsWith("2")) {
+		const error = new Error(`${errMessage}: ${response.body}`)
+		// eslint-disable-next-line fp/no-mutation
+		error.name = response.statusCode.toString()
+		throw error
+	}
+}
+
+export async function postAsync(request: PostRequest) {
+	return new Promise<Response>((resolve, reject) => {
+		const data = getHttpData(request.data)
+		// eslint-disable-next-line fp/no-unused-expression
+		post({
+			uri: request.uri,
+			body: data.body,
+			headers: { ...request.headers, "Content-Type": data["Content-Type"] }
+		}, getResponseHandler(resolve, reject))
+	})
+}
+
+export async function putAsync(request: PostRequest) {
+	return new Promise<Response>((resolve, reject) => {
+		const data = getHttpData(request.data)
+		// eslint-disable-next-line fp/no-unused-expression
+		put({
+			uri: request.uri,
+			body: data.body,
+			headers: { ...request.headers, "Content-Type": data["Content-Type"] }
+		}, getResponseHandler(resolve, reject))
+	})
+}
+
+export async function getAsync(request: GetRequest, opts?: { badHttpCodeAsError: boolean }): Promise<Response> {
+	return new Promise<Response>((resolve, reject) => {
+		const queryParams = request.query ? `?${asQueryParams(request.query)}` : ""
+		// eslint-disable-next-line fp/no-unused-expression
+		get({
+			uri: `${new String(request.uri).trimRight("/")}${queryParams}`,
+			headers: { ...request.headers }
+		}, getResponseHandler(resolve, reject, opts))
+	})
+}
+
+export async function deleteAsync(request: GetRequest) {
+	return new Promise<Response>((resolve, reject) => {
+		const queryParams = request.query ? asQueryParams(request.query) : ""
+		// eslint-disable-next-line fp/no-unused-expression
+		del({
+			uri: `${request.uri}?${queryParams}`,
+			headers: { ...request.headers }
+		}, getResponseHandler(resolve, reject))
+	})
 }

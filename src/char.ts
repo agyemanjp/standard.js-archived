@@ -9,6 +9,7 @@ export class CharASCII {
 		if (charCode > 128)
 			throw new Error(`Invalid argument: must be less than 128`)
 
+		// eslint-disable-next-line fp/no-mutation
 		this.char = String.fromCharCode(charCode)
 		//assert.ok(this.char.length === 1, `CharASCII can't be initialized with string of length greater than 1`)
 	}

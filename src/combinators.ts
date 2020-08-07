@@ -5,8 +5,16 @@
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-loops */
 
+import { Tuple } from "./types"
+import { Predicate, Projector, ProjectorIndexed, Reducer } from "./lambda"
 
-import { Reducer, Projector, ProjectorIndexed, Predicate, Zip, UnwrapNestedIterable, Tuple, } from "./_types"
+/* eslint-disable brace-style */
+type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
+type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T
+type UnwrapIterable3<T> = T extends Iterable<infer X> ? UnwrapIterable2<X> : T
+export type UnwrapNestedIterable<T> = T extends Iterable<infer X> ? UnwrapIterable3<X> : T
+
+export type Zip<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] extends Iterable<infer T> ? T : never }
 
 //#region Iterable/Collection functions
 export function* take<T>(iterable: Iterable<T>, n: number): Iterable<T> {

@@ -1,5 +1,5 @@
 /* eslint-disable brace-style */
-import { Predicate, Projector } from "./_types"
+import { Predicate, Projector } from "./lambda"
 import { unique, map } from "./combinators"
 import { Set } from "./set"
 

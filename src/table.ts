@@ -3,10 +3,9 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 
-import { ExtractByType, Primitive } from "../types"
-import { Projector } from "./_types"
-import { getRanker } from "./_utility"
-import { hasValue } from "../core/core"
+import { ExtractByType, Primitive } from "./types"
+import { Projector, getRanker } from "./lambda"
+import { hasValue } from "./utility"
 import { zip } from "./combinators"
 import { Dictionary } from "./dictionary"
 import { Sequence } from "./sequence"
