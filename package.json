@@ -1,5 +1,5 @@
 {
-	"name": "@agyemanjp/standard",
+	"name": "@hypothesize/standard",
 	"version": "1.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/index.js",
