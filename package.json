@@ -1,5 +1,5 @@
 {
-	"name": "@hypothesize/standard",
+	"name": "@agyemanjp/standard",
 	"version": "0.2.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/index.js",
@@ -20,16 +20,25 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Hypothesize/standard.git"
+		"url": "git+https://github.com/Hypothesize/standard.js.git"
 	},
 	"keywords": [],
-	"author": "",
-	"contributors": [],
+	"contributors": [
+		{
+			"name": "James Prempeh"
+		},
+		{
+			"name": "Arthur Plouet"
+		},
+		{
+			"name": "Diego Cisneros"
+		}
+	],
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Hypothesize/standard/issues"
+		"url": "https://github.com/Hypothesize/standard.js/issues"
 	},
-	"homepage": "https://github.com/Hypothesize/standard#readme",
+	"homepage": "https://github.com/Hypothesize/standard.js#readme",
 	"dependencies": {
 		"request": "^2.88.2"
 	},
