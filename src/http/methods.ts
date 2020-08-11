@@ -1,5 +1,5 @@
 import { Response, post, get, put, del } from "request"
-import { GetRequest, PostRequest } from "./types"
+import { GetRequest, PostRequest } from "./_types"
 import { getHttpData, getResponseHandler, asQueryParams } from "./utils"
 import { String } from "../primitives/string"
 

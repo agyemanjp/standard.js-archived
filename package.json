@@ -1,35 +1,44 @@
 {
 	"name": "@hypothesize/standard",
-	"version": "0.2.0",
+	"version": "1.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
 		"dist",
-		"!/dist/*.test.*"
+		"!/dist/**/*test.*"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
-		"clean": "rm -rf ./dist .eslintcache",
+		"clean": "rm -rf ./dist .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "tsc && rm -rf dist/*.test.js.map dist/*.test.d.ts",
-		"test": "mocha dist/test/*.test.js",
-		"test-report": "mocha dist/test/*.test.js --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run clean && npm run lint && npm run build && npm run test"
+		"build": "npm run clean && tsc && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"test": "mocha dist/**/*tests.js",
+		"test-report": "mocha dist/**/*tests.js --reporter mocha-reporter-json-standard >| .test-report.json",
+		"ci": "npm run lint && npm run build && npm run test"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Hypothesize/standard.git"
+		"url": "git+https://github.com/Hypothesize/standard.js.git"
 	},
 	"keywords": [],
-	"author": "",
-	"contributors": [],
+	"contributors": [
+		{
+			"name": "James Prempeh"
+		},
+		{
+			"name": "Arthur Plouet"
+		},
+		{
+			"name": "Diego Cisneros"
+		}
+	],
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Hypothesize/standard/issues"
+		"url": "https://github.com/Hypothesize/standard.js/issues"
 	},
-	"homepage": "https://github.com/Hypothesize/standard#readme",
+	"homepage": "https://github.com/Hypothesize/standard.js#readme",
 	"dependencies": {
 		"request": "^2.88.2"
 	},
@@ -43,8 +52,10 @@
 		"@typescript-eslint/eslint-plugin": "3.4.0",
 		"@typescript-eslint/parser": "3.4.0",
 		"eslint": "^7.3.1",
+		"eslint-formatter-json-standard": "^1.0.0",
 		"eslint-plugin-fp": "2.3.0",
 		"mocha": "^7.1.1",
+		"mocha-reporter-json-standard": "^1.0.0",
 		"source-map-support": "^0.5.19",
 		"typescript": "^3.9.3"
 	}
