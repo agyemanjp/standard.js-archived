@@ -354,9 +354,6 @@ export class Array__<T> implements Ordered<T> {
 			}
 		return _min
 	}
-
-	firstQuartile(): T { throw new Error(`Not implemented`) }
-	thirdQuartile(): T { throw new Error(`Not implemented`) }
 	indexed(): Array__<Tuple<number, T>> {
 		return new Array__(zip((function* () { let counter = 0; while (true) yield counter++ })(), this))
 	}
@@ -506,10 +503,18 @@ export class ArrayNumeric extends Array__<number> {
 		}
 	}
 	interQuartileRange() {
-		const sortedList = this.sort()
-		const percentile25 = sortedList.get(Math.floor(0.25 * sortedList.size))
-		const percentile75 = sortedList.get(Math.ceil(0.75 * sortedList.size))
-		return percentile25 && percentile75 ? percentile75 - percentile25 : undefined
+		var sortedList = this.sort()
+		var percentile25 = sortedList[Math.floor(0.25 * sortedList.length)];
+		var percentile75 = sortedList[Math.ceil(0.75 * sortedList.length)];
+		return percentile75 - percentile25;
+	}
+	firstQuartile() {
+		var sortedList = this.sort()
+		return sortedList.get(Math.floor(0.25 * sortedList.length));
+	}
+	thirdQuartile() {
+		var sortedList = this.sort()
+		return sortedList.get(Math.ceil(0.75 * sortedList.length) - 1);
 	}
 	sum() {
 		return this.reduce(0, (x, y) => x + y).last()!
