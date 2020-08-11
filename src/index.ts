@@ -504,8 +504,8 @@ export class ArrayNumeric extends Array__<number> {
 	}
 	interQuartileRange() {
 		var sortedList = this.sort()
-		var percentile25 = sortedList[Math.floor(0.25 * sortedList.length)];
-		var percentile75 = sortedList[Math.ceil(0.75 * sortedList.length)];
+		var percentile25 = sortedList.get(Math.floor(0.25 * sortedList.length)) || NaN;
+		var percentile75 = sortedList.get(Math.ceil(0.75 * sortedList.length)) || NaN;
 		return percentile75 - percentile25;
 	}
 	firstQuartile() {
