@@ -1,6 +1,5 @@
 /* eslint-disable brace-style */
-import { Predicate, Projector } from "./_types"
-import { unique, map } from "./combinators"
+import { Predicate, Projector, unique, map } from "./combinators"
 import { Set } from "./set"
 
 /** Eager, ordered, material collection */

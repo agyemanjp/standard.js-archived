@@ -1,11 +1,12 @@
 {
-	"name": "@hypothesize/standard",
+	"name": "@agyemanjp/standard",
 	"version": "1.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"main": "dist/_index.js",
+	"types": "dist/_index.d.ts",
 	"files": [
-		"dist",
+		"dist/*.js",
+		"dist/*.d.ts",
 		"!/dist/**/*test.*"
 	],
 	"scripts": {
@@ -13,10 +14,10 @@
 		"clean": "rm -rf ./dist .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "npm run clean && tsc && rm -rf dist/*.test.js.map dist/*.test.d.ts",
-		"test": "mocha dist/**/*tests.js",
-		"test-report": "mocha dist/**/*tests.js --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run lint && npm run build && npm run test"
+		"build": "rm -rf dist/*.js && tsc && flatten dist && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"test": "mocha dist/*.test.js",
+		"test-report": "mocha dist/*.test.js --reporter mocha-reporter-json-standard >| .test-report.json",
+		"ci": "npm run clean && npm run lint && npm run build && npm run test"
 	},
 	"repository": {
 		"type": "git",
