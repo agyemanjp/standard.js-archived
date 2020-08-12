@@ -3,8 +3,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable fp/no-class */
 
-import { Predicate, Projector, Reducer } from "./lambda"
-import { take, skip, first, last, map, filter, reduce, forEach } from "./combinators"
+import { Predicate, Projector, Reducer, take, skip, first, last, map, filter, reduce, forEach } from "./combinators"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {

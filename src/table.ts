@@ -4,11 +4,10 @@
 /* eslint-disable brace-style */
 
 import { ExtractByType, Primitive } from "./types"
-import { Projector, getRanker } from "./lambda"
-import { hasValue } from "./utility"
-import { zip } from "./combinators"
+import { Projector, getRanker, zip } from "./combinators"
 import { Dictionary } from "./dictionary"
 import { Sequence } from "./sequence"
+import { hasValue } from "./utility"
 
 //import { tableParsers } from "./parsers"
 

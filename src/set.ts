@@ -1,7 +1,6 @@
 /* eslint-disable brace-style */
 
-import { Predicate, Ranker, Projector } from "./lambda"
-import { map, intersection, every, union, some, except, complement } from "./combinators"
+import { Predicate, Ranker, Projector, map, intersection, every, union, some, except, complement } from "./combinators"
 import { Sequence } from "./sequence"
 import { Array } from "./array"
 

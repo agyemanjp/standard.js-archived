@@ -1,7 +1,6 @@
 /* eslint-disable brace-style */
 import { Tuple } from "./types"
-import { ProjectorIndexed, ReducerIndexed, Predicate } from "./lambda"
-import { map } from "./combinators"
+import { ProjectorIndexed, ReducerIndexed, Predicate, map } from "./combinators"
 import { Set } from "./set"
 
 /** Eager, un-ordered, material, indexed associative collection */
