@@ -3,7 +3,6 @@
 import * as assert from "assert"
 import { hasValue } from "./utility"
 
-
 describe('hasValue()', function () {
 	it('should return true for an empty array', function () {
 		assert.equal(hasValue([]), true)
@@ -47,3 +46,5 @@ describe('hasValue()', function () {
 		assert.equal(hasValue(Number.NaN), false)
 	})
 })
+
+

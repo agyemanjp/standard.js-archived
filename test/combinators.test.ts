@@ -1,6 +1,6 @@
 /* eslint-disable fp/no-unused-expression */
 import * as assert from "assert"
-import { flatten, chunk, take } from "./combinators"
+import { flatten, chunk, take, compare } from "./combinators"
 
 describe('flatten()', function () {
 	it('should return a result that excludes empty arrays', function () {
@@ -82,7 +82,33 @@ describe('chunk()', function () {
 	})
 })
 
-
+describe('compare()', () => {
+	it(`should return negative number when comparing two numbers, first greater than the second one`, () => {
+		const x = 2
+		const y = 3
+		assert.equal(compare(x, y) < 0, true)
+	})
+	it(`should return zero when comparing two variables with the same value`, () => {
+		const x = 2
+		const y = 2
+		assert.equal(compare(x, y) === 0, true)
+	})
+	it(`should return a positive number when comparing two variables passed as string with the 'tryNumber' parameter enabled`, () => {
+		const x = "4"
+		const y = "3"
+		assert.equal(compare(x, y, undefined, true) > 0, true)
+	})
+	it(`should return a negative number when comparing 2 strings, the first alphabetically first than the second one`, () => {
+		const x = "abc"
+		const y = "xyz"
+		assert.equal(compare(x, y) < 0, true)
+	})
+	it(`should return a negative number when comparing dates formated as strings, with the 'tryDate' parameter enabled`, () => {
+		const x = "2012-05-06 11:20:30"
+		const y = "2012-05-06 11:20:32"
+		assert.equal(compare(x, y, undefined, false, true) < 0, true)
+	})
+})
 /* // data-table tests
 	describe("page", () => {
 		it(`should return the original rows if page (original) is called several time in a row`, () => {

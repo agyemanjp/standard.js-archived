@@ -301,14 +301,21 @@ export function objectMap<K extends string, X, Y, T extends Record<K, X>>(obj: T
 //#endregion
 
 
-export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNumeric = false): number {
-	// eslint-disable-next-line fp/no-let
-	let _x: unknown = comparer ? comparer(x) : x
-	// eslint-disable-next-line fp/no-let
-	let _y: unknown = comparer ? comparer(y) : y
+export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNumeric = false, tryDate = false): number {
+	const _x: unknown = comparer ? comparer(x) : x
+	const _y: unknown = comparer ? comparer(y) : y
 
 	if (typeof _x === "string" && typeof _y === "string") {
-
+		if (tryDate === true) {
+			const __x = new Date(_x)
+			const __y = new Date(_y)
+			if (__x > __y)
+				return 1
+			else if (__x === __y)
+				return 0
+			else
+				return -1
+		}
 		if (tryNumeric === true) {
 			const __x = parseFloat(_x)
 			const __y = parseFloat(_y)
@@ -323,13 +330,11 @@ export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNume
 		return (_x || 0) - (_y || 0)
 	}
 	else if (_x instanceof Date && _y instanceof Date) {
-		// eslint-disable-next-line fp/no-mutation
-		_x = _x || new Date()
-		// eslint-disable-next-line fp/no-mutation
-		_y = _y || new Date()
-		if ((_x as Date) > (_y as Date))
+		const __x = _x || new Date()
+		const __y = _y || new Date()
+		if ((__x as Date) > (__y as Date))
 			return 1
-		else if (_x === _y)
+		else if (__x === __y)
 			return 0
 		else
 			return -1
@@ -337,15 +342,15 @@ export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNume
 	else
 		return _x === _y ? 0 : 1
 }
-export function getRanker<T>(args: { projector: Projector<T, unknown>, tryNumeric?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
+export function getRanker<T>(args: { projector: Projector<T, unknown>, tryNumeric?: boolean/*=false*/, tryDate?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
 	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
 	return (x: T, y: T) => {
-		return compare(x, y, args.projector, args.tryNumeric) * (args.reverse === true ? -1 : 1)
+		return compare(x, y, args.projector, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
 	}
 }
-export function getComparer<T>(projector: Projector<T, unknown>, tryNumeric = false/*, reverse = false*/): Comparer<T> {
+export function getComparer<T>(projector: Projector<T, unknown>, tryNumeric = false, tryDate?: boolean/*=false* reverse = false*/): Comparer<T> {
 	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
 	return (x: T, y: T) => {
-		return compare(x, y, projector, tryNumeric) === 0
+		return compare(x, y, projector, tryNumeric, tryDate) === 0
 	}
 }
