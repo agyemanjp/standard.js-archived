@@ -1,5 +1,8 @@
 /* eslint-disable indent */
 
+// import { Projector, Ranker, Comparer } from "./types"
+
+
 export function hasValue(value?: unknown): boolean {
 	switch (typeof value) {
 		case "function":
