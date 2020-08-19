@@ -4,30 +4,24 @@
 /* eslint-disable fp/no-unused-expression */
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-loops */
-
-import { Tuple } from "./types"
-
-/** Returns -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
-export type Ranker<X = unknown> = (a: X, b: X) => number
-/** Returns true if a and b are equal, otherwise returne false */
-export type Comparer<X = unknown> = (a: X, b: X) => boolean
-export type Hasher<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y
-export type Projector<X = unknown, Y = unknown> = (value: X) => Y
-export type ProjectorIndexed<X = unknown, Y = unknown, I = unknown> = (value: X, indexOrKey: I) => Y
-export type Predicate<X = unknown> = (value: X) => boolean
-export type Reducer<X = unknown, Y = unknown> = (prev: Y, current: X) => Y
-export type ReducerIndexed<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, indexOrKey: I) => Y
-
-
 /* eslint-disable brace-style */
+
+import { Tuple, hasValue } from "../utility"
+import { Reducer, Projector, Predicate } from "../functional"
+
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
 type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T
 type UnwrapIterable3<T> = T extends Iterable<infer X> ? UnwrapIterable2<X> : T
 export type UnwrapNestedIterable<T> = T extends Iterable<infer X> ? UnwrapIterable3<X> : T
-
 export type Zip<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] extends Iterable<infer T> ? T : never }
 
-//#region Iterable/Collection functions
+/** Iterable type guard */
+export function isIterable<T, _>(val: Iterable<T> | _): val is _ extends Iterable<infer X> ? never : Iterable<T> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	return hasValue(val) && typeof (val as any)[Symbol.iterator] === "function"
+}
+
+/**  */
 export function* take<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 	if (typeof n !== "number") throw new Error(`Invalid type ${typeof n} for argument "n"\nMust be number`)
 	if (n < 0) {
@@ -60,20 +54,27 @@ export function* skip<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 }
 
 export function* reduce<X, Y>(iterable: Iterable<X>, initial: Y, reducer: Reducer<X, Y>): Iterable<Y> {
-	for (const element of iterable) {
-		initial = reducer(initial, element)
+	for (const tuple of indexed(iterable)) {
+		initial = reducer(initial, tuple[1], tuple[0])
 		yield initial
 	}
 }
 
 export function* map<X, Y>(iterable: Iterable<X>, projector: Projector<X, Y>): Iterable<Y> {
-	for (const element of iterable) {
-		yield projector(element)
+	for (const tuple of indexed(iterable)) {
+		yield projector(tuple[1], tuple[0])
 	}
 }
 
-// eslint-disable-next-line require-yield
-export function filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
+export function* filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
+	for (const tuple of indexed(iterable)) {
+		if (predicate(tuple[1], tuple[0]))
+			yield tuple[1]
+		else
+			continue
+	}
+}
+/* export function filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
 	return ({
 		*[Symbol.iterator]() {
 			for (const element of iterable) {
@@ -84,8 +85,17 @@ export function filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
 			}
 		}
 	})
-}
+}*/
 
+export function contains<A>(iterable: Iterable<A>, value: A) {
+	for (const x of iterable) {
+		if (x === value) {
+			return true
+		}
+	}
+
+	return false
+}
 
 export function* unique<T>(iterable: Iterable<T>): Iterable<T> {
 	const seen = new Set()
@@ -125,7 +135,7 @@ export function* chunk<T>(iter: Iterable<T>, chunkSize: number): Iterable<T[]> {
  * The shortest iterable determines the length of the result
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, fp/no-rest-parameters, @typescript-eslint/no-explicit-any
-export function zip<T extends readonly any[]>(...iterables: T): IterableIterator<Zip<T>> {
+export function zip<T extends readonly Iterable<any>[]>(...iterables: T): IterableIterator<Zip<T>> {
 	console.assert(iterables.every(iter => typeof iter[Symbol.iterator] === "function"))
 
 	const iterators = iterables.map(i => i[Symbol.iterator]() as Iterator<unknown>)
@@ -153,6 +163,11 @@ export function zip<T extends readonly any[]>(...iterables: T): IterableIterator
 	}
 }
 
+/** Transform an iterable into another of tuples containing the a sequential index and the orginal values */
+export function* indexed<T>(items: Iterable<T>, from = 0) {
+	yield* zip(integers({ from, direction: "upwards" }), items)
+}
+
 export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedIterable<X>> {
 	//console.log(`\nInput to flatten: ${JSON.stringify(nestedIterable)}`)
 
@@ -171,9 +186,9 @@ export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedI
 }
 
 export function forEach<T>(iterable: Iterable<T>, action: Projector<T>) {
-	for (const element of iterable) {
+	for (const tuple of indexed(iterable)) {
 		// eslint-disable-next-line fp/no-unused-expression
-		action(element)
+		action(tuple[1], tuple[0])
 	}
 }
 
@@ -182,9 +197,9 @@ export function forEach<T>(iterable: Iterable<T>, action: Projector<T>) {
  * @returns First element, or <undefined> if such an element is not found
  */
 export function first<T>(iterable: Iterable<T>, predicate?: Predicate<T>): T | undefined {
-	for (const element of iterable) {
-		if (predicate === undefined || predicate(element))
-			return element
+	for (const tuple of indexed(iterable)) {
+		if (predicate === undefined || predicate(tuple[1], tuple[0]))
+			return tuple[1]
 	}
 	return undefined
 }
@@ -202,7 +217,7 @@ export function last<T>(collection: Iterable<T> | { length: number, get(index: n
 		// eslint-disable-next-line fp/no-let
 		for (let i = collection.length - 1; i >= 0; i--) {
 			const element = collection.get(i)
-			if (predicate === undefined || predicate(element))
+			if (predicate === undefined || predicate(element, i))
 				return element
 		}
 		return undefined
@@ -218,20 +233,23 @@ export function last<T>(collection: Iterable<T> | { length: number, get(index: n
 	}
 }
 
+/**  */
 export function some<T>(iterable: Iterable<T>, predicate: Predicate<T>): boolean {
-	for (const elt of iterable) {
-		if (predicate(elt) === true) return true
+	for (const tuple of indexed(iterable)) {
+		if (predicate(tuple[1], tuple[0]) === true) return true
 	}
 	return false
 }
 
+/**  */
 export function every<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
-	for (const elt of iterable) {
-		if (predicate(elt) === false) return false
+	for (const tuple of indexed(iterable)) {
+		if (predicate(tuple[1], tuple[0]) === false) return false
 	}
 	return true
 }
 
+/**  */
 export function union<T>(collections: globalThis.Array<Iterable<T>>): Iterable<T>
 export function union<T>(collections: Iterable<Iterable<T>>): Iterable<T> {
 	return unique((function* () {
@@ -243,114 +261,114 @@ export function union<T>(collections: Iterable<Iterable<T>>): Iterable<T> {
 	})())
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/**  */
 export function intersection<T>(collections: ArrayLike<T>[]): Iterable<T> {
 	throw new Error(`Not Implemented`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function except<T>(src: Iterable<T>, exclusions: ArrayLike<T>[]): Iterable<T> {
+/**  */
+export function except<T>(src: Iterable<T>, ...exclusions: ArrayLike<T>[]): Iterable<T> {
 	throw new Error(`Not Implemented`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function complement<T>(target: ArrayLike<T>, universe: Iterable<T>): Iterable<T> {
 	throw new Error(`Not Implemented`)
 }
 
-export function indexesOf<K, V>(collection: Iterable<Tuple<K, V>>, target: ({ value: V } | { predicate: Predicate<V> })) {
+export function indexesOf<K, V>(collection: Iterable<Tuple<K, V>>, target: ({ value: V } | { predicate: Predicate<V, K> })) {
 	return 'value' in target
 		? map(filter(collection, kv => kv[1] === target.value), kv => kv[0])
-		: map(filter(collection, kv => target.predicate(kv[1])), kv => kv[0])
+		: map(filter(collection, kv => target.predicate(kv[1], kv[0])), kv => kv[0])
 }
 
-//#endregion
-
-//#region Object functions
-export function objectPick<T extends Record<string, unknown>, K extends keyof T>(obj: T, ...keys: K[]): Record<K, T[K]> {
-	const result = {} as Pick<T, K>
-	keys.forEach(k => result[k] = obj[k])
-	return result
+/** Generate sequence of integers */
+export function* integers(args: { from: number, to: number } | { from: number, direction: "upwards" | "downwards" }) {
+	// eslint-disable-next-line fp/no-let
+	let num = args.from
+	// eslint-disable-next-line fp/no-loops
+	do {
+		// eslint-disable-next-line fp/no-mutation
+		yield ("to" in args ? args.to >= args.from : args.direction === "upwards") ? num++ : num--
+	}
+	while ("direction" in args || args.from !== args.to)
 }
-export function objectKeys<K extends string, V>(obj: Record<K, V>): K[]
-export function objectKeys<T extends Record<string, unknown>>(obj: T): (keyof T)[]
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function objectKeys<K extends string>(obj: {} | Record<K, unknown>) {
-	return Object.keys(obj) //as K[]
+/** Generate sequence of numbers */
+export function* range(from: number, to: number, opts?: { mode: "width", width: number } | { mode: "count", count: number }) {
+	if (opts) {
+		if (opts.mode === "width" && opts.width <= 0) throw new Error("width must be positive non-zero number")
+		if (opts.mode === "count" && opts.count <= 0) throw new Error("count must be positive non-zero number")
+	}
+
+	const diff = to - from
+	const sign = to >= from ? 1 : -1
+	const delta = opts === undefined
+		? sign
+		: opts.mode === "width"
+			? (opts.width * sign)
+			: diff / opts.count
+
+
+	const length = Math.floor(diff / delta) + 1
+
+	// eslint-disable-next-line fp/no-let, fp/no-loops, fp/no-mutation
+	for (let i = 0; i < length; i++) {
+		// eslint-disable-next-line fp/no-mutating-methods
+		yield (from + (i * delta))
+	}
 }
 
-export function objectFromKeyValues<T, K extends string = string>(keyValues: Tuple<K, T>[]) {
-	const obj = {} as Record<K, T>
-	keyValues.forEach(kvp => {
-		obj[kvp[0]] = kvp[1]
-	})
-	return obj
+
+export function* repeat(val: unknown, count?: number) {
+	while (count === undefined || (--count >= 0)) {
+		yield val
+	}
 }
 
-export function objectEntries<V, K extends string>(obj: Record<K, V>): Tuple<K, V>[]
-export function objectEntries<V, K extends string, T extends Record<K, V>>(obj: T): Tuple<K, V>[] {
-	return objectKeys(obj).map((key) => new Tuple(key, obj[key]) as Tuple<K, V>)
-}
-export function objectMap<K extends string, X, Y>(obj: Record<K, X>, projector: ProjectorIndexed<X, Y, K>): Record<K, Y>
-export function objectMap<K extends string, X, Y, T extends Record<K, X>>(obj: T, projector: ProjectorIndexed<X, Y, K>): Record<K, Y> {
-	const entries = objectEntries(obj)
-	const mapped = entries.map(kv => new Tuple(kv[0], projector(kv[1], kv[0])))
-	const newObj = objectFromKeyValues(mapped)
-	return newObj
-}
-//#endregion
+/** Partition will partition List according to given function. */
+// val numbers = List(1, 2, 3, 4, 5, 6)
+// numbers.partition(_ % 2 == 0)
+// output: (List[Int], List[Int]) = (List(2, 4, 6), List(1, 3, 5))
 
-
-export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown>, tryNumeric = false, tryDate = false): number {
-	const _x: unknown = comparer ? comparer(x) : x
-	const _y: unknown = comparer ? comparer(y) : y
-
-	if (typeof _x === "string" && typeof _y === "string") {
-		if (tryDate === true) {
-			const __x = new Date(_x)
-			const __y = new Date(_y)
-			if (__x > __y)
-				return 1
-			else if (__x === __y)
-				return 0
-			else
-				return -1
+/*function chain<T, K extends string = string>(fns: Record<string, (val: T, ...args: any[]) => T>): From<T, K>
+function chain<T, K extends string = string>(fns: Record<string, (val: T, ...args: any[]) => T>, seed: T): Chain<T, K>
+function chain<T, K extends string = string>(fns: Record<string, (val: T, ...args: any[]) => T>, seed?: T) {
+	return seed
+		? objectMap(fns, f => (...args: any[]) => {
+			const r = f(seed, ...args)
+			// eslint-disable-next-line fp/no-mutating-assign
+			return Object.assign(r, chain(fns, r))
+		})
+		: {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			from: (val: T) => chain(fns, val)
 		}
-		if (tryNumeric === true) {
-			const __x = parseFloat(_x)
-			const __y = parseFloat(_y)
-			if ((!Number.isNaN(__x)) && (!Number.isNaN(__y))) {
-				return __x - __y
-			}
-		}
+}
 
-		return new Intl.Collator().compare(_x || "", _y || "")
-	}
-	else if (typeof _x === "number" && typeof _y === "number") {
-		return (_x || 0) - (_y || 0)
-	}
-	else if (_x instanceof Date && _y instanceof Date) {
-		const __x = _x || new Date()
-		const __y = _y || new Date()
-		if ((__x as Date) > (__y as Date))
-			return 1
-		else if (__x === __y)
-			return 0
-		else
-			return -1
-	}
-	else
-		return _x === _y ? 0 : 1
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Chain<T, K extends string = string> = Record<K, (...args: any[]) => T & Chain<T>>
+type From<T, K extends string = string> = { from: (val: T) => Chain<T, K> }
+
+const test = chain({ filter, skip, take })
+
+test.from([1, 2, 3])
+*/
+
+/*
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace Iterable {
+	export type AsyncGenerated<T> = AsyncIterable<T>
+	export type AsyncValued<T> = Iterable<Promise<T>>
+	export type AsyncDeferredValued<T> = Iterable<() => Promise<T>>
 }
-export function getRanker<T>(args: { projector: Projector<T, unknown>, tryNumeric?: boolean/*=false*/, tryDate?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
-	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
-	return (x: T, y: T) => {
-		return compare(x, y, args.projector, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class IterableDeferred<X> implements Iterable<Promise<X>> {
+	constructor(protected items: Iterable<() => Promise<X>>) {
+
 	}
-}
-export function getComparer<T>(projector: Projector<T, unknown>, tryNumeric = false, tryDate?: boolean/*=false* reverse = false*/): Comparer<T> {
-	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
-	return (x: T, y: T) => {
-		return compare(x, y, projector, tryNumeric, tryDate) === 0
+
+	*[Symbol.iterator]() {
+		for (const item of this.items) {
+			yield item()
+		}
 	}
-}
+}*/

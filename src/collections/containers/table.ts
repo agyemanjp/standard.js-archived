@@ -3,11 +3,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 
-import { ExtractByType, Primitive } from "./types"
-import { Projector, getRanker, zip } from "./combinators"
+import { ExtractByType, Primitive, hasValue } from "../../utility"
+import { zip } from "../iterable"
+import { Projector, getRanker } from "../../functional"
 import { Dictionary } from "./dictionary"
 import { Sequence } from "./sequence"
-import { hasValue } from "./utility"
 
 //import { tableParsers } from "./parsers"
 

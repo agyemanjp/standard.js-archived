@@ -1,6 +1,7 @@
 /* eslint-disable brace-style */
-import { Tuple } from "./types"
-import { ProjectorIndexed, ReducerIndexed, Predicate, map } from "./combinators"
+import { Tuple } from "../../utility"
+import { Predicate, Projector, Reducer } from "../../functional"
+import { map } from "../iterable"
 import { Set } from "./set"
 
 /** Eager, un-ordered, material, indexed associative collection */
@@ -55,11 +56,12 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 		keys.forEach(k => delete result[k])
 		return new Dictionary(result as Omit<T, K>)
 	}
-	map<Y>(projector: ProjectorIndexed<T[keyof T], Y, keyof T>) {
+
+	map<Y>(projector: Projector<T[keyof T], Y, keyof T>) {
 		const keyValues = this.entries().map(kv => new Tuple(String(kv[0]), projector(kv[1], kv[0])))
 		return Dictionary.fromKeyValues(keyValues)
 	}
-	reduce<Y>(initial: Y, reducer: ReducerIndexed<T[keyof T], Y, keyof T>) {
+	reduce<Y>(initial: Y, reducer: Reducer<T[keyof T], Y, keyof T>) {
 		return this.entries().reduce((prev, curr) => reducer(prev, curr[1], curr[0]), initial)
 	}
 
@@ -67,10 +69,10 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 	getAll(selector: Iterable<keyof T>) { return new Set(map(selector, index => this.obj[index])) }
 
 	/** Get the indexes where a value occurs or a certain predicate/condition is met */
-	indexesOf(args: ({ value: T[keyof T] } | { predicate: Predicate<T[keyof T]> })) {
+	indexesOf(args: ({ value: T[keyof T] } | { predicate: Predicate<T[keyof T], keyof T> })) {
 		return 'value' in args
 			? this.entries().filter(kv => kv[1] === args.value).map(kv => kv[0])
-			: this.entries().filter(kv => args.predicate(kv[1]) === true).map(kv => kv[0])
+			: this.entries().filter(kv => args.predicate(kv[1], kv[0]) === true).map(kv => kv[0])
 	}
 
 	/*static equals(obj1: unknown, obj2: unknown, ignoreUnmatchedProps = false) {

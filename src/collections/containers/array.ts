@@ -1,6 +1,8 @@
 /* eslint-disable brace-style */
-import { Predicate, Projector, unique, map } from "./combinators"
+import { Predicate, Projector } from "../../functional"
+import { unique, map } from "../iterable"
 import { Set } from "./set"
+
 
 /** Eager, ordered, material collection */
 export class Array<X> extends Set<X> {
@@ -58,7 +60,7 @@ export class Array<X> extends Set<X> {
 	indexesOf(args: ({ value: X } | { predicate: Predicate<X> })) {
 		return 'value' in args
 			? this.entries().filter(kv => kv[1] === args.value).map(kv => kv[0])
-			: this.entries().filter(kv => args.predicate(kv[1]) === true).map(kv => kv[0])
+			: this.entries().filter(kv => args.predicate(kv[1], kv[0]) === true).map(kv => kv[0])
 	}
 
 	entries() { return new Array(this.core.array.entries()) }
@@ -78,8 +80,8 @@ export class Array<X> extends Set<X> {
 	}
 }
 
-export class stdArrayNumeric extends Array<number> {
-	ctor(iterable: Iterable<number>): this { return new stdArrayNumeric(iterable) as this }
+export class ArrayNumeric extends Array<number> {
+	ctor(iterable: Iterable<number>): this { return new ArrayNumeric(iterable) as this }
 
 	min(): number | undefined {
 		return this
@@ -120,9 +122,9 @@ export class stdArrayNumeric extends Array<number> {
 		}
 		else {
 			// eslint-disable-next-line no-shadow, @typescript-eslint/no-non-null-assertion
-			const first = _ordered.get(Math.floor(_ordered.size / 2) - 1)!
+			const first = _ordered.get(Math.floor(_ordered.size / 2) - 1)
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const second = _ordered.get(Math.floor(_ordered.size / 2))!
+			const second = _ordered.get(Math.floor(_ordered.size / 2))
 			return (first + second) / 2
 		}
 	}
@@ -135,13 +137,13 @@ export class stdArrayNumeric extends Array<number> {
 	}
 	sum() { return this.reduce(0, (x, y) => x + y).last() || 0 }
 
-	map(projector: Projector<number, number>): stdArrayNumeric
+	map(projector: Projector<number, number>): ArrayNumeric
 	map<Y>(projector: Projector<number, Y>): Array<Y>
-	map<Y>(projector: Projector<number, number> | Projector<number, Y>): stdArrayNumeric | Array<Y> {
+	map<Y>(projector: Projector<number, number> | Projector<number, Y>): ArrayNumeric | Array<Y> {
 		// eslint-disable-next-line fp/no-let
 		let notNumeric = false
-		const newArr = map<number, number | Y>(this, val => {
-			const newVal = projector(val)
+		const newArr = map<number, number | Y>(this, (val, index) => {
+			const newVal = projector(val, index)
 			if (typeof newVal !== "number" && typeof newVal !== "bigint")
 				// eslint-disable-next-line fp/no-mutation
 				notNumeric = true
@@ -150,6 +152,6 @@ export class stdArrayNumeric extends Array<number> {
 
 		return notNumeric
 			? new Array(newArr as Iterable<Y>)
-			: new stdArrayNumeric(newArr as Iterable<number>)
+			: new ArrayNumeric(newArr as Iterable<number>)
 	}
 }

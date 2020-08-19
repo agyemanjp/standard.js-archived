@@ -1,6 +1,7 @@
 /* eslint-disable brace-style */
 
-import { Predicate, Ranker, Projector, map, intersection, every, union, some, except, complement } from "./combinators"
+import { map, intersection, every, union, some, except, complement } from "../iterable"
+import { Predicate, Ranker, Projector } from "../../functional"
 import { Sequence } from "./sequence"
 import { Array } from "./array"
 
@@ -49,7 +50,7 @@ export class Set<X> extends Sequence<X> {
 
 	union(collections: Iterable<X>[]) { return this.ctor(union([this, ...collections])) }
 	intersection(collections: globalThis.Array<X>[]) { return this.ctor(intersection(collections)) }
-	except(collections: globalThis.Array<X>[]): Iterable<X> { return this.ctor(except(this, collections)) }
+	except(collections: globalThis.Array<X>[]): Iterable<X> { return this.ctor(except(this, ...collections)) }
 	complement(universe: Iterable<X>): Iterable<X> { return complement([...this], universe) }
 
 	// eslint-disable-next-line fp/no-mutating-methods
@@ -57,3 +58,17 @@ export class Set<X> extends Sequence<X> {
 	// eslint-disable-next-line fp/no-mutating-methods
 	sortDescending(comparer?: Ranker<X>) { return new Array([...this].sort(comparer).reverse()) }
 }
+
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Set {
+	export class Ordered {
+
+	}
+	export class UnOrdered {
+
+	}
+	export class Lazy<T> { }
+
+}
+

@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-unused-expression */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable fp/no-class */
 
-import { Predicate, Projector, Reducer, take, skip, first, last, map, filter, reduce, forEach } from "./combinators"
+import { take, skip, first, last, map, filter, reduce, forEach } from "../iterable"
+import { Predicate, Projector, Reducer } from "../../functional"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {
@@ -82,4 +84,17 @@ export class Sequence<X> implements Iterable<X> {
 	toDictionary<X>() {
 		return Dictionary.fromKeyValues([...this])
 	}
+}*/
+
+/* export namespace Iterable {
+	export class Infinite {
+
+	}
+	export class Cached {
+
+	}
+	export class Async {
+
+	}
+
 }*/

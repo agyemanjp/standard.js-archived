@@ -1,24 +1,14 @@
 
 export * from "./async"
-
-export * from "./combinators"
-export * from "./dictionary"
-export * from "./sequence"
-export * from "./table"
-export * from "./array"
-export * from "./set"
-
+export * from "./collections"
 export * from "./datetime"
-export * from "./string"
-export * from "./number"
-export * from "./char"
+export * from "./functional"
+// export * from "./nu ric"
+export * from "./text"
+export * from "./web"
+export * from "./utility"
 
-export * from "./http"
-
-export * from "./types"
-
-/*
-export {
+/* export {
 	Primitive,
 	Collection,
 	Tuple,
