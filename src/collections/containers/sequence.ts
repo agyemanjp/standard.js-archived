@@ -86,7 +86,7 @@ export class Sequence<X> implements Iterable<X> {
 	}
 }*/
 
-export namespace Iterable {
+/* export namespace Iterable {
 	export class Infinite {
 
 	}
@@ -97,4 +97,4 @@ export namespace Iterable {
 
 	}
 
-}
+}*/
