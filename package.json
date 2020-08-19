@@ -2,10 +2,10 @@
 	"name": "@agyemanjp/standard",
 	"version": "2.0.2",
 	"description": "Standard library for JavaScript/TypeScript",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"main": "index.js",
+	"types": "index.d.ts",
 	"files": [
-		"dist",
+		"/*",
 		"!*.tsbuildinfo"
 	],
 	"scripts": {
@@ -16,7 +16,8 @@
 		"compile": "tsc",
 		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
-		"build": "npm run clean && npm run lint && npm run compile && npm run test"
+		"build": "npm run clean && npm run lint && npm run compile && npm run test",
+		"package": "git add . && git commit -m 'Update' && git push && npm version patch && git push --follow-tags && cp package.json README.md dist && npm publish --dry-run"
 	},
 	"repository": {
 		"type": "git",
