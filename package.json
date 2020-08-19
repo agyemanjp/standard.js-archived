@@ -2,7 +2,7 @@
 	"name": "@agyemanjp/standard",
 	"version": "1.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
-	"main": "dist/_index.js",
+	"main": "dist/index.js",
 	"types": "dist/",
 	"files": [
 		"dist/*",
@@ -58,7 +58,6 @@
 		"mocha": "^7.1.1",
 		"mocha-reporter-json-standard": "^1.0.0",
 		"source-map-support": "^0.5.19",
-		"tspath": "^1.3.7",
 		"typescript": "^3.9.3"
 	}
 }
