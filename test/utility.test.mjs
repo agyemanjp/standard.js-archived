@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
+//@ts-check
 
 import mocha from "mocha"
+// @ts-ignore
 import assert from "assert"
 import utility from "../dist/utility.js"
 

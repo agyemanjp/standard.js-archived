@@ -1,17 +1,31 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
-import * as assert from "assert"
-import { isIterable, flatten, chunk, take } from "./collections"
+
+//@ts-check
+
+import mocha from "mocha"
+// @ts-ignore
+import assert from "assert"
+import iterable from "../../dist/collections/iterable.js"
+
+const { describe, it } = mocha
+const { isIterable, flatten, chunk, take } = iterable
 
 describe("isIterable", () => {
 	it("", () => {
-		function f1(x: any) {
+		function f1(x) {
 			if (isIterable(x)) {
-				const it = x[Symbol.iterator]()
+				const iter = x[Symbol.iterator]()
 			}
 		}
-		function f2(x: Iterable<number> | Promise<any> | string) {
+		/**
+		 * @param {Iterable<number> | Promise<any> | string} x
+		 */
+		function f2(x) {
 			if (isIterable(x)) {
-				const it = x[Symbol.iterator]()
+				const iter = x[Symbol.iterator]()
 			}
 		}
 	})

@@ -142,11 +142,11 @@ export function flip<A, B, Ret>(f: (a: A, b: B) => Ret): (b: B, a: A) => Ret {
 }*/
 
 /* https://github.com/kolodny/cury/blob/master/index.ts */
-function curry<A, R>(fn: (a: A) => R): (a: A) => R
-function curry<A, B, R>(fn: (a: A, b: B) => R): (a: A) => (b: B) => R
-function curry<A, B, C, R>(fn: (a: A, b: B, c: C) => R): (a: A) => (b: B) => (c: C) => R
-function curry<A, B, C, D, R>(fn: (a: A, b: B, c: C, d: D) => R): (a: A) => (b: B) => (c: C) => (d: D) => R
-function curry(fn: (...args: any[]) => unknown) {
+export function curry<A, R>(fn: (a: A) => R): (a: A) => R
+export function curry<A, B, R>(fn: (a: A, b: B) => R): (a: A) => (b: B) => R
+export function curry<A, B, C, R>(fn: (a: A, b: B, c: C) => R): (a: A) => (b: B) => (c: C) => R
+export function curry<A, B, C, D, R>(fn: (a: A, b: B, c: C, d: D) => R): (a: A) => (b: B) => (c: C) => (d: D) => R
+export function curry(fn: (...args: any[]) => unknown) {
 	return function curried(...args: any[]) {
 		if (args.length >= fn.length) {
 			const x = fn(...args)

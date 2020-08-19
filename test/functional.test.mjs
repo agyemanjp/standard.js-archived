@@ -1,10 +1,15 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 // /* eslint-disable fp/no-unused-expression */
 
+//@ts-check
+
+import mocha from "mocha"
+// @ts-ignore
 import assert from "assert"
-// import { flip, curry } from './functional'
 import functional from '../dist/functional/index.js'
-const { compare } = functional
+const { compare, flip, curry } = functional
+const { describe, it } = mocha
 
 
 describe('compare()', () => {

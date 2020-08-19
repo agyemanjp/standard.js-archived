@@ -1,10 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable fp/no-unused-expression */
 
+//@ts-check
+
+import mocha from "mocha"
+// @ts-ignore
 import assert from "assert"
 import async from "../dist/async/index.js"
 
-const { AsyncFn, promisify, sleep, notConcurrent, Mutex } = async
+const { promisify, sleep, notConcurrent, Mutex } = async
+const { describe, it } = mocha
 
 /*describe("Mutex", () => {
 	it("", () => {
