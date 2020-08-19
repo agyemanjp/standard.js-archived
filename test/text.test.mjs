@@ -1,7 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
-import * as assert from "assert"
-import { String } from "./string"
 
+//@ts-check
+
+import mocha from "mocha"
+// @ts-ignore
+import assert from "assert"
+import str from "../dist/text/string.js"
+import char from "../dist/text/char.js"
+
+const { describe, it } = mocha
+const { String } = str
+const { CharASCII } = char
 
 describe("plural", () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars

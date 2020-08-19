@@ -17,17 +17,11 @@
 		],
 		"strict": true,
 		"skipLibCheck": true,
-		"resolveJsonModule": true,
 		"incremental": true,
-		"rootDirs": [
-			"./src",
-			"./test"
-		],
-		"outDir": "./dist",
+		"outDir": "./dist"
 	},
 	"include": [
 		"./src",
-		"./test"
 	],
 	"exclude": []
 }

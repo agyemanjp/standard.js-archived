@@ -3,21 +3,21 @@
 	"version": "1.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/_index.js",
-	"types": "dist/_index.d.ts",
+	"types": "dist/",
 	"files": [
-		"dist/*.js",
-		"dist/*.d.ts",
-		"!/dist/**/*test.*"
+		"dist/*",
+		"!*.tsbuildinfo"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
 		"clean": "rm -rf ./dist .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "rm -rf dist/*.js && tsc && flatten dist && rm -rf dist/*.test.js.map dist/*.test.d.ts",
-		"test": "mocha dist/*.test.js",
+		"build": "rm -rf dist/*.js && tsc  && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha dist/*.test.js --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run clean && npm run lint && npm run build && npm run test"
+		"ci": "npm run clean && npm run lint && npm run build && npm run test",
+		"package": ""
 	},
 	"repository": {
 		"type": "git",
@@ -58,6 +58,7 @@
 		"mocha": "^7.1.1",
 		"mocha-reporter-json-standard": "^1.0.0",
 		"source-map-support": "^0.5.19",
+		"tspath": "^1.3.7",
 		"typescript": "^3.9.3"
 	}
 }

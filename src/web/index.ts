@@ -1,6 +1,6 @@
 /* eslint-disable indent */
 import { Response, get, post, put, del } from "request"
-import { String } from "./string"
+import { String } from "../text/string"
 
 export interface Json { [x: string]: string | number | boolean | Date | Json | JsonArray }
 type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
