@@ -3,21 +3,20 @@
 	"version": "2.0.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "dist/index.js",
-	"types": "dist/",
+	"types": "dist/index.d.ts",
 	"files": [
-		"dist/*",
+		"./dist",
 		"!*.tsbuildinfo"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
-		"clean": "rm -rf ./dist .eslintcache *-report.json",
+		"clean": "rm -rf dist/* .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "rm -rf dist/*.js && tsc  && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"compile": "tsc",
 		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run clean && npm run lint && npm run build && npm run test",
-		"package": ""
+		"build": "npm run clean && npm run lint && npm run compile && npm run test"
 	},
 	"repository": {
 		"type": "git",
