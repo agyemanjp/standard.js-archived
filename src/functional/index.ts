@@ -68,16 +68,16 @@ export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown, void>, t
 		return _x === _y ? 0 : 1
 }
 
-export function getRanker<T>(args: { projector: Projector<T, unknown, void>, tryNumeric?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
+export function getRanker<T>(args: { projector: Projector<T, unknown, void>, tryNumeric?: boolean/*=false*/, tryDate?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
 	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
 	return (x: T, y: T) => {
-		return compare(x, y, args.projector, args.tryNumeric) * (args.reverse === true ? -1 : 1)
+		return compare(x, y, args.projector, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
 	}
 }
-export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeric = false/*, reverse = false*/): Comparer<T> {
+export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeric = false, tryDate?: boolean/*=false* reverse = false*/): Comparer<T> {
 	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
 	return (x: T, y: T) => {
-		return compare(x, y, projector, tryNumeric) === 0
+		return compare(x, y, projector, tryNumeric, tryDate) === 0
 	}
 }
 
