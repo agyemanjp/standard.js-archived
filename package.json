@@ -1,23 +1,23 @@
 {
 	"name": "@agyemanjp/standard",
-	"version": "2.0.0",
+	"version": "2.0.3",
 	"description": "Standard library for JavaScript/TypeScript",
-	"main": "dist/index.js",
-	"types": "dist/",
+	"main": "index.js",
+	"types": "index.d.ts",
 	"files": [
-		"dist/*",
+		"/*",
 		"!*.tsbuildinfo"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
-		"clean": "rm -rf ./dist .eslintcache *-report.json",
+		"clean": "rm -rf dist/* .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "rm -rf dist/*.js && tsc  && rm -rf dist/*.test.js.map dist/*.test.d.ts",
+		"compile": "tsc",
 		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run clean && npm run lint && npm run build && npm run test",
-		"package": ""
+		"build": "npm run clean && npm run lint && npm run compile && npm run test",
+		"package": "git add . && git commit -m 'Update' && git push && npm version patch && git push --follow-tags && cp package.json README.md dist && npm publish --dry-run"
 	},
 	"repository": {
 		"type": "git",

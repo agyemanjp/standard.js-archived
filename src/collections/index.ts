@@ -71,12 +71,14 @@ export namespace Collection {
 }
 */
 
+export * as obj from "./object"
+export * as iterAsync from "./iterable-async"
+export * as Iter from "./iterable"
 
-export * from "./iterable-async"
-export * from "./iterable"
 export * from "./containers/dictionary"
 export * from "./containers/sequence"
 export * from "./containers/table"
 export * from "./containers/array"
 export * from "./containers/set"
+
 
