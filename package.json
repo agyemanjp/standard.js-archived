@@ -1,6 +1,6 @@
 {
 	"name": "@agyemanjp/standard",
-	"version": "2.0.4",
+	"version": "2.0.5",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "index.js",
 	"types": "index.d.ts",
