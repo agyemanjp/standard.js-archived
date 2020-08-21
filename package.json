@@ -1,6 +1,6 @@
 {
 	"name": "@agyemanjp/standard",
-	"version": "2.0.3",
+	"version": "2.0.5",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -17,7 +17,7 @@
 		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
 		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git add . && git commit -m 'Update' && git push && npm version patch && git push --follow-tags && cp package.json README.md dist && npm publish --dry-run"
+		"package": "git add . && git commit -m 'Update' && npm version patch && git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run"
 	},
 	"repository": {
 		"type": "git",

@@ -1,6 +1,10 @@
-/*
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Collection {
+
+export * from "./object"
+export * from "./iterable-async"
+export * from "./iterable"
+export * from "./containers"
+
+/* export namespace Collection {
 	export interface Enumerable<X> extends Iterable<X> {
 		take: (n: number) => Enumerable<X>
 		skip: (n: number) => Enumerable<X>
@@ -70,15 +74,3 @@ export namespace Collection {
 	}
 }
 */
-
-export * as obj from "./object"
-export * as iterAsync from "./iterable-async"
-export * as Iter from "./iterable"
-
-export * from "./containers/dictionary"
-export * from "./containers/sequence"
-export * from "./containers/table"
-export * from "./containers/array"
-export * from "./containers/set"
-
-
