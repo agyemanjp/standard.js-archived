@@ -16,3 +16,18 @@ Standard library for JavaScript/TypeScript
 `npm install --save @hypothesize/standard`
 
 
+## Usage
+```ts
+// import specific functions from specific modules
+import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@agyemanjp/standard/collections/iterable-async"
+import { map, filter, reduce, skip, take, chunk /*, ...*/ } from "@agyemanjp/standard/collections/iterable"
+import { keys, entries, pick, omit, mapObject, fiterObject  /*, ...*/ } from "@agyemanjp/standard/collections/object"
+
+// import everything from a module
+import * as containers from "@agyemanjp/standard/collections/containers"
+const numArray = new containers.Array([1, 2, 3])
+
+// import everything from package
+import * as stdlib from "@agyemanjp/standard"
+type Predicate<T> = stdlib.Predicate<T>
+```
