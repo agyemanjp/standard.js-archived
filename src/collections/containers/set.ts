@@ -3,7 +3,7 @@
 import { map, intersection, every, union, some, except, complement } from "../iterable"
 import { Predicate, Ranker, Projector } from "../../functional"
 import { Sequence } from "./sequence"
-import { Array } from "./array"
+// import { Array } from "./array"
 
 /** Set of unique elements, known in advance, without any specific order */
 export class Set<X> extends Sequence<X> {
@@ -54,7 +54,7 @@ export class Set<X> extends Sequence<X> {
 	complement(universe: Iterable<X>): Iterable<X> { return complement([...this], universe) }
 
 	// eslint-disable-next-line fp/no-mutating-methods
-	sort(comparer?: Ranker<X>) { return new Array([...this].sort(comparer)) }
+	sort(comparer?: Ranker<X>) { return this.ctor([...this].sort(comparer)) }
 	// eslint-disable-next-line fp/no-mutating-methods
 	sortDescending(comparer?: Ranker<X>) { return new Array([...this].sort(comparer).reverse()) }
 }

@@ -9,8 +9,11 @@ import { Predicate, Projector } from "../functional"
 
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
-export function keys<K extends string, V>(obj: Record<K, V>): K[]
-export function keys(obj: any) { return Object.keys(obj) }
+export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): K[]
+export function keys(obj: any) {
+	// if (typeof obj === "object") throw new Error
+	return Object.keys(obj)
+}
 
 export function fromKeyValues<T, K extends string = string>(keyValues: Tuple<K, T>[]) {
 	const obj = {} as Record<K, T>
@@ -35,10 +38,10 @@ export function mapObject<X, Y>(obj: Obj<string, X>, projector: Projector<X, Y, 
 	return newObj
 }
 
-export function filterObject<K extends string, V>(obj: Obj<K, V>, predicate: Predicate<V>): Partial<Obj<K, V>>
-export function filterObject<T extends Obj>(obj: T, predicate: Predicate<T[keyof T]>): Partial<T>
-export function filterObject(obj: Obj, predicate: Predicate<unknown>) {
-	return fromKeyValues(entries(obj).filter(predicate))
+export function filterObject<K extends string, V>(obj: Obj<K, V>, predicate: Predicate<V, K>): Partial<Obj<K, V>>
+export function filterObject<T extends Obj>(obj: T, predicate: Predicate<T[keyof T], keyof T>): Partial<T>
+export function filterObject(obj: Obj, predicate: Predicate<unknown, keyof typeof obj>) {
+	return fromKeyValues(entries(obj).filter(entry => predicate(entry[1], entry[0])))
 }
 
 export function pick<T extends Obj, K extends keyof T>(obj: T, ..._keys: K[]): Record<K, T[K]> {
@@ -86,11 +89,14 @@ export interface ObjectMergeOptions {
 // function merge<X>(target: X, source: undefined | null): X
 // function merge<X>(target: undefined | null, source: X): X
 // function merge<X, Y>(target: X, source: Y): X & Y
-export function deepmerge<T1, T2>(x: T1, y: T2, options?: ObjectMergeOptions): T1 & T2
-export function deepmerge<T1, T2, T3>(x: T1, y: T2, options?: ObjectMergeOptions): T1 & T2 & T3
-export function deepmerge<T1, T2, T3, T4>(x: T1, y: T2, options?: ObjectMergeOptions): T1 & T2 & T3 & T4
+export function deepMerge<T1>(args: [T1], options?: ObjectMergeOptions): T1
+export function deepMerge<T1, T2>(args: [T1, T2], options?: ObjectMergeOptions): T1 & T2
+export function deepMerge<T1, T2, T3>(args: [T1, T2, T3], options?: ObjectMergeOptions): T1 & T2 & T3
+export function deepMerge<T1, T2, T3, T4>(args: [T1, T2, T3, T4], options?: ObjectMergeOptions): T1 & T2 & T3 & T4
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function deepmerge(options?: ObjectMergeOptions, ...args: any[]) {
+export function deepMerge(args: any[], options?: ObjectMergeOptions) {
+	if (!Array.isArray(args)) throw new Error(`Invalid argument <args>: must be of type array`)
+
 	function emptyTarget(val: unknown) {
 		return Array.isArray(val) ? [] : {}
 	}
@@ -99,9 +105,9 @@ export function deepmerge(options?: ObjectMergeOptions, ...args: any[]) {
 	type Any = object | string | number | symbol | boolean | bigint
 
 
-	function cloneUnlessOtherwiseSpecified(value: unknown, _options: ObjectMergeOptions) {
+	function cloneUnlessOtherwiseSpecified(value: unknown, _options: ObjectMergeOptions): unknown {
 		return (_options.clone !== false && _options.isMergeableObject && _options.isMergeableObject(value))
-			? deepmerge(emptyTarget(value), value, _options)
+			? _deepmerge(emptyTarget(value), value, _options)
 			: value
 	}
 
@@ -113,10 +119,10 @@ export function deepmerge(options?: ObjectMergeOptions, ...args: any[]) {
 
 	function getMergeFunction(key: string, _options: ObjectMergeOptions) {
 		if (!_options.customMerge) {
-			return deepmerge
+			return deepMerge
 		}
 		const customMerge = _options.customMerge(key)
-		return typeof customMerge === 'function' ? customMerge : deepmerge
+		return typeof customMerge === 'function' ? customMerge : _deepmerge
 	}
 
 	function getEnumerableOwnPropertySymbols(target: Any) {
@@ -168,6 +174,7 @@ export function deepmerge(options?: ObjectMergeOptions, ...args: any[]) {
 				destination[key] = getMergeFunction(key, _options)(target[key], source[key], _options)
 			}
 			else {
+				// eslint-disable-next-line fp/no-mutation
 				destination[key] = cloneUnlessOtherwiseSpecified(source[key], _options)
 			}
 		})

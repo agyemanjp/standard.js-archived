@@ -8,7 +8,7 @@
 import mocha from "mocha"
 // @ts-ignore
 import assert from "assert"
-import iterable from "../../dist/collections/iterable.js"
+import iterable from "../dist/collections/iterable.js"
 
 const { describe, it } = mocha
 const { isIterable, flatten, chunk, take } = iterable

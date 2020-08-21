@@ -17,7 +17,7 @@
 		"test": "mocha test/*.test.mjs",
 		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
 		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git add . && git commit -m 'Update' && npm version patch && git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run"
+		"package": "git add . && git commit -m 'Update' && npm version patch && cp package.json README.md dist && cd dist && npm publish --dry-run"
 	},
 	"repository": {
 		"type": "git",
@@ -45,6 +45,7 @@
 	},
 	"devDependencies": {
 		"@hutsoninc/flatten-dir-cli": "^1.0.2",
+		"@types/assert": "^1.5.1",
 		"@types/eslint": "^7.2.0",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^14.0.4",
