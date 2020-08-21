@@ -9,7 +9,7 @@ import assert from "assert"
 import utility from "../dist/utility.js"
 
 const { describe, it } = mocha
-const { hasValue, isArr } = utility
+const { hasValue, isArray } = utility
 
 describe('hasValue()', function () {
 	it('should return true for an empty array', function () {
@@ -60,7 +60,7 @@ describe("isArray", () => {
 	it("should work for a union of an array and a primitive", () => {
 		// eslint-disable-next-line no-constant-condition
 		const val = true ? [1, 2, 3] : ""
-		if (isArr(val)) {
+		if (isArray(val)) {
 			// test type
 			/** @type Array<number> */
 			const x = val
@@ -73,7 +73,7 @@ describe("isArray", () => {
 	it("should work for a union of an array and a primitive", () => {
 		// eslint-disable-next-line no-constant-condition
 		const val = true ? [1, 2, 3] : [""]
-		if (isArr(val)) {
+		if (isArray(val)) {
 			// test type
 			/** @type Array<number> | Array<string> */
 			const x = val

@@ -59,16 +59,3 @@ export class Set<X> extends Sequence<X> {
 	sortDescending(comparer?: Ranker<X>) { return new Array([...this].sort(comparer).reverse()) }
 }
 
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Set {
-	export class Ordered {
-
-	}
-	export class UnOrdered {
-
-	}
-	export class Lazy<T> { }
-
-}
-

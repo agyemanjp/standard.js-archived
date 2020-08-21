@@ -12,8 +12,12 @@ export type RecursiveRequired<T> = { [P in keyof T]-?: Required<T[P]> }
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
 export type ArrayElementType<T> = T extends (infer U)[] ? U : T
 export type ExtractByType<TObj, TType> = Pick<TObj, { [k in keyof TObj]-?: TObj[k] extends TType ? k : never }[keyof TObj]>
-export type OptionalKeys<T extends Record<string, unknown>> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type ExtractOptional<T extends Record<string, unknown>, K extends OptionalKeys<T> = OptionalKeys<T>> = Record<K, T[K]>
+
+// export type OptionalKeys<T extends Record<string, unknown>> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
+// export type ExtractOptional<T extends Record<string, unknown>, K extends OptionalKeys<T> = OptionalKeys<T>> = Record<K, T[K]>
+type OptionalKeys<T> = { [k in keyof T]: undefined extends T[k] ? k : never }[keyof T]
+type ExtractOptional<T> = { [k in OptionalKeys<T>]?: T[k] }
+
 export type ArrayRecursive<T> = Array<T | ArrayRecursive<T>>
 export type Tuple<X, Y> = [X, Y]
 export const Tuple = class <X, Y>  { constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> } } as { new <X, Y>(x: X, y: Y): [X, Y] }
@@ -83,15 +87,8 @@ export function parseNumber(value: unknown): number | undefined {
 }
 
 /** Array type guard */
-export function isArray<T, _>(val: Array<T> | _): val is _ extends Array<infer X> ? never : Array<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return hasValue(val)
-		&& "length" in val
-		&& typeof val.length === 'number'
-		&& val.length >= 0
-		&& val.length % 1 === 0
-}
-export function isArr(val: any): val is typeof val extends Array<infer X> ? Array<X> : Array<unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isArray(val: any): val is typeof val extends Array<infer X> ? Array<X> : Array<unknown> {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return hasValue(val)
 		&& "length" in val
