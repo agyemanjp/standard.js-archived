@@ -84,6 +84,10 @@ describe("isArray", () => {
 
 })
 
+//#region Type tests
+
+//#endregion
+
 /*
 describe("Number Regex", function () {
 	var re = new RegExp("^(" + numberReSnippet + ")$")

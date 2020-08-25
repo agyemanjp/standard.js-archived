@@ -6,7 +6,7 @@
 /* eslint-disable fp/no-loops */
 /* eslint-disable brace-style */
 
-import { Tuple, hasValue } from "../utility"
+import { Tuple, TypeGuard, hasValue } from "../utility"
 import { Reducer, Projector, Predicate } from "../functional"
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
@@ -66,7 +66,9 @@ export function* map<X, Y>(iterable: Iterable<X>, projector: Projector<X, Y>): I
 	}
 }
 
-export function* filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
+export function filter<X>(iterable: Iterable<X>, predicate: Predicate<X, number>): Iterable<X>
+export function filter<X, X1 extends X>(iterable: Iterable<X>, predicate: TypeGuard<X, X1>): Iterable<X1>
+export function* filter<X, X1 extends X>(iterable: Iterable<X>, predicate: Predicate<X> | TypeGuard<X, X1>) {
 	for (const tuple of indexed(iterable)) {
 		if (predicate(tuple[1], tuple[0]))
 			yield tuple[1]

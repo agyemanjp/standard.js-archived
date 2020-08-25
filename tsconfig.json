@@ -16,6 +16,7 @@
 			"esnext.asynciterable"
 		],
 		"strict": true,
+		"strictNullChecks": true,
 		"skipLibCheck": true,
 		"incremental": true,
 		"outDir": "./dist"

@@ -12,7 +12,7 @@ import containers from "../dist/collections/containers/index.js"
 const { Array } = containers
 
 describe("Array", () => {
-	it("should work", () => {
+	it("should be equivalent to global array for empty arrays", () => {
 		assert.deepEqual([], [...new Array([])])
 
 	})
