@@ -9,7 +9,7 @@ import { Sequence } from "./sequence"
 export class Set<X> extends Sequence<X> {
 	constructor(elements: Iterable<X>/*, protected opts?: { comparer?: Comparer<X>, ranker?: Ranker<X> }*/) {
 		// eslint-disable-next-line fp/no-unused-expression
-		super(elements)
+		super([...elements])
 	}
 	protected _set?: globalThis.Set<X> = undefined
 	protected readonly core = ((me: this) => {
