@@ -103,6 +103,7 @@ function assignProp(carry: Obj, key: string, newVal: any, originalObject: Obj): 
 function mergeRecursively<T1 extends Obj | any, T2 extends Obj | any>(origin: T1, newComer: T2, compareFn?: (prop1: any, prop2: any, propName: string) => any): (T1 & T2) | T2 {
 	// always return newComer if its not an object
 	if (!isObject(newComer)) return newComer
+
 	// define newObject to merge all values upon
 	// eslint-disable-next-line fp/no-let
 	let newObject = {} as (T1 & T2) | T2
