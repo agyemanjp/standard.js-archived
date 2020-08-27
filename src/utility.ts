@@ -15,8 +15,7 @@ type IsAny<T> = (T extends {} ? 1 : 0) extends (0 | 1)
 	? "true"
 	: "false"
 	: "false"
-type IsAnyTest<T> = "true" extends IsAny<T> ? "true" : "false"
-
+// type IsAnyTest<T> = "true" extends IsAny<T> ? "true" : "false"
 export type TypeAssert<T1, T2> = (
 	"true" extends IsAny<T1>
 	? "true" extends IsAny<T2>
@@ -28,10 +27,6 @@ export type TypeAssert<T1, T2> = (
 	? "true"
 	: "false"
 )
-
-type Test1 = IsAnyTest<unknown>
-type Test2 = TypeAssert<never | any, never | any>
-
 
 export type Fx<Ret, Args extends any[]> = (...args: Args) => Ret
 export type Primitive = number | string | bigint | boolean | symbol
@@ -85,12 +80,10 @@ export type Merge2<A, B> = Merge<A, B>
 export type Merge3<A, B, C> = Merge<A, Merge<B, C>>
 export type Merge4<A, B, C, D> = Merge<A, Merge<B, Merge<C, D>>>
 export type Merge5<A, B, C, D, E> = Merge<A, Merge<B, Merge<C, Merge<D, E>>>>
-
 // export type MergeReduce<A extends ReadonlyArray<any> = any[]> = Array<A["length"] extends 1 ? A[0] : Merge<A[0], MergeReduce<A>>>
 // type Unwrap<p> = p extends Promise<infer T> ? T : p extends Array<infer Y> ? Y : p
 // type M<a extends ReadonlyArray<any>> = Unwrap<MergeReduce<a>>
 // type test = M<[1, 2]>
-
 
 /** Determines if input argument has a value */
 export function hasValue<T>(value?: T): value is T {

@@ -17,7 +17,7 @@
 		"test": "mocha --require ts-node/register test/*.test.*",
 		"test-report": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test-report.json",
 		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git add . && git commit -m 'Update' && git push --follow-tags && npm version patch && cp package.json README.md dist && cd dist && npm publish --dry-run"
+		"package": "npm version patch && git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run"
 	},
 	"repository": {
 		"type": "git",
