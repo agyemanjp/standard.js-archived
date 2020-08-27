@@ -3,32 +3,24 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
-
-import mocha from "mocha"
-// @ts-ignore
-import assert from "assert"
-import iterable from "../dist/collections/iterable.js"
-
-const { describe, it } = mocha
-const { isIterable, flatten, chunk, take } = iterable
+// import mocha from "mocha"
+import * as assert from "assert"
+import { isIterable, flatten, chunk, take } from "../dist/collections/iterable.js"
 
 describe("isIterable", () => {
-	it("", () => {
-		function f1(x) {
-			if (isIterable(x)) {
-				const iter = x[Symbol.iterator]()
-			}
-		}
-		/**
-		 * @param {Iterable<number> | Promise<any> | string} x
-		 */
-		function f2(x) {
-			if (isIterable(x)) {
-				const iter = x[Symbol.iterator]()
-			}
-		}
-	})
+	// it("", () => {
+	// 	function f1(x) {
+	// 		if (isIterable(x)) {
+	// 			const iter = x[Symbol.iterator]()
+	// 		}
+	// 	}
+
+	// 	function f2(x: Iterable<number> | Promise<any> | string) {
+	// 		if (isIterable(x)) {
+	// 			const iter = x[Symbol.iterator]()
+	// 		}
+	// 	}
+	// })
 })
 
 describe('flatten()', function () {
@@ -41,11 +33,7 @@ describe('flatten()', function () {
 				"start_line": 0,
 				"end_line": 0,
 				"annotation_level": "warning"
-			}],
-			[],
-			[],
-			[],
-			[]
+			}], [], [], [], []
 		])]
 
 		const expected = [{

@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
-
-//@ts-ignore
-import assert from "assert"
-import mocha from "mocha"
-const { describe, it } = mocha
-import _object from "../dist/collections/object.js"
-const { pick, deepMerge, filterObject, mapObject, omit, keys, entries, fromKeyValues } = _object
+import * as assert from "assert"
+import { pick, deepMerge, filterObject, mapObject, omit, keys, entries, fromKeyValues } from "../dist/collections/object.js"
 
 
 describe('keys', () => {
@@ -54,7 +48,7 @@ describe('mapObject', () => {
 describe('filterObject', () => {
 	it('should remove fields not matching predicate', () => {
 		const obj = { a: 'first', b: 2, c: 'third' }
-		const result = filterObject(obj, (field, key) => `${key}-${field}` !== 'b-2')
+		const result = filterObject(obj, ((field, key) => `${key}-${field}` !== 'b-2'))
 		assert.deepEqual(result, { a: 'first', c: 'third' })
 	})
 

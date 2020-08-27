@@ -2,17 +2,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
+import * as assert from "assert"
+import { String } from "../dist/text/string.js"
+import { CharASCII } from "../dist/text/char.js"
 
-import mocha from "mocha"
-// @ts-ignore
-import assert from "assert"
-import str from "../dist/text/string.js"
-import char from "../dist/text/char.js"
-
-const { describe, it } = mocha
-const { String } = str
-const { CharASCII } = char
 
 describe("plural", () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
@@ -21,9 +14,7 @@ describe("plural", () => {
 	})
 })
 
-/*
-
-t.is(plur('unicorn', 0), 'unicorns');
+/* t.is(plur('unicorn', 0), 'unicorns');
 	t.is(plur('unicorn', 1), 'unicorn');
 	t.is(plur('unicorn', 2), 'unicorns');
 	t.is(plur('unicorn', 'horse', 0), 'horse');

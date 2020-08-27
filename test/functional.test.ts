@@ -2,14 +2,9 @@
 /* eslint-disable fp/no-unused-expression */
 // /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
-
-import mocha from "mocha"
-// @ts-ignore
-import assert from "assert"
-import functional from '../dist/functional/index.js'
-const { compare, flip, curry } = functional
-const { describe, it } = mocha
+// import mocha from "mocha"
+import * as assert from "assert"
+import { compare, flip, curry } from '../dist/functional/index.js'
 
 
 describe('compare()', () => {

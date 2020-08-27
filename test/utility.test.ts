@@ -1,17 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
+import * as assert from "assert"
+import {
+	ExtractByType,
+	TypeAssert,
+	Merge, Merge1, Merge2, Merge3,
+	hasValue, isArray
+} from "../dist/utility.js"
 
-import mocha from "mocha"
-// @ts-ignore
-import assert from "assert"
-import utility from "../dist/utility.js"
-
-const { describe, it } = mocha
-const { hasValue, isArray } = utility
-
-describe('hasValue()', function () {
+describe('hasValue', function () {
 	it('should return true for an empty array', function () {
 		assert.equal(hasValue([]), true)
 	})
@@ -83,10 +85,6 @@ describe("isArray", () => {
 	})
 
 })
-
-//#region Type tests
-
-//#endregion
 
 /*
 describe("Number Regex", function () {
@@ -197,3 +195,124 @@ describe('clone()', () => {
 	});
 })
 */
+
+
+//#region Type tests
+
+describe("TypeAssert", () => {
+	it("should return 'true' for identical union types", () => {
+		const test_1: TypeAssert<string | bigint, string | bigint> = "true"
+		const test_2: TypeAssert<string | {} | bigint, {} | string | bigint> = "true"
+		assert.ok(true)
+	})
+	it("should return 'false' for non-identical union types", () => {
+		const test: TypeAssert<string | bigint, string | boolean> = "false"
+		assert.ok(true)
+	})
+	it("should return 'false' when comparing a non-union type with a union type", () => {
+		const test: TypeAssert<string, string | bigint> = "false"
+		assert.ok(true)
+	})
+	it("should return 'true' when both types are <any>", () => {
+		const test: TypeAssert<any, any> = "true"
+		assert.ok(true)
+	})
+	it("should return 'true' when both types are <unknown>", () => {
+		const test: TypeAssert<unknown, unknown> = "true"
+		assert.ok(true)
+	})
+	it("should return 'true' when both types are <never>", () => {
+		const test: TypeAssert<never, never> = "true"
+		assert.ok(true)
+	})
+	it("should return 'false' when one type extends the other but they are not identical", () => {
+		const test: TypeAssert<Array<any>, Iterable<any>> = "false"
+		assert.ok(true)
+	})
+	it("should return 'false' when comparing <any> to another type", () => {
+		const test: TypeAssert<any, { str: "" }> = "false"
+		const test_1: TypeAssert<number, any> = "false"
+		const test_2: TypeAssert<unknown, any> = "false"
+		const test_3: TypeAssert<any, unknown> = "false"
+		const test_4: TypeAssert<any, never> = "false"
+		assert.ok(true)
+	})
+	it("should return 'false' when comparing <never> to another type", () => {
+		const test: TypeAssert<never, {}> = "false"
+		const test_1: TypeAssert<never, unknown> = "false"
+		const test_2: TypeAssert<never, string> = "false"
+		const test_3: TypeAssert<number, never> = "false"
+		const test_4: TypeAssert<never, object> = "false"
+		assert.ok(true)
+	})
+})
+
+describe("ExtractByType", () => {
+	it("should return only those properties that have the desired type", () => {
+		const obj = { str: "", num: 1, b: true, arr: [1, 2, 3], o: { x: null } }
+		const test_1: TypeAssert<ExtractByType<typeof obj, string>, { str: string }> = "true"
+		const test_2: TypeAssert<ExtractByType<typeof obj, number>, { str: "" }> = "false"
+		const test_3: TypeAssert<ExtractByType<typeof obj, number>, { num: number }> = "true"
+
+		assert.ok(true)
+	})
+	it("should return all properties if extracted property type is <any>", () => {
+		const obj = { str: "", num: 1, b: true, arr: [1, 2, 3], o: { x: null } }
+		const test_1: TypeAssert<ExtractByType<typeof obj, any>, typeof obj> = "true"
+		assert.ok(true)
+	})
+	it("should return an empty object if extracted property type is <unknown>", () => {
+		const obj = { str: "", num: 1, b: true, arr: [1, 2, 3], o: { x: null } }
+		const test: TypeAssert<ExtractByType<typeof obj, unknown>, {}> = "true"
+		assert.ok(true)
+	})
+	it("should return only properties that have the desired string literal type", () => {
+		const obj = { str: "" as const, num: 1, b: true, arr: [1, 2, 3], o: { x: null } }
+		const test: TypeAssert<ExtractByType<typeof obj, "">, { str: "" }> = "true"
+
+		assert.ok(true)
+	})
+	it("should return only properties that have the desired numeric literal type", () => {
+		const obj = { str: "" as const, num: 1 as const, b: true, arr: [1, 2, 3], o: { x: null } }
+		const test: TypeAssert<ExtractByType<typeof obj, 1>, { num: 1 }> = "true"
+		assert.ok(true)
+	})
+})
+
+describe("Merge", () => {
+	it("should return the argument value if passed a single argument", () => {
+		const test: TypeAssert<Merge1<{ str: "str", num: 3 }>, { str: "str", num: 3 }> = "true"
+		const test_1: TypeAssert<Merge1<string>, string> = "true"
+		const test_2: TypeAssert<Merge1<any>, any> = "true"
+		const test_3: TypeAssert<Merge1<2>, 2> = "true"
+
+		assert.ok(true)
+	})
+	it("should overwrite undefined properties upstream", () => {
+		const test: TypeAssert<Merge2<{ str: "str", num: undefined }, { str: "abc", num: 3 }>, { str: "abc", num: 3 }> = "true"
+		assert.ok(true)
+	})
+	it("should overwrite first argument is any of the arguments are primitive", () => {
+		// const test_1: TypeAssert<Merge2<{ str: "str", num: undefined }, 2>, 2> = "true"
+		// const test_2: TypeAssert<Merge3<"abc", { str: "str", num: undefined }, 2>, 2> = "true"
+
+		assert.ok(true)
+	})
+})
+
+
+/*
+const testMerge2: TypeAssert<Merge2<{ str: "str", num: 3 }, { str: "abc", num: undefined }>, { str: "abc", num: 3 }> = "true"
+
+const testMerge2_1: TypeAssert<Merge2<"c", "str">, "str"> = "true"
+
+const testMerge3: TypeAssert<Merge3<"", { str: "str" }, { str: undefined, num: 1 }>, { str: "str", num: 1 }> = "true"
+
+const testMerge3_1: TypeAssert<Merge3<{}, {}, { str: "num" }>, { str: "num" }> = "true"
+
+const test_TypeAssert_Any: TypeAssert<any, { str: "num" }> = "false"
+*/
+
+
+
+//#endregion

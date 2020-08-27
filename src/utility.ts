@@ -4,36 +4,93 @@
 /* eslint-disable fp/no-rest-parameters */
 /* eslint-disable brace-style */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Arr = any[]
-export type Fx<Ret, Args extends Arr> = (...args: Args) => Ret
+
+/*export type TypeAssert<T, Expected> = T extends Expected ? (Expected extends T ? true : never) : never;
+type NotAny<T> = T[] extends true[] ? T : T[] extends false[] ? T : never;
+type AssertEqual<T, Expected> = NotAny<T extends Expected ? (Expected extends T ? true : false) : false>;
+export type TypeAssert3<T, Expected> = [T, Expected] extends [Expected, T] ? true : never;*/
+
+type IsAny<T> = (T extends {} ? 1 : 0) extends (0 | 1)
+	? (0 | 1) extends (T extends {} ? 1 : 0)
+	? "true"
+	: "false"
+	: "false"
+type IsAnyTest<T> = "true" extends IsAny<T> ? "true" : "false"
+
+export type TypeAssert<T1, T2> = (
+	"true" extends IsAny<T1>
+	? "true" extends IsAny<T2>
+	? "true"
+	: "false"
+	: "true" extends IsAny<T2>
+	? "false"
+	: [T1, T2] extends [T2, T1]
+	? "true"
+	: "false"
+)
+
+type Test1 = IsAnyTest<unknown>
+type Test2 = TypeAssert<never | any, never | any>
+
+
+export type Fx<Ret, Args extends any[]> = (...args: Args) => Ret
 export type Primitive = number | string | bigint | boolean | symbol
 export type Obj<TValue = unknown, TKey extends string = string> = { [key in TKey]: TValue }
-// export type Obj<TKey extends string = string, TValue = unknown> = { [key in TKey]: TValue }
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
 export type RecursiveRequired<T> = { [P in keyof T]-?: Required<T[P]> }
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
-export type ArrayElementType<T> = T extends (infer U)[] ? U : T
+
 export type OptionalKeys<T> = { [k in keyof T]: undefined extends T[k] ? k : never }[keyof T]
 export type ExtractOptional<T> = { [k in OptionalKeys<T>]?: T[k] }
 export type KeysByType<T, K> = { [k in keyof T]: K extends T[k] ? k : never }[keyof T]
 export type ExtractByType<T, K> = { [k in KeysByType<T, K>]: T[k] }
-// const obj = { str: "" as string | undefined, num: 1, b: true, arr: [1, 2, 3], o: { x: null } }
-// const extract: ExtractByType<typeof obj, string> = {str: "", num:1}
-export type ArrayRecursive<T> = Array<T | ArrayRecursive<T>>
-export type Tuple<X, Y> = [X, Y]
-export const Tuple = class <X, Y>  { constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> } } as { new <X, Y>(x: X, y: Y): [X, Y] }
 
-export type Int = number & { __int__: void }
-export type Float = number & { __int__: void }
-
-/** `Guard` checks if a value is of a type. */
+/** Checks and asserts checks that a value is of a type. */
 export type TypeGuard<A, B extends A> = (value: A) => value is B
 
-/** Option is a container, which is generic.
- * It has two sub - class, one is Some[T], the other is None.
- * You see its interface and will know everything.*/
-type Option<T> = { isDefined: boolean; get: T; getOrElse(t: T): T; }
+export type ArrayRecursive<T> = Array<T | ArrayRecursive<T>>
+export type ArrayElementType<T> = T extends (infer U)[] ? U : T
+
+export type Tuple<X, Y> = [X, Y]
+export const Tuple = class <X, Y>  {
+	constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> }
+} as { new <X, Y>(x: X, y: Y): [X, Y] }
+
+/** Type of tail of array */
+export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
+/** Type of last element of array */
+export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
+/** Type of first element of array */
+export type First<Arr extends Array<any>> = Arr[0]
+
+export type Merge<A, B> = (
+	undefined extends A
+	? B
+	: undefined extends B
+	? A
+	: null extends A
+	? B
+	: null extends B
+	? A
+	: A extends Primitive
+	? B
+	: B extends Primitive
+	? A
+	: _Merge<A, B>
+)
+type _Merge<T, U> = { [K in (keyof T) | (keyof U)]: Merge<K extends keyof T ? T[K] : undefined, K extends keyof U ? U[K] : undefined> };
+
+export type Merge1<A> = A
+export type Merge2<A, B> = Merge<A, B>
+export type Merge3<A, B, C> = Merge<A, Merge<B, C>>
+export type Merge4<A, B, C, D> = Merge<A, Merge<B, Merge<C, D>>>
+export type Merge5<A, B, C, D, E> = Merge<A, Merge<B, Merge<C, Merge<D, E>>>>
+
+// export type MergeReduce<A extends ReadonlyArray<any> = any[]> = Array<A["length"] extends 1 ? A[0] : Merge<A[0], MergeReduce<A>>>
+// type Unwrap<p> = p extends Promise<infer T> ? T : p extends Array<infer Y> ? Y : p
+// type M<a extends ReadonlyArray<any>> = Unwrap<MergeReduce<a>>
+// type test = M<[1, 2]>
+
 
 /** Determines if input argument has a value */
 export function hasValue<T>(value?: T): value is T {
@@ -63,39 +120,6 @@ export function hasValue<T>(value?: T): value is T {
  */
 export function getType(payload: any): string {
 	return Object.prototype.toString.call(payload).slice(8, -1)
-}
-
-//#region Number functions
-export function isIntegerString(value: string): boolean {
-	const numberReSnippet = "(?:NaN|-?(?:(?:\\d+|\\d*\\.\\d+)(?:[E|e][+|-]?\\d+)?|Infinity))"
-	const matchOnlyNumberRe = new RegExp("^(" + numberReSnippet + ")$")
-
-	return matchOnlyNumberRe.test(value)
-}
-export const roundToInt = (num: number): Int => Math.round(num) as Int
-// const a: Int = 440 as Int
-// const b: Int = 6 as Int
-// const c: Int = 11 as Int
-// const result: Int = roundToInt(a * (b / c))
-//#endregion
-
-
-export function parseNumber(value: unknown): number | undefined {
-	const parsed = typeof value === "number"
-		? value
-		: Number.parseFloat(String(value))
-	return (!Number.isNaN(parsed)) ? parsed : undefined
-}
-
-//#region Type Guards
-
-export function isInteger(value: number): value is Int {
-	return Number.isInteger(value)
-}
-export function isFloat(value: unknown): value is Float {
-	const parsed = typeof value === "number"
-		? value : Number.parseFloat(String(value))
-	return (!Number.isNaN(parsed)) && (!Number.isInteger(parsed))
 }
 
 /** Returns whether the payload is undefined
@@ -165,7 +189,7 @@ export function isArrayLike(val: any): val is typeof val extends Array<infer X> 
 		&& val.length % 1 === 0
 }
 
-/** Returns whether the payload is a an empty array
+/** Returns whether the payload is an empty array
  * @param {*} payload
  * @returns {payload is []}
  */
@@ -355,6 +379,4 @@ export function isType<T extends Function>(payload: any, type: T): payload is T 
 	return getType(payload) === name || Boolean(payload && payload.constructor === type)
 }
 
-
-//#endregion
 
