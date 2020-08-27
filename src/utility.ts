@@ -115,6 +115,16 @@ export function getType(payload: any): string {
 	return Object.prototype.toString.call(payload).slice(8, -1)
 }
 
+/** Assert that input key argument is a key of input obj arguments */
+export function isKeyOf(key: any, obj: Obj, caseSensitive = true): key is keyof typeof obj {
+	if (isString(key))
+		return caseSensitive
+			? Object.keys(obj).includes(key)
+			: Object.keys(obj).map(k => k.toUpperCase()).includes(key.toUpperCase())
+	else
+		return false
+}
+
 /** Returns whether the payload is undefined
  * @param {*} payload
  * @returns {payload is undefined}
