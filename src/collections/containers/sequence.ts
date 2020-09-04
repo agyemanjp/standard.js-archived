@@ -9,9 +9,9 @@ import { Predicate, Projector, Reducer } from "../../functional"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {
+	protected _iterable: Iterable<X>
 	// eslint-disable-next-line fp/no-nil, fp/no-mutation
 	constructor(iterable: Iterable<X>) { this._iterable = iterable }
-	protected _iterable: Iterable<X>
 	protected ctor(iterable: Iterable<X>): this { return new Sequence(iterable) as this }
 
 	[Symbol.iterator](): Iterator<X> { return this._iterable[Symbol.iterator]() }

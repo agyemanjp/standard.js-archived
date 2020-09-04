@@ -3,32 +3,24 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
 
-//@ts-check
-
-import mocha from "mocha"
-// @ts-ignore
-import assert from "assert"
-import iterable from "../../dist/collections/iterable.js"
-
-const { describe, it } = mocha
-const { isIterable, flatten, chunk, take } = iterable
+// import mocha from "mocha"
+import * as assert from "assert"
+import { isIterable, flatten, chunk, take } from "../dist/collections/iterable.js"
 
 describe("isIterable", () => {
-	it("", () => {
-		function f1(x) {
-			if (isIterable(x)) {
-				const iter = x[Symbol.iterator]()
-			}
-		}
-		/**
-		 * @param {Iterable<number> | Promise<any> | string} x
-		 */
-		function f2(x) {
-			if (isIterable(x)) {
-				const iter = x[Symbol.iterator]()
-			}
-		}
-	})
+	// it("", () => {
+	// 	function f1(x) {
+	// 		if (isIterable(x)) {
+	// 			const iter = x[Symbol.iterator]()
+	// 		}
+	// 	}
+
+	// 	function f2(x: Iterable<number> | Promise<any> | string) {
+	// 		if (isIterable(x)) {
+	// 			const iter = x[Symbol.iterator]()
+	// 		}
+	// 	}
+	// })
 })
 
 describe('flatten()', function () {
@@ -41,11 +33,7 @@ describe('flatten()', function () {
 				"start_line": 0,
 				"end_line": 0,
 				"annotation_level": "warning"
-			}],
-			[],
-			[],
-			[],
-			[]
+			}], [], [], [], []
 		])]
 
 		const expected = [{
@@ -62,6 +50,17 @@ describe('flatten()', function () {
 	it('should treat strings as primitives, not iterables', function () {
 		const actual = [...flatten([["annotation"], ["simplicity"]])]
 		const expected = ["annotation", "simplicity"]
+		assert.deepEqual(actual, expected)
+	})
+
+	it('should be able to handle null or undefined elements in input iterable', function () {
+		// eslint-disable-next-line fp/no-let, init-declarations
+		let actual: unknown
+		assert.doesNotThrow(() => {
+			// eslint-disable-next-line fp/no-mutation
+			actual = [...flatten([["annotation"], [undefined, 1, null, [undefined]], ["simplicity"]])]
+		})
+		const expected = ["annotation", undefined, 1, null, undefined, "simplicity"]
 		assert.deepEqual(actual, expected)
 	})
 })

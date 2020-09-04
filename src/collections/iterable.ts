@@ -6,7 +6,7 @@
 /* eslint-disable fp/no-loops */
 /* eslint-disable brace-style */
 
-import { Tuple, hasValue } from "../utility"
+import { Tuple, TypeGuard, hasValue } from "../utility"
 import { Reducer, Projector, Predicate } from "../functional"
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
@@ -25,7 +25,7 @@ export function isIterable<T, _>(val: Iterable<T> | _): val is _ extends Iterabl
 export function* take<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 	if (typeof n !== "number") throw new Error(`Invalid type ${typeof n} for argument "n"\nMust be number`)
 	if (n < 0) {
-		console.warn(`Warning: Negative value ${n} passed to argument <n> of take()`)
+		// console.warn(`Warning: Negative value ${n} passed to argument <n> of take()`)
 		return
 	}
 
@@ -41,7 +41,7 @@ export function* skip<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 	if (typeof n !== "number")
 		throw new Error(`Invalid type ${typeof n} for argument "n"\nMust be number`)
 	if (n < 0) {
-		console.warn(`Warning: Negative value ${n} passed to argument <n> of skip()`)
+		// console.warn(`Warning: Negative value ${n} passed to argument <n> of skip()`)
 		return
 	}
 
@@ -66,7 +66,9 @@ export function* map<X, Y>(iterable: Iterable<X>, projector: Projector<X, Y>): I
 	}
 }
 
-export function* filter<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
+export function filter<X>(iterable: Iterable<X>, predicate: Predicate<X, number>): Iterable<X>
+export function filter<X, X1 extends X>(iterable: Iterable<X>, predicate: TypeGuard<X, X1>): Iterable<X1>
+export function* filter<X, X1 extends X>(iterable: Iterable<X>, predicate: Predicate<X> | TypeGuard<X, X1>) {
 	for (const tuple of indexed(iterable)) {
 		if (predicate(tuple[1], tuple[0]))
 			yield tuple[1]
@@ -169,20 +171,20 @@ export function* indexed<T>(items: Iterable<T>, from = 0) {
 }
 
 export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedIterable<X>> {
-	//console.log(`\nInput to flatten: ${JSON.stringify(nestedIterable)}`)
-
-	for (const element of nestedIterable) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		if (typeof element !== "string" && typeof (element as any)[Symbol.iterator] === 'function') {
-			//console.log(`flatten: element <${JSON.stringify(element)}> is iterable; flattening it *`)
-			yield* flatten(element as unknown as Iterable<X>)
-		}
-		else {
-			//console.log(`flatten: element <${JSON.stringify(element)}> is not iterable; yielding it *`)
-			yield element as UnwrapNestedIterable<X>
+	// console.log(`\nInput to flatten: ${JSON.stringify(nestedIterable)}`)
+	if (nestedIterable) {
+		for (const element of nestedIterable) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			if (hasValue(element) && typeof element !== "string" && typeof (element as any)[Symbol.iterator] === 'function') {
+				//console.log(`flatten: element <${JSON.stringify(element)}> is iterable; flattening it *`)
+				yield* flatten(element as unknown as Iterable<X>)
+			}
+			else {
+				//console.log(`flatten: element <${JSON.stringify(element)}> is not iterable; yielding it *`)
+				yield element as UnwrapNestedIterable<X>
+			}
 		}
 	}
-
 }
 
 export function forEach<T>(iterable: Iterable<T>, action: Projector<T>) {

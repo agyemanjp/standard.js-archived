@@ -1,6 +1,6 @@
 {
 	"name": "@agyemanjp/standard",
-	"version": "2.0.5",
+	"version": "2.3.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -14,10 +14,11 @@
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
 		"compile": "tsc",
-		"test": "mocha test/*.test.mjs",
-		"test-report": "mocha test/*.test.mjs --reporter mocha-reporter-json-standard >| .test-report.json",
+		"test": "mocha --require ts-node/register test/*.test.*",
+		"test-report": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test-report.json",
 		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git add . && git commit -m 'Update' && npm version patch && git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run"
+		"package": "git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run",
+		"pub": "cd dist && npm publish --access public"
 	},
 	"repository": {
 		"type": "git",
@@ -44,7 +45,7 @@
 		"request": "^2.88.2"
 	},
 	"devDependencies": {
-		"@hutsoninc/flatten-dir-cli": "^1.0.2",
+		"@types/assert": "^1.5.1",
 		"@types/eslint": "^7.2.0",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^14.0.4",
@@ -58,6 +59,7 @@
 		"mocha": "^7.1.1",
 		"mocha-reporter-json-standard": "^1.0.0",
 		"source-map-support": "^0.5.19",
+		"ts-node": "^9.0.0",
 		"typescript": "^3.9.3"
 	}
 }

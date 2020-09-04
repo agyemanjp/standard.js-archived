@@ -3,13 +3,13 @@
 import { map, intersection, every, union, some, except, complement } from "../iterable"
 import { Predicate, Ranker, Projector } from "../../functional"
 import { Sequence } from "./sequence"
-import { Array } from "./array"
+// import { Array } from "./array"
 
 /** Set of unique elements, known in advance, without any specific order */
 export class Set<X> extends Sequence<X> {
 	constructor(elements: Iterable<X>/*, protected opts?: { comparer?: Comparer<X>, ranker?: Ranker<X> }*/) {
 		// eslint-disable-next-line fp/no-unused-expression
-		super(elements)
+		super([...elements])
 	}
 	protected _set?: globalThis.Set<X> = undefined
 	protected readonly core = ((me: this) => {
@@ -54,21 +54,8 @@ export class Set<X> extends Sequence<X> {
 	complement(universe: Iterable<X>): Iterable<X> { return complement([...this], universe) }
 
 	// eslint-disable-next-line fp/no-mutating-methods
-	sort(comparer?: Ranker<X>) { return new Array([...this].sort(comparer)) }
+	sort(comparer?: Ranker<X>) { return this.ctor([...this].sort(comparer)) }
 	// eslint-disable-next-line fp/no-mutating-methods
 	sortDescending(comparer?: Ranker<X>) { return new Array([...this].sort(comparer).reverse()) }
-}
-
-
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Set {
-	export class Ordered {
-
-	}
-	export class UnOrdered {
-
-	}
-	export class Lazy<T> { }
-
 }
 
