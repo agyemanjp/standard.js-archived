@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-unused-expression */
+
 import * as assert from "assert"
-import { String } from "./string"
+import { String } from "../dist/text/string.js"
+import { CharASCII } from "../dist/text/char.js"
 
 
 describe("plural", () => {
@@ -10,9 +14,7 @@ describe("plural", () => {
 	})
 })
 
-/*
-
-t.is(plur('unicorn', 0), 'unicorns');
+/* t.is(plur('unicorn', 0), 'unicorns');
 	t.is(plur('unicorn', 1), 'unicorn');
 	t.is(plur('unicorn', 2), 'unicorns');
 	t.is(plur('unicorn', 'horse', 0), 'horse');

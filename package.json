@@ -1,23 +1,24 @@
 {
 	"name": "@agyemanjp/standard",
-	"version": "1.0.0",
+	"version": "2.3.1",
 	"description": "Standard library for JavaScript/TypeScript",
-	"main": "dist/_index.js",
-	"types": "dist/_index.d.ts",
+	"main": "index.js",
+	"types": "index.d.ts",
 	"files": [
-		"dist/*.js",
-		"dist/*.d.ts",
-		"!/dist/**/*test.*"
+		"/*",
+		"!*.tsbuildinfo"
 	],
 	"scripts": {
 		"setup": "rm -rf ./node_modules package-lock.json && npm install",
-		"clean": "rm -rf ./dist .eslintcache *-report.json",
+		"clean": "rm -rf dist/* .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache src/*",
 		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache src/*",
-		"build": "rm -rf dist/*.js && tsc && flatten dist && rm -rf dist/*.test.js.map dist/*.test.d.ts",
-		"test": "mocha dist/*.test.js",
-		"test-report": "mocha dist/*.test.js --reporter mocha-reporter-json-standard >| .test-report.json",
-		"ci": "npm run clean && npm run lint && npm run build && npm run test"
+		"compile": "tsc",
+		"test": "mocha --require ts-node/register test/*.test.*",
+		"test-report": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test-report.json",
+		"build": "npm run clean && npm run lint && npm run compile && npm run test",
+		"package": "git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run",
+		"pub": "cd dist && npm publish --access public"
 	},
 	"repository": {
 		"type": "git",
@@ -44,7 +45,7 @@
 		"request": "^2.88.2"
 	},
 	"devDependencies": {
-		"@hutsoninc/flatten-dir-cli": "^1.0.2",
+		"@types/assert": "^1.5.1",
 		"@types/eslint": "^7.2.0",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^14.0.4",
@@ -58,6 +59,7 @@
 		"mocha": "^7.1.1",
 		"mocha-reporter-json-standard": "^1.0.0",
 		"source-map-support": "^0.5.19",
+		"ts-node": "^9.0.0",
 		"typescript": "^3.9.3"
 	}
 }

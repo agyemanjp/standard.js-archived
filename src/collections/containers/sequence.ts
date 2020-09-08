@@ -1,15 +1,17 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-unused-expression */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable fp/no-class */
 
-import { Predicate, Projector, Reducer, take, skip, first, last, map, filter, reduce, forEach } from "./combinators"
+import { take, skip, first, last, map, filter, reduce, forEach } from "../iterable"
+import { Predicate, Projector, Reducer } from "../../functional"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {
+	protected _iterable: Iterable<X>
 	// eslint-disable-next-line fp/no-nil, fp/no-mutation
 	constructor(iterable: Iterable<X>) { this._iterable = iterable }
-	protected _iterable: Iterable<X>
 	protected ctor(iterable: Iterable<X>): this { return new Sequence(iterable) as this }
 
 	[Symbol.iterator](): Iterator<X> { return this._iterable[Symbol.iterator]() }
@@ -82,4 +84,17 @@ export class Sequence<X> implements Iterable<X> {
 	toDictionary<X>() {
 		return Dictionary.fromKeyValues([...this])
 	}
+}*/
+
+/* export namespace Iterable {
+	export class Infinite {
+
+	}
+	export class Cached {
+
+	}
+	export class Async {
+
+	}
+
 }*/
