@@ -4,8 +4,8 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { compare, flip, curry } from '../dist/functional/index.js'
-
+import { compare, flip, curry, asProgressiveGenerator, fnPromise } from '../dist/functional/index.js'
+import { sleep } from "../dist/async/index.js"
 
 describe('compare()', () => {
 	it(`should return negative number when comparing two numbers, first greater than the second one`, () => {
@@ -32,6 +32,21 @@ describe('compare()', () => {
 		const x = "2012-05-06 11:20:30"
 		const y = "2012-05-06 11:20:32"
 		assert.equal(compare(x, y, undefined, false, true) < 0, true)
+	})
+})
+
+describe('asProgressiveGenerator()', () => {
+	it(`should turn a function into a generator`, done => {
+		const longFunction: fnPromise<void, boolean> = async () => {
+			sleep(1000)
+			return true
+		}
+		const generatorizedFunction = asProgressiveGenerator(longFunction, 1000)
+		// eslint-disable-next-line fp/no-loops
+		for (const update in generatorizedFunction()) {
+			console.log(update)
+		}
+		done()
 	})
 })
 

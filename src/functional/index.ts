@@ -3,6 +3,7 @@
 /* eslint-disable fp/no-rest-parameters */
 /* eslint-disable brace-style */
 import { } from "../utility"
+import { sleep } from "../async"
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => number
@@ -82,6 +83,88 @@ export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeri
 }
 
 export const identity = <T>(val: T) => val
+
+const SLEEP_DURATION_MILLISECONDS = 100
+
+export interface ProgressInfo<T> {
+	/** Result value, either final (undefined and then set once) or cumulative (repeatedly updated) */
+	result?: T
+
+	done: boolean
+
+	/** Optional percentage completion estimate */
+	percentComplete?: number
+
+	/** Context-dependent optional message; Can be used for prev/current/next operation, extra completion info, etc */
+	message?: string
+}
+/* export interface CumulativeProgressInfo<T> extends Omit<ProgressInfo<T>, "result"> {
+	result: { value: T, done: boolean }
+}*/
+
+
+export type fnGenerator<X, Y> = (arg: X) => AsyncGenerator<ProgressInfo<Y>, void>
+export type fnPromise<X, Y> = (arg: X) => Promise<Y>
+type fn<X, Y> = fnPromise<X, Y> | fnGenerator<X, Y>
+
+export function asProgressiveGenerator<X, Y>(f: fnGenerator<X, Y>): (arg: X) => AsyncGenerator<ProgressInfo<Y>>
+export function asProgressiveGenerator<X, Y>(f: fnPromise<X, Y>, etaMillisecs: number): (arg: X) => AsyncGenerator<ProgressInfo<Y>>
+export function asProgressiveGenerator<X, Y>(f: fn<X, Y>, etaMillisecs?: number) {
+	return async function* wrappedFn(arg: X) {
+
+		const worker = new Worker(URL.createObjectURL(new Blob(
+			[
+				`(${function (_f: fn<X, Y>) {
+					// eslint-disable-next-line fp/no-mutation
+					self.onmessage = async (e: MessageEvent) => {
+						const generatorOrPromise = _f(e.data)
+						if ("then" in generatorOrPromise) {
+							const result = await generatorOrPromise
+							// eslint-disable-next-line fp/no-unused-expression
+							self.postMessage({ result, done: true } as ProgressInfo<Y>, "")
+						}
+						else {
+							// eslint-disable-next-line fp/no-loops
+							for await (const result of generatorOrPromise) {
+								// eslint-disable-next-line fp/no-unused-expression
+								self.postMessage(result as ProgressInfo<Y>, "")
+							}
+							// eslint-disable-next-line fp/no-unused-expression
+							self.postMessage({ done: true } as ProgressInfo<Y>, "")
+						}
+					}
+				}.toString()})(${f.toString()})`
+			],
+			{ type: 'text/javascript' }
+		)))
+
+		// eslint-disable-next-line fp/no-let
+		let progress: ProgressInfo<Y> = { result: undefined, done: false, percentComplete: 0, message: "" }
+		// eslint-disable-next-line fp/no-mutation
+		worker.onmessage = (e) => { progress = { ...e.data } }
+		// eslint-disable-next-line fp/no-unused-expression
+		worker.postMessage(arg)
+
+		// eslint-disable-next-line fp/no-let
+		let iterations = 0
+		// eslint-disable-next-line fp/no-loops
+		while (progress.done === false) {
+			// eslint-disable-next-line fp/no-unused-expression
+			yield {
+				percentComplete: etaMillisecs
+					// eslint-disable-next-line fp/no-mutation
+					? iterations++ * 100 / (etaMillisecs / SLEEP_DURATION_MILLISECONDS)
+					: 0,
+				message: undefined,
+
+				...progress
+			}
+			// eslint-disable-next-line fp/no-unused-expression
+			sleep(SLEEP_DURATION_MILLISECONDS)
+		}
+
+	}
+}
 
 
 //#region Combinators
