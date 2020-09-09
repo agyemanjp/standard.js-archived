@@ -9,9 +9,6 @@ import { sleep } from "../async"
 const Blob = require('node-blob')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const NodeInlineWorker = require("node-inline-worker")
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { parentPort, Worker: NodeWorker } = require('worker_threads')
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => number
