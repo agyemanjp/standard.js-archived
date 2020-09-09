@@ -1,9 +1,17 @@
+/* eslint-disable fp/no-unused-expression */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable fp/no-rest-parameters */
 /* eslint-disable brace-style */
 import { } from "../utility"
 import { sleep } from "../async"
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Blob = require('node-blob')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const NodeInlineWorker = require("node-inline-worker")
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { parentPort, Worker: NodeWorker } = require('worker_threads')
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => number
@@ -112,57 +120,72 @@ export function asProgressiveGenerator<X, Y>(f: fnPromise<X, Y>, etaMillisecs: n
 export function asProgressiveGenerator<X, Y>(f: fn<X, Y>, etaMillisecs?: number) {
 	return async function* wrappedFn(arg: X) {
 
-		const worker = new Worker(URL.createObjectURL(new Blob(
-			[
-				`(${function (_f: fn<X, Y>) {
-					// eslint-disable-next-line fp/no-mutation
-					self.onmessage = async (e: MessageEvent) => {
-						const generatorOrPromise = _f(e.data)
-						if ("then" in generatorOrPromise) {
-							const result = await generatorOrPromise
-							// eslint-disable-next-line fp/no-unused-expression
-							self.postMessage({ result, done: true } as ProgressInfo<Y>, "")
-						}
-						else {
-							// eslint-disable-next-line fp/no-loops
-							for await (const result of generatorOrPromise) {
+		// eslint-disable-next-line fp/no-let, init-declarations
+		let worker: Worker
+		if (global.window) {
+			// eslint-disable-next-line fp/no-mutation
+			worker = new Worker(URL.createObjectURL(new Blob(
+				[
+					`(${function (_f: fn<X, Y>) {
+						// eslint-disable-next-line fp/no-mutation
+						self.onmessage = async (e: MessageEvent) => {
+							const generatorOrPromise = _f(e.data)
+							if ("then" in generatorOrPromise) {
+								const result = await generatorOrPromise
 								// eslint-disable-next-line fp/no-unused-expression
-								self.postMessage(result as ProgressInfo<Y>, "")
+								self.postMessage({ result, done: true } as ProgressInfo<Y>, "")
 							}
-							// eslint-disable-next-line fp/no-unused-expression
-							self.postMessage({ done: true } as ProgressInfo<Y>, "")
+							else {
+								// eslint-disable-next-line fp/no-loops
+								for await (const result of generatorOrPromise) {
+									// eslint-disable-next-line fp/no-unused-expression
+									self.postMessage(result as ProgressInfo<Y>, "")
+								}
+								// eslint-disable-next-line fp/no-unused-expression
+								self.postMessage({ done: true } as ProgressInfo<Y>, "")
+							}
 						}
-					}
-				}.toString()})(${f.toString()})`
-			],
-			{ type: 'text/javascript' }
-		)))
+					}.toString()})(${f.toString()})`
+				],
+				{ type: 'text/javascript' }
+			)))
+			// eslint-disable-next-line fp/no-mutation
+			worker.onmessage = (e: { data: any }) => { progress = { ...e.data } }
+			// eslint-disable-next-line fp/no-unused-expression
+			worker.postMessage(arg)
+		} else {
+			const _worker = NodeInlineWorker(f)
+			//console.log(`About to post message to data parser`)
+			_worker(arg)
+				.then((e: any) => {
+					// eslint-disable-next-line fp/no-mutation
+					progress = { ...progress, done: true, result: e }
+				})
+				.catch((err: Error) => {
+					throw err
+				})
+		}
 
 		// eslint-disable-next-line fp/no-let
 		let progress: ProgressInfo<Y> = { result: undefined, done: false, percentComplete: 0, message: "" }
-		// eslint-disable-next-line fp/no-mutation
-		worker.onmessage = (e) => { progress = { ...e.data } }
-		// eslint-disable-next-line fp/no-unused-expression
-		worker.postMessage(arg)
 
 		// eslint-disable-next-line fp/no-let
 		let iterations = 0
 		// eslint-disable-next-line fp/no-loops
 		while (progress.done === false) {
-			// eslint-disable-next-line fp/no-unused-expression
-			yield {
+			// eslint-disable-next-line fp/no-mutation
+			yield progress = {
+				...progress,
 				percentComplete: etaMillisecs
 					// eslint-disable-next-line fp/no-mutation
-					? iterations++ * 100 / (etaMillisecs / SLEEP_DURATION_MILLISECONDS)
+					? Math.max(100, iterations++ * 100 / (etaMillisecs / SLEEP_DURATION_MILLISECONDS))
 					: 0,
-				message: undefined,
-
-				...progress
+				message: undefined
 			}
-			// eslint-disable-next-line fp/no-unused-expression
-			sleep(SLEEP_DURATION_MILLISECONDS)
+			// eslint-disable-next-line no-await-in-loop
+			await sleep(SLEEP_DURATION_MILLISECONDS)
 		}
-
+		yield progress
 	}
 }
 

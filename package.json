@@ -42,6 +42,7 @@
 	},
 	"homepage": "https://github.com/Hypothesize/standard.js#readme",
 	"dependencies": {
+		"node-inline-worker": "^1.0.0",
 		"request": "^2.88.2"
 	},
 	"devDependencies": {

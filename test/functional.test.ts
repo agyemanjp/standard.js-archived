@@ -36,18 +36,25 @@ describe('compare()', () => {
 })
 
 describe('asProgressiveGenerator()', () => {
-	it(`should turn a function into a generator`, done => {
-		const longFunction: fnPromise<void, boolean> = async () => {
-			sleep(1000)
-			return true
+	it(`should turn a function into a generator`, async () => {
+		const longFunction: fnPromise<number, string> = async (num: number) => {
+			const delayedResult = new Promise<string>(resolve => {
+				setTimeout(() => {
+					resolve(num.toString())
+				}, 2000)
+			})
+			const result = await delayedResult
+			return result
 		}
-		const generatorizedFunction = asProgressiveGenerator(longFunction, 1000)
+		const generatorizedFunction = asProgressiveGenerator(longFunction, 2000)
 		// eslint-disable-next-line fp/no-loops
-		for (const update in generatorizedFunction()) {
-			console.log(update)
+		for await (const update of generatorizedFunction(55)) {
+			if (update.done === true) {
+				assert(update.percentComplete === 100)
+				assert(update.result === "55")
+			}
 		}
-		done()
-	})
+	}).timeout(20000)
 })
 
 // /** https://github.com/kolodny/cury/blob/master/test.ts */
