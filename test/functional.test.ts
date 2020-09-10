@@ -36,25 +36,60 @@ describe('compare()', () => {
 })
 
 describe('asProgressiveGenerator()', () => {
-	it(`should turn a function into a generator`, async () => {
+	it(`should turn a promise-like function into a generator`, async () => {
 		const longFunction: fnPromise<number, string> = async (num: number) => {
 			const delayedResult = new Promise<string>(resolve => {
 				setTimeout(() => {
 					resolve(num.toString())
-				}, 2000)
+				}, 1000)
 			})
 			const result = await delayedResult
 			return result
 		}
-		const generatorizedFunction = asProgressiveGenerator(longFunction, 2000)
+		const generatorizedFunction = asProgressiveGenerator(longFunction, 1000)
 		// eslint-disable-next-line fp/no-loops
 		for await (const update of generatorizedFunction(55)) {
 			if (update.done === true) {
-				assert(update.percentComplete === 100)
-				assert(update.result === "55")
+				assert.ok(update.result === "55")
 			}
 		}
-	}).timeout(20000)
+	})
+	it(`should returns before 100% completion if the actual time was faster faster than the estimate`, async () => {
+		const longFunction: fnPromise<number, string> = async (num: number) => {
+			const delayedResult = new Promise<string>(resolve => {
+				setTimeout(() => {
+					resolve(num.toString())
+				}, 300)
+			})
+			const result = await delayedResult
+			return result
+		}
+		const generatorizedFunction = asProgressiveGenerator(longFunction, 1000)
+		// eslint-disable-next-line fp/no-loops
+		for await (const update of generatorizedFunction(55)) {
+			if (update.done === true) {
+				assert.equal(update.percentComplete, 30)
+			}
+		}
+	})
+	it(`should ends with the completion at 100% even if the actual time needed was longer than the estimate`, async () => {
+		const longFunction: fnPromise<number, string> = async (num: number) => {
+			const delayedResult = new Promise<string>(resolve => {
+				setTimeout(() => {
+					resolve(num.toString())
+				}, 500)
+			})
+			const result = await delayedResult
+			return result
+		}
+		const generatorizedFunction = asProgressiveGenerator(longFunction, 300)
+		// eslint-disable-next-line fp/no-loops
+		for await (const update of generatorizedFunction(55)) {
+			if (update.done === true) {
+				assert.equal(update.percentComplete, 100)
+			}
+		}
+	})
 })
 
 // /** https://github.com/kolodny/cury/blob/master/test.ts */

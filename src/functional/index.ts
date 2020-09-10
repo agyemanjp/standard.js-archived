@@ -175,7 +175,7 @@ export function asProgressiveGenerator<X, Y>(f: fn<X, Y>, etaMillisecs?: number)
 				...progress,
 				percentComplete: etaMillisecs
 					// eslint-disable-next-line fp/no-mutation
-					? Math.max(100, iterations++ * 100 / (etaMillisecs / SLEEP_DURATION_MILLISECONDS))
+					? Math.min(100, iterations++ * 100 / (etaMillisecs / SLEEP_DURATION_MILLISECONDS))
 					: 0,
 				message: undefined
 			}
