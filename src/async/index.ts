@@ -46,7 +46,6 @@ export function notConcurrent<T>(proc: () => PromiseLike<T>): () => Promise<T> {
 	}
 }
 
-
 /** Enables a way to specify critical section of code that cannot be happening simultaneously */
 export class Mutex {
 	private mutex = Promise.resolve();

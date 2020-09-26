@@ -13,7 +13,7 @@ Standard library for JavaScript/TypeScript
 
 
 ## Install
-`npm install --save @hypothesize/standard`
+`npm install --save @sparkwave/standard`
 
 
 ## Usage

@@ -5,6 +5,7 @@
 
 import { ExtractByType, Primitive, hasValue } from "../../utility"
 import { zip } from "../iterable"
+import { Predicate, PredicateAsync } from "../../functional"
 import { Projector, getRanker } from "../../functional"
 import { Dictionary } from "./dictionary"
 import { Sequence } from "./sequence"
@@ -17,22 +18,22 @@ export class DataTable<T extends Record<string, Primitive> = Record<string, Prim
 	protected readonly _idVector: number[]
 	protected readonly _colVectors: Dictionary<Record<keyof T, T[keyof T][]>>
 
-    /** Contruct from a collection of objects
-     * @param rowObjects Iterable collection of row object literals
-     * @param idVector 
-     */
+	/** Contruct from a collection of objects
+	 * @param rowObjects Iterable collection of row object literals
+	 * @param idVector 
+	 */
 	constructor(rowObjects: Iterable<T>, idVector?: Iterable<number>)
 
 	/** Construct from an object literal of columns
-     * @param columnVectors
-     * @param idVector 
-     */
+	 * @param columnVectors
+	 * @param idVector 
+	 */
 	constructor(columnVectors: Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>)
 
 	/** Actual implementation of constructor variants
-     * @param source Either rows or columns as defined above
-     * @param idVector Optional vector of row indexes indicating which which rows are part of this data table
-     */
+	 * @param source Either rows or columns as defined above
+	 * @param idVector Optional vector of row indexes indicating which which rows are part of this data table
+	 */
 	constructor(source: Iterable<T> | Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>) {
 		const start = new Date().getTime()
 
@@ -76,8 +77,8 @@ export class DataTable<T extends Record<string, Primitive> = Record<string, Prim
 	get length() { return this._idVector.length }
 
 	/** Return a new data table that excludes data disallowed by the passed filters */
-	filter(args: { filter?: Filter<T> | FilterGroup<T>, options?: FilterOptions }): DataTable<T> {
-		const shouldRetain = (row: T, filter: Filter<T> | FilterGroup<T>): boolean => {
+	filter(args: { filter?: Predicate<T, void> | Filter<T> | FilterGroup<T>, options?: FilterOptions }): DataTable<T> {
+		const shouldRetain = (row: T, filter: Predicate<T, void> | Filter<T> | FilterGroup<T>): boolean => {
 			if ("filters" in filter) {
 				switch (filter.combinator) {
 					case undefined:
@@ -90,7 +91,7 @@ export class DataTable<T extends Record<string, Primitive> = Record<string, Prim
 					}
 				}
 			}
-			else {
+			else if ("fieldName" in filter) {
 				const _test = filter.negated ? false : true
 				const _val = row[filter.fieldName as keyof T]
 
@@ -132,6 +133,9 @@ export class DataTable<T extends Record<string, Primitive> = Record<string, Prim
 						throw new Error(`Unknown filter operator: ${(filter as any).operator}`)
 					}
 				}
+			}
+			else {
+				return filter(row)
 			}
 		}
 
