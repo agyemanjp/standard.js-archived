@@ -83,7 +83,6 @@ export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeri
 
 export const identity = <T>(val: T) => val
 
-
 //#region Combinators
 export const constant = <T>(val: T) => () => val
 
