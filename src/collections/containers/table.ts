@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 
-import { ExtractByType, Primitive, hasValue } from "../../utility"
+import { ExtractByType, Primitive, Obj, hasValue } from "../../utility"
 import { zip } from "../iterable"
 import { Predicate, PredicateAsync } from "../../functional"
 import { Projector, getRanker } from "../../functional"
@@ -118,7 +118,9 @@ export class DataTable<T extends Record<string, Primitive> = Record<string, Prim
 						// return (belowMin || aboveMax) === _test
 						return true
 					case "contains":
-						return (_val !== undefined && _val !== null && _val.toString().indexOf(filter.value) >= 0) === _test
+						return (hasValue(_val) && _val.toString().indexOf(filter.value) >= 0) === _test
+					case "is-contained":
+						return (hasValue(_val) && filter.value.indexOf(_val.toString()) >= 0) === _test
 					case "starts_with":
 						return (_val !== undefined && _val !== null && _val.toString().startsWith(filter.value)) === _test
 					case "ends_with":
@@ -273,7 +275,7 @@ export namespace Filter {
 		negated?: boolean
 	}
 	export interface Textual<T extends Record<string, Primitive>> extends Base<T, string> {
-		operator: "contains" | "starts_with" | "ends_with" | "blank",
+		operator: "contains" | "is-contained" | "starts_with" | "ends_with" | "blank",
 	}
 	export interface Statistical<T extends Record<string, Primitive>> extends Base<T, number> {
 		operator: "is_outlier_by" | "blank",
