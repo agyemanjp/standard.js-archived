@@ -39,18 +39,16 @@ export class Sequence<X> implements Iterable<X> {
 	reduce<Y>(initial: Y, reducer: Reducer<X, Y>) { return new Sequence(reduce(this, initial, reducer)) }
 	forEach(action: Projector<X>) { return forEach(this, action) }
 
-	/** Generate sequence of integers */
+	/** Generate sequence of integers including 'from' and 'to' values if provided */
 	static integers(args: { from: number, to: number } | { from: number, direction: "upwards" | "downwards" }) {
 		return new Sequence((function* () {
 			// eslint-disable-next-line fp/no-let
 			let num = args.from
 			// eslint-disable-next-line fp/no-loops
-			do {
+			while ("direction" in args || num !== (args.to >= args.from ? args.to + 1 : args.to - 1)) {
 				// eslint-disable-next-line fp/no-mutation
 				yield ("to" in args ? args.to >= args.from : args.direction === "upwards") ? num++ : num--
 			}
-			while ("direction" in args || args.from !== args.to)
-
 		})())
 	}
 	static fromRange(from: number, to: number, opts?: { mode: "width", width: number } | { mode: "count", count: number }) {
