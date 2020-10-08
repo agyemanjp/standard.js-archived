@@ -1,6 +1,6 @@
 {
 	"name": "@sparkwave/standard",
-	"version": "2.3.1",
+	"version": "2.5.0",
 	"description": "Standard library for JavaScript/TypeScript",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -17,7 +17,7 @@
 		"test": "mocha --require ts-node/register test/*.test.*",
 		"test-report": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test-report.json",
 		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git push --follow-tags && cp package.json README.md dist && cd dist && npm publish --dry-run",
+		"package": "git push --follow-tags && cp package.json README.md LICENSE dist && cd dist && npm publish --dry-run",
 		"pub": "cd dist && npm publish --access public"
 	},
 	"repository": {
