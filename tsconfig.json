@@ -9,6 +9,7 @@
 			"es7",
 			"es6",
 			"es5",
+			"ES2018",
 			"dom",
 			"es2015.promise",
 			"scripthost",
@@ -19,7 +20,19 @@
 		"strictNullChecks": true,
 		"skipLibCheck": true,
 		"incremental": true,
-		"outDir": "./dist"
+		"rootDirs": [
+			"./src",
+			"./src/functional",
+			"./src/collections",
+			"./src/datetime",
+			"./src/stats",
+			"./src/async",
+			"./src/object",
+			"./src/numeric",
+			"./src/utility",
+			"./src/text",
+		],
+		"outDir": "./dist",
 	},
 	"include": [
 		"./src",

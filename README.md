@@ -1,33 +1,34 @@
-# Standard
+# standard.js
 Standard library for JavaScript/TypeScript
 
 ## Features
-- Lazy iterable combinators such as map, filter, reduce, etc.
-- Lazy async iterable combinators such as mapAsync, filterAsync, etc.
-- Functional combinators such as flip, curry, etc.
-- Async combinators such as promisify, sleep, etc.
-- Iterable fluent containers: Sequence, Group, Vector, Dictionary, and Table (for manipulation of tabular in-memory data)
-- Http communication functionality
-- Extensions of basic types: string, number, date, char
-- Basic utilities: types, type guards, helpers
+- Lazy iterable combinators such as _map_, _filter_, _reduce_, etc.
+- Lazy async iterable combinators such as _mapAsync_, _filterAsync_, etc.
+- Fluent iterable containers: _Sequence_, _Set_, _Array_, _Dictionary_, and _DataTable_
+- Functional combinators such as _flip_, _curry_, etc.
+- Async combinators such as _promisify_, _sleep_, etc.
+- Statistical functions such as _mean_, _median_, _quartiles_, _variance/standard deviation_, etc.
+- _HTTP_ communication functionality
+- Advanced _string_, _date-time_, and _numeric_ functions
+- Utility _types_, _type guards_, and _value helpers_
 
 
 ## Install
-`npm install --save @sparkwave/standard`
+`npm install --save @agyemanjp/standard`
 
 
 ## Usage
 ```ts
 // import specific functions from specific modules
-import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@agyemanjp/standard/collections/iterable-async"
-import { map, filter, reduce, skip, take, chunk /*, ...*/ } from "@agyemanjp/standard/collections/iterable"
-import { keys, entries, pick, omit, mapObject, fiterObject  /*, ...*/ } from "@agyemanjp/standard/collections/object"
+import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@sparkwave/standard/collections/combinators"
+import { keys, entries, pick, omit  /*, ...*/ } from "@sparkwave/standard/object"
+import { sleep, promisify } from "@sparkwave/standard/async"
 
 // import everything from a module
-import * as containers from "@agyemanjp/standard/collections/containers"
+import * as containers from "@sparkwave/standard/collections/containers"
 const numArray = new containers.Array([1, 2, 3])
 
 // import everything from package
-import * as stdlib from "@agyemanjp/standard"
+import * as stdlib from "@sparkwave/standard"
 type Predicate<T> = stdlib.Predicate<T>
 ```

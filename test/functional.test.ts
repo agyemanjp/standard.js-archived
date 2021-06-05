@@ -4,7 +4,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { compare, flip, curry } from '../dist/functional/index.js'
+import { compare, getRanker } from '../dist/functional/index.js'
 
 
 describe('compare()', () => {
@@ -34,6 +34,83 @@ describe('compare()', () => {
 		assert.equal(compare(x, y, undefined, false, true) < 0, true)
 	})
 })
+
+describe('getRanker()', () => {
+	it(`should rank numbers correctly`, () => {
+		const series = [7, 7, 7, 2, 5, 3, 4, 5, 5, 6]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify([2, 3, 4, 5, 5, 5, 6, 7, 7, 7]))
+	})
+	it(`should rank text correctly`, () => {
+		const series = ["banana", "apple", "lemon", "apple", "citrus"]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify(["apple", "apple", "banana", "citrus", "lemon",]))
+	})
+	it(`should rank number and text separately`, () => {
+		const series = ["Blue", "Blue", 2, 5, 3, "Blue", 4, "Green", 5, 5, 6, 7, 7, 7, "Green"]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify([2, 3, 4, 5, 5, 5, 6, 7, 7, 7, "Blue", "Blue", "Blue", "Green", "Green"]))
+	})
+	it(`should rank number and text correctly as text, if no option is passed`, () => {
+		const mixedseries = ["Blue", "Blue", 2, 5, 3, "Blue", 4, "Green", 5, 5, 6, 7, 7, 7, "Green"]
+		const textSeries = ["Blue", "Blue", "2", "5", "3", "Blue", "4", "Green", "5", "5", "6", "7", "7", "7", "Green"]
+		const ranker = getRanker({
+			projector: v => v
+		})
+		const sortedMixedSeries = mixedseries.sort(ranker)
+		const sortedTextSeries = textSeries.sort(ranker)
+
+		assert.strictEqual(JSON.stringify(sortedMixedSeries), JSON.stringify(sortedTextSeries.map(v => parseInt(v) || v)))
+	})
+	it(`should rank strings as number, if tryNumeric is set`, () => {
+		const series = ["Blue", "0", 2, 5, 3, "15", 4, "Green", 5, 5, 6, 7, 7, 7, "Green"]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v,
+				tryNumeric: true
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify(["0", 2, 3, 4, 5, 5, 5, 6, 7, 7, 7, "15", "Blue", "Green", "Green"]))
+	})
+	it(`should rank dates as number, if tryDate is set`, () => {
+		const series = ["December 1 1991", "December 1 1991", "December 2 1991", "December 5 1991", "April 5, 2001"]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v,
+				tryDate: true
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify(["December 1 1991", "December 1 1991", "December 2 1991", "December 5 1991", "April 5, 2001"]))
+	})
+	it(`should rank dates as strings, if tryDate is not set`, () => {
+		const series = ["December 1 1991", "December 1 1991", "December 2 1991", "December 5 1991", "April 5, 2001", "December 5 1995"]
+		// eslint-disable-next-line fp/no-mutating-methods
+		const sortedSeries = series.sort(
+			getRanker({
+				projector: v => v
+			})
+		)
+		assert.strictEqual(JSON.stringify(sortedSeries), JSON.stringify(["April 5, 2001", "December 1 1991", "December 1 1991", "December 2 1991", "December 5 1991", "December 5 1995"]))
+	})
+})
+
 
 // /** https://github.com/kolodny/cury/blob/master/test.ts */
 // describe('curry', () => {

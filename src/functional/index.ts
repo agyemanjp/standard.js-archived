@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable fp/no-rest-parameters */
 /* eslint-disable brace-style */
-import { } from "../utility"
+import { Obj } from "../utility"
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => number
@@ -19,54 +20,13 @@ export type HasherAsync<X = unknown, Y extends string | number | symbol = number
 export type Projector<X = unknown, Y = unknown, I = number> = (value: X, index: I) => Y
 export type ProjectorAsync<X = unknown, Y = unknown, I = unknown> = (item: X, index: I) => Y | Promise<Y>
 
-export type Predicate<X = unknown, I = number> = (value: X, index: I) => boolean
+export type Predicate<X = unknown, I = unknown> = (value: X, index: I) => boolean
 export type PredicateAsync<X = unknown, I = unknown> = (value: X, index: I) => Promise<boolean>
 
 export type Reducer<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Y
 export type ReducerAsync<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Promise<Y>
 
 
-export function compare<T>(x: T, y: T, comparer?: Projector<T, unknown, void>, tryNumeric = false, tryDate = false): number {
-	const _x: unknown = comparer ? comparer(x) : x
-	const _y: unknown = comparer ? comparer(y) : y
-
-	if (typeof _x === "string" && typeof _y === "string") {
-		if (tryDate === true) {
-			const __x = new Date(_x)
-			const __y = new Date(_y)
-			if (__x > __y)
-				return 1
-			else if (__x === __y)
-				return 0
-			else
-				return -1
-		}
-		if (tryNumeric === true) {
-			const __x = parseFloat(_x)
-			const __y = parseFloat(_y)
-			if ((!Number.isNaN(__x)) && (!Number.isNaN(__y))) {
-				return __x - __y
-			}
-		}
-
-		return new Intl.Collator().compare(_x || "", _y || "")
-	}
-	else if (typeof _x === "number" && typeof _y === "number") {
-		return (_x || 0) - (_y || 0)
-	}
-	else if (_x instanceof Date && _y instanceof Date) {
-		const __x = _x || new Date()
-		const __y = _y || new Date()
-		if ((__x as Date) > (__y as Date))
-			return 1
-		else if (__x === __y)
-			return 0
-		else
-			return -1
-	}
-	else
-		return _x === _y ? 0 : 1
-}
 
 export function getRanker<T>(args: { projector: Projector<T, unknown, void>, tryNumeric?: boolean/*=false*/, tryDate?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
 	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
@@ -80,6 +40,80 @@ export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeri
 		return compare(x, y, projector, tryNumeric, tryDate) === 0
 	}
 }
+/** Compares 2 values and sort them, possibly parsing it as date or number beforehand.
+ * If the 2 compared values have a different type, the string type will always be ranked last, unless the user choses (through 'tryNumeric') to convert number-likes strings into numbers for comparison.
+ * @param larger One value to compare
+ * @param smaller The other value to compare
+ * @param projector A projector used to find the values to compare, if the passed values are objects
+ * @param tryNumeric If any or both of the two values are strings, an attempt will be made to parse them as number before doing to comparison
+ * @param tryDateAsNumeric If both values are strings corresponding to dates, they will be parsed as Dates and compared as such.
+ */
+export function compare<T>(larger: T, smaller: T, projector?: Projector<T, unknown, void>, tryNumeric = false, tryDateAsNumeric = false): -1 | 0 | 1 {
+	const _larger: unknown = projector ? projector(larger) : larger
+	const _smaller: unknown = projector ? projector(smaller) : smaller
+
+	const sign = (n: number) => Math.sign(n) as -1 | 0 | 1
+
+	if (typeof _larger === "string" && typeof _smaller === "string") {
+		if (tryDateAsNumeric === true) {
+			const __x = new Date(_larger)
+			const __y = new Date(_smaller)
+			if (__x > __y)
+				return 1
+			else if (__x === __y)
+				return 0
+			else
+				return -1
+		}
+		if (tryNumeric === true) {
+			const __x = parseFloat(_larger)
+			const __y = parseFloat(_smaller)
+			if ((!Number.isNaN(__x)) && (!Number.isNaN(__y))) {
+				return sign(__x - __y)
+			}
+		}
+
+		return sign(new Intl.Collator().compare(_larger || "", _smaller || ""))
+	}
+	else if (typeof _larger === "number" && typeof _smaller === "number") {
+		return sign((_larger || 0) - (_smaller || 0))
+	}
+	else if (_larger instanceof Date && _smaller instanceof Date) {
+		const largerDate = _larger || new Date()
+		const smallerDate = _smaller || new Date()
+		if (largerDate > smallerDate)
+			return 1
+		else if (largerDate === smallerDate)
+			return 0
+		else
+			return -1
+	}
+	else if (typeof _larger !== typeof _smaller) { // When both values have different types
+		if (tryNumeric) {
+			const _largerNum = typeof _larger === "number"
+				? _larger
+				: typeof _larger === "string"
+					? parseFloat(_larger)
+					: 0
+			const _smallerNum = typeof _smaller === "number"
+				? _smaller
+				: typeof _smaller === "string"
+					? parseFloat(_smaller)
+					: 0
+			// If both types could succesfully be turned into numbers, we compare it numerically
+			if (!isNaN(_smallerNum) && !isNaN(_largerNum)) {
+				return sign(_largerNum - _smallerNum)
+			}
+		}
+		return typeof _larger === "string" ? 1 : -1 // Strings will appear last
+	}
+	else {
+		return _larger === _smaller ? 0 : 1
+
+	}
+}
+
+export const noop = () => { }
 
 export const identity = <T>(val: T) => val
 
@@ -158,6 +192,12 @@ export function curry(fn: (...args: any[]) => unknown) {
 			return x
 		}
 		return curry(fn.bind(null, ...args))
+	}
+}
+
+export function objectCurry<X extends Obj, Y>(fn: (x: X) => Y) {
+	return <P extends Partial<X>>(part: P) => (x: Omit<X, keyof P>): Y => {
+		return fn({ ...x, ...part } as X)
 	}
 }
 

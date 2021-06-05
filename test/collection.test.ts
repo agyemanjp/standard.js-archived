@@ -5,7 +5,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { isIterable, flatten, chunk, take } from "../dist/collections/iterable.js"
+import { isIterable, flatten, chunk, take } from "../dist/collections"
 
 describe("isIterable", () => {
 	// it("", () => {

@@ -6,12 +6,7 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import {
-	ExtractByType,
-	TypeAssert,
-	Merge, Merge1, Merge2, Merge3,
-	hasValue, isArray
-} from "../dist/utility.js"
+import { ExtractByType, TypeAssert, Merge, Merge1, Merge2, Merge3, hasValue, isArray } from "../dist/utility.js"
 
 describe('hasValue', function () {
 	it('should return true for an empty array', function () {
@@ -207,6 +202,7 @@ describe("TypeAssert", () => {
 	})
 	it("should return 'false' for non-identical union types", () => {
 		const test: TypeAssert<string | bigint, string | boolean> = "false"
+		const test1: TypeAssert<string | undefined, boolean | undefined> = "false"
 		assert.ok(true)
 	})
 	it("should return 'false' when comparing a non-union type with a union type", () => {
@@ -229,12 +225,28 @@ describe("TypeAssert", () => {
 		const test: TypeAssert<Array<any>, Iterable<any>> = "false"
 		assert.ok(true)
 	})
-	it("should return 'false' when comparing <any> to another type", () => {
+	it("should return 'false' when comparing <any> to another (non-union) type", () => {
 		const test: TypeAssert<any, { str: "" }> = "false"
+		const test_0: TypeAssert<any, RegExp> = "false"
+		const test_5: TypeAssert<any, Array<any>> = "false"
+		const test_6: TypeAssert<any, []> = "false"
 		const test_1: TypeAssert<number, any> = "false"
-		const test_2: TypeAssert<unknown, any> = "false"
-		const test_3: TypeAssert<any, unknown> = "false"
+		// const test_2: TypeAssert<unknown, any> = "false"
+		// const test_3: TypeAssert<any, unknown> = "false"
 		const test_4: TypeAssert<any, never> = "false"
+
+		assert.ok(true)
+	})
+	it("should return 'false' when comparing <any> to another union type", () => {
+
+		const test_1: TypeAssert<string | number, any> = "false"
+		const test_2: TypeAssert<number[] | undefined, any> = "false"
+		const test_3: TypeAssert<never[] | undefined, any> = "false"
+		const test_4: TypeAssert<any, never[] | undefined> = "false"
+		const test_5: TypeAssert<{} | number, any> = "false"
+		// const test_6: TypeAssert<any, any | any> = "false"
+
+
 		assert.ok(true)
 	})
 	it("should return 'false' when comparing <never> to another type", () => {

@@ -64,7 +64,8 @@ export class Mutex {
 		const unlock = await this.lock()
 		try {
 			return await Promise.resolve(fn())
-		} finally {
+		}
+		finally {
 			unlock()
 		}
 	}

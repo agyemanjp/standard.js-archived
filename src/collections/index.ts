@@ -1,7 +1,5 @@
-
-export * from "./object"
-export * from "./iterable-async"
-export * from "./iterable"
+export * from "./types"
+export * from "./combinators"
 export * from "./containers"
 
 /* export namespace Collection {

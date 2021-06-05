@@ -12,6 +12,125 @@ describe("plural", () => {
 	it("should handles words ending in 'h' properly", () => {
 		assert.strictEqual(new String("batch").plural().toString(), "batches")
 	})
+
+	it("should check whether is a whitespace or not", () => {
+		const inputString = ""
+		assert.equal(new String(inputString).isWhiteSpace(), true)
+	})
+
+
+
+})
+
+describe("shorten()", () => {
+	it(`should return an empty string when passing that same string with any max length input value`, (done) => {
+		const testData = ["", "", 20]
+		const maxLen = testData[2]
+		const expectedTitle = testData[1]
+		const newTitle = new String(testData[0] as string).shorten(maxLen as number).toString()
+
+		assert.equal(newTitle, expectedTitle)
+		done()
+	})
+
+	it(`should return only the first character of the input string plus an ellipsis when passed a max length between 1 and 4 and the string length is greater than the max length`, (done) => {
+		const testData = ["Long Blink Experiment (1) Experiment", "L...", 1]
+		const maxLen = testData[2]
+		const expectedTitle = testData[1]
+		const newTitle = new String(testData[0] as string).shorten(maxLen as number).toString()
+
+		assert.equal(newTitle, expectedTitle)
+		done()
+	})
+
+	it(`should return the start and end characters of the input string with an ellipsis between them when passed a max length equals to 5 and the string length is greater than the max length`, (done) => {
+		const testData = ["Feature discovery by competitive learning Release 2.1", "F...1", 5]
+		const maxLen = testData[2]
+		const expectedTitle = testData[1]
+		const newTitle = new String(testData[0] as string).shorten(maxLen as number).toString()
+
+		assert.equal(newTitle, expectedTitle)
+		done()
+	})
+
+	it(`should return the same input string when its length is less than the max lenght input value`, (done) => {
+		const testData = ["Ignite Experiment", "Ignite Experiment", 20]
+		const maxLen = testData[2]
+		const expectedTitle = testData[1]
+		const newTitle = new String(testData[0] as string).shorten(maxLen as number).toString()
+
+		assert.equal(newTitle, expectedTitle)
+		done()
+	})
+})
+
+describe("isUrl()", () => {
+	it(`should return true for valid URLs that start with 'www'`, () => {
+		const expected = true
+		const actual = new String("www.data.com/table.csv").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return true for valid URLs that start with neither 'http', 'https' or 'www' `, () => {
+		const expected = true
+		const actual = new String("gist.github.com").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return true for valid URLs that start with 'http'`, () => {
+		const expected = true
+		const actual = new String("http://gist.github.com").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return false for invalid URLs that start with 'https'`, () => {
+		const expected = false
+		const actual = new String("https:/gist.github.com").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return false for invalid URLs that start with 'http'`, () => {
+		const expected = false
+		const actual = new String("http//gist.github.com").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return false for invalid URLs that have no domain extension`, () => {
+		const expected = false
+		const actual = new String("http://test").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return false for empty URLs`, () => {
+		const expected = false
+		const actual = new String("").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return false for invalid URLs that start with special characters`, () => {
+		const expected = false
+		const actual = new String("http://www.*test.com").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return true for urls that contain a * character in the query after the domain name`, () => {
+		const expected = true
+		const actual = new String("https://en.wikipedia.org/w/api.php?format=json&origin=*&titles=P-value").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return true for urls that contain parentheses in the query after the domain name`, () => {
+		const expected = true
+		const actual = new String("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles=Mode_(statistics)").isURL()
+		assert.equal(actual, expected)
+	})
+
+	it(`should return true for urls that contain non-alphanumeric characters`, () => {
+		const expected = true
+		const actual = new String("https://docs.google.com/document/d/17fF-U9mMalQiFEzJrsdXYyw7YNCv8ihKGnrIKyz0M-E/edit?ts=6015dedd").isURL()
+		assert.equal(actual, expected)
+	})
+
 })
 
 /* t.is(plur('unicorn', 0), 'unicorns');

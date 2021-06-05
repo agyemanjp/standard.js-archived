@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable indent */
@@ -5,17 +8,38 @@
 /* eslint-disable brace-style */
 
 
-/*export type TypeAssert<T, Expected> = T extends Expected ? (Expected extends T ? true : never) : never;
-type NotAny<T> = T[] extends true[] ? T : T[] extends false[] ? T : never;
-type AssertEqual<T, Expected> = NotAny<T extends Expected ? (Expected extends T ? true : false) : false>;
-export type TypeAssert3<T, Expected> = [T, Expected] extends [Expected, T] ? true : never;*/
-
-type IsAny<T> = (T extends {} ? 1 : 0) extends (0 | 1)
+/*type IsAnyOld<T> = (T extends {} ? 1 : 0) extends (0 | 1)
 	? (0 | 1) extends (T extends {} ? 1 : 0)
-	? "true"
+	? undefined extends T
+	? "false"
+	: "true"
 	: "false"
 	: "false"
-// type IsAnyTest<T> = "true" extends IsAny<T> ? "true" : "false"
+*/
+
+/** Tests for whether a type is exactly <any>. Fails for types that are extended by <unknown> */
+type IsAny<T> = ((Exclude<any, T> extends (never) ? 1 : 0) extends (0 | 1)
+	? (0 | 1) extends (Exclude<any, T> extends never ? 1 : 0)
+	? "false"
+	: "true"
+	: "true"
+)
+
+const test_any_any: IsAny<(any)> = "true"
+const test_any_union: IsAny<(string | undefined)> = "false"
+const test_any_never: IsAny<(never)> = "false"
+const test_any_undefined: IsAny<(undefined)> = "false"
+const test_any_obj: IsAny<({})> = "false"
+const test_any_num: IsAny<(number)> = "false"
+const test_any_arr: IsAny<(Array<any>)> = "false"
+const test_any_tuple: IsAny<[number, Array<any>]> = "false"
+const test_any_tuple_unknown: IsAny<[unknown, any]> = "false"
+
+// Failing
+// const test_any_unknown: IsAny<(unknown)> = "false"
+// const test_any_unknown_union: IsAny<(number | unknown)> = "false"
+
+
 export type TypeAssert<T1, T2> = (
 	"true" extends IsAny<T1>
 	? "true" extends IsAny<T2>
@@ -29,8 +53,9 @@ export type TypeAssert<T1, T2> = (
 )
 
 export type Fx<Ret, Args extends any[]> = (...args: Args) => Ret
+export type ArgsType<F extends (...x: any[]) => any> = F extends (...x: infer A) => any ? A : never
 export type Primitive = number | string | bigint | boolean | symbol
-export type Obj<TValue = unknown, TKey extends string = string> = { [key in TKey]: TValue }
+export type Obj<TValue = unknown, TKey extends string | number = string> = { [key in TKey]: TValue }
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
 export type RecursiveRequired<T> = { [P in keyof T]-?: Required<T[P]> }
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
@@ -50,6 +75,8 @@ export type Tuple<X, Y> = [X, Y]
 export const Tuple = class <X, Y>  {
 	constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> }
 } as { new <X, Y>(x: X, y: Y): [X, Y] }
+
+export type Collection<T> = AsyncIterable<T> | AsyncGenerator<T> | Iterable<T> | Generator<T>
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never

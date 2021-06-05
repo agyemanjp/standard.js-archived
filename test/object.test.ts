@@ -2,7 +2,7 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import { pick, deepMerge, filterObject, mapObject, omit, keys, entries, fromKeyValues } from "../dist/collections/object.js"
+import { pick, deepMerge, /*filterObject, mapObject,*/ omit, keys, entries, objectFromTuples } from "../dist/object"
 
 
 describe('keys', () => {
@@ -25,10 +25,9 @@ describe('keys', () => {
 	// })
 })
 
-describe('mapObject', () => {
+/*describe('mapObject', () => {
 	it('should return transformed object', () => {
 		const obj = { a: 'first', b: 32 }
-		/** @type {{ a: string; b: string }} */
 		const mapped = mapObject(obj, (value, key) => `${key}-${value}`)
 
 		assert.deepEqual(mapped, { a: 'a-first', b: 'b-32' })
@@ -54,16 +53,12 @@ describe('filterObject', () => {
 
 	it('should remove fields not matching guard and cast values that match using the guard', () => {
 		//const obj = { a: 'first', b: 2, c: 'third' }
-		/** String type guard
-		 * @param value { unknown }
-		 * @returns { value is string }
-		 */
 		//const isString = (value) => typeof value === 'string'
-		///** @type {{ readonly a: string; readonly c: string }} */
 		//const result = filterObject(obj, isString)
 		//assert.deepEqual(result, { a: 'first', c: 'third', })
 	})
 })
+*/
 
 describe('pick', () => {
 	const obj = { a: 'first', b: 2, c: 'third' }
