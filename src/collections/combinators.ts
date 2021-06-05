@@ -6,7 +6,7 @@
 /* eslint-disable brace-style */
 
 
-import { Ranker, RankerAsync, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "./functional"
+import { Ranker, RankerAsync, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "../functional"
 import { Obj, Primitive, Tuple, Collection, TypeGuard, ExtractByType, hasValue } from "../utility"
 import { entries, objectFromTuples, objectFromTuplesAsync } from "../object"
 import { Zip, ZipAsync } from "./types"
