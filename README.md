@@ -20,15 +20,15 @@ Standard library for JavaScript/TypeScript
 ## Usage
 ```ts
 // import specific functions from specific modules
-import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@sparkwave/standard/collections/combinators"
+import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@agyemanjp/standard/collections/combinators"
 import { keys, entries, pick, omit  /*, ...*/ } from "@sparkwave/standard/object"
-import { sleep, promisify } from "@sparkwave/standard/async"
+import { sleep, promisify } from "@agyemanjp/standard/async"
 
 // import everything from a module
-import * as containers from "@sparkwave/standard/collections/containers"
+import * as containers from "@agyemanjp/standard/collections/containers"
 const numArray = new containers.Array([1, 2, 3])
 
 // import everything from package
-import * as stdlib from "@sparkwave/standard"
+import * as stdlib from "@agyemanjp/standard"
 type Predicate<T> = stdlib.Predicate<T>
 ```
