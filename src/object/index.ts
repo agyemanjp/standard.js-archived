@@ -5,7 +5,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Tuple, Obj, Collection, Merge, isObject, isSymbol } from "../utility"
-import { skip } from "../collections"
 
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
@@ -122,7 +121,7 @@ export function deepMerge(...args: any[])/*: O.Compact<T, Tn, 'deep'>*/ {
 		return result
 	}
 
-	return [...skip(args, 1)].reduce((result, newComer) => {
+	return args.slice(1).reduce((result, newComer) => {
 		return mergeRecursively(result, newComer)
 	}, args[0]) //as O.Compact<T, Tn, 'deep'>
 }

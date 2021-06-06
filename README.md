@@ -21,7 +21,7 @@ Standard library for JavaScript/TypeScript
 ```ts
 // import specific functions from specific modules
 import { mapAsync, ZipAsync, isAsyncIterable /*, ...*/ } from "@agyemanjp/standard/collections/combinators"
-import { keys, entries, pick, omit  /*, ...*/ } from "@sparkwave/standard/object"
+import { keys, entries, pick, omit  /*, ...*/ } from "@agyemanjp/standard/object"
 import { sleep, promisify } from "@agyemanjp/standard/async"
 
 // import everything from a module
