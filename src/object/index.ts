@@ -6,7 +6,6 @@
 
 import { Tuple, Obj, Collection, Merge, isObject, isSymbol } from "../utility"
 
-
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): K[]
 export function keys(obj: any) {
@@ -25,15 +24,20 @@ export function objectFromTuples<T, K extends string = string>(keyValues: Tuple<
 }
 export async function objectFromTuplesAsync<T, K extends string = string>(keyValues: Collection<Tuple<K, T>>) {
 	const obj = {} as Obj<T, K>
+	// eslint-disable-next-line fp/no-loops
 	for await (const kv of keyValues) {
+		// eslint-disable-next-line fp/no-mutation
 		obj[kv[0]] = kv[1]
 	}
 	return obj
 }
 
+export function values<V, K extends string | number>(obj: Record<K, V>): V[]
+export function values<V, K extends string | number, T extends Record<K, V>>(obj: T): V[]
+export function values(obj: Obj) { return Object.values(obj) }
 
-export function entries<V, K extends string>(obj: Record<K, V>): Tuple<K, V>[]
-export function entries<V, K extends string, T extends Record<K, V>>(obj: T): Tuple<K, V>[]
+export function entries<V, K extends string | number>(obj: Record<K, V>): Tuple<K, V>[]
+export function entries<V, K extends string | number, T extends Record<K, V>>(obj: T): Tuple<K, V>[]
 export function entries(obj: Obj) { return keys(obj).map(key => new Tuple(key, obj[key])) }
 
 /** Return object consisting of only certain properties from onput object certain properties excluded */
