@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-shadow */
 /* eslint-disable brace-style */
-import { reduce, last, filter, map, sort } from "../collections"
+import { reduce, last, filter, map, sort } from "../collections/combinators"
 import { Ranker, noop } from "../functional"
 import { Tuple, isNumber } from "../utility"
 
