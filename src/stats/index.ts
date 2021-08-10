@@ -2,7 +2,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable brace-style */
 import { reduce, last, filter, map, sort } from "../collections/combinators"
-import { Ranker, noop } from "../functional"
+import { Ranker } from "../functional"
 import { Tuple, isNumber } from "../utility"
 
 export function min(vector: Iterable<number>): number | undefined
@@ -133,7 +133,7 @@ export function thirdQuartile<T>(vector: Array<T>, ranker?: Ranker<T>) {
 	return sortedList[Math.ceil(0.75 * sortedList.length) - 1]
 }
 
-export function mode<T>(vector: Array<T>): T[] | undefined {
+/*export function mode<T>(vector: Array<T>): T[] | undefined {
 	if (vector.length === 0) return undefined
 	return (vector.reduce((accu, curr) => {
 		const freqsMap = accu.freqsMap
@@ -155,13 +155,47 @@ export function mode<T>(vector: Array<T>): T[] | undefined {
 		modes: [] as T[]
 	})).modes
 
+}*/
+
+/** Computes the mode of a set of values. It uses the "multimode" function but instead of
+ * returning an array of values, it will pick the middle one after sorting the modes array
+ */
+export function mode<T>(vector: Array<T>): T | undefined {
+	if (vector.length === 0) return undefined
+
+	// eslint-disable-next-line fp/no-mutating-methods
+	const modes = multiMode(vector).sort()
+	const index = modes.length % 2 === 0
+		? (modes.length / 2) - 1
+		: Math.floor(modes.length / 2)
+
+	return modes[index]
+}
+/** Computes the mode of a set of values. It returns an array of all the modes found */
+export function multiMode<T>(vector: Array<T>): T[] {
+	if (vector.length === 0) return []
+
+	return (vector.reduce((accu, curr) => {
+		const freqsMap = accu.freqsMap
+		freqsMap.set(curr, (freqsMap.get(curr) || 0) + 1)
+
+		const maxCount = freqsMap.get(curr)! > accu.maxCount
+			? freqsMap.get(curr)!
+			: accu.maxCount
+		const modes = freqsMap.get(curr) === accu.maxCount
+			? [...accu.modes, curr]
+			: freqsMap.get(curr)! > accu.maxCount
+				? [curr]
+				: accu.modes
+
+		return { freqsMap, maxCount, modes }
+	}, { freqsMap: new globalThis.Map<T, number>(), maxCount: 1, modes: [] as T[] })).modes
 }
 
 export function interQuartileRange(vector: number[]) {
 	// eslint-disable-next-line fp/no-mutating-methods
-	const sortedList = vector.sort()
-	const percentile25 = sortedList[Math.floor(0.25 * sortedList.length)]
-	const percentile75 = sortedList[Math.ceil(0.75 * sortedList.length)]
+	const percentile25 = firstQuartile(vector, (a, b) => { return a > b ? 1 : -1 })
+	const percentile75 = thirdQuartile(vector, (a, b) => { return a > b ? 1 : -1 })
 	return percentile25 && percentile75 ? percentile75 - percentile25 : undefined
 }
 

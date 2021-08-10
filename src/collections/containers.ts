@@ -6,8 +6,8 @@
 
 import {
 	unique,
-	take,
-	skip,
+	take, takeWhile,
+	skip, skipWhile,
 	first,
 	last,
 	map,
@@ -43,6 +43,10 @@ export class Sequence<X> implements Iterable<X> {
 
 	take(n: number) { return this.ctor(take(this, n)) }
 	skip(n: number) { return this.ctor(skip(this, n)) }
+
+	takeWhile(predicate: Predicate<X, number | void>) { return this.ctor(takeWhile(this, predicate)) }
+	skipWhile(predicate: Predicate<X, number | void>) { return this.ctor(skipWhile(this, predicate)) }
+
 
 	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
 	 * @param predicate Optional predicate to filter elements

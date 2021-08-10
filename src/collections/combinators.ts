@@ -204,6 +204,17 @@ export async function* takeAsync<T>(collection: Collection<T>, n: number): Async
 		}
 	}
 }
+/** Return all elements while a condition is not violated */
+export function* takeWhile<X>(iterable: Iterable<X>, predicate: Predicate<X, number | void>): Iterable<X> {
+	if (typeof predicate !== "function") throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
+
+	for (const element of indexed(iterable)) {
+		if (predicate(element[1], element[0]))
+			yield element[1]
+		else
+			break
+	}
+}
 
 /** Skip n elements from start of sequence and take the rest */
 export function* skip<T>(iterable: Iterable<T>, n: number): Iterable<T> {
@@ -234,6 +245,17 @@ export async function* skipAsync<T>(iterable: Collection<T>, n: number): AsyncIt
 			yield element
 		else
 			n--
+	}
+}
+/** Return all remaining elements beginning from when condition is violated */
+export function* skipWhile<T>(iterable: Iterable<T>, predicate: Predicate<T, number | void>): Iterable<T> {
+	if (typeof predicate !== "function") throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
+
+	for (const element of indexed(iterable)) {
+		if (predicate(element[1], element[0]))
+			continue
+		else
+			yield element[1]
 	}
 }
 
@@ -368,7 +390,6 @@ export function* chunk<T>(iter: Iterable<T>, chunkSize: number): Iterable<T[]> {
 
 // eslint-disable-next-line fp/no-mutating-methods
 export function sort<T>(items: Iterable<T>, comparer?: Ranker<T>) { return [...items].sort(comparer) }
-
 
 export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedIterable<X>> {
 	// console.log(`\nInput to flatten: ${JSON.stringify(nestedIterable)}`)
@@ -542,13 +563,11 @@ export function indexesOf<K, V>(collection: Iterable<Tuple<K, V>>, target: ({ va
 		: map(filter(collection, kv => target.predicate(kv[1], kv[0])), kv => kv[0])
 }
 
-
 export function* repeat(val: unknown, count?: number) {
 	while (count === undefined || (--count >= 0)) {
 		yield val
 	}
 }
-
 
 export async function toArrayAsync<T>(iterable: Collection<T>) {
 	const arr = [] as Array<T>
