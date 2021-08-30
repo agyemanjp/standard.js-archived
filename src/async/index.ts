@@ -22,22 +22,20 @@ export function promisify<T, A extends any[]>(fn: (...args: A) => T): AsyncFn<T,
 	}
 }
 
-/** Returns a wrapped version of a function that prevents simultaneous execution.
+/** Returns a version of a function that prevents simultaneous execution.
  * See https://spin.atomicobject.com/2018/09/10/javascript-concurrency/
- * @param proc 
+ * @param fn 
  */
-export function notConcurrent<T>(proc: () => PromiseLike<T>): () => Promise<T> {
+export function notConcurrent<X extends any[], Y>(fn: (...args: X) => PromiseLike<Y>): (...args: X) => Promise<Y> {
 	// eslint-disable-next-line fp/no-let
-	let inFlight: Promise<T> | false = false
-	return () => {
+	let inFlight: Promise<Y> | false = false
+	return (...args: X) => {
 		if (!inFlight) {
-			// eslint-disable-next-line fp/no-mutation
 			inFlight = (async () => {
 				try {
-					return await proc()
+					return await fn(...args)
 				}
 				finally {
-					// eslint-disable-next-line fp/no-mutation
 					inFlight = false
 				}
 			})()
@@ -46,7 +44,7 @@ export function notConcurrent<T>(proc: () => PromiseLike<T>): () => Promise<T> {
 	}
 }
 
-/** Enables a way to specify critical section of code that cannot be happening simultaneously */
+/** Enables a way to specify critical section of code that cannot be running simultaneously */
 export class Mutex {
 	private mutex = Promise.resolve();
 

@@ -26,16 +26,21 @@ export type PredicateAsync<X = unknown, I = unknown> = (value: X, index: I) => P
 export type Reducer<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Y
 export type ReducerAsync<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Promise<Y>
 
-
+/** A function that does nothing */
 export function noop() { }
 
+/** Identity function which returns the exact same argument it was passed */
 export function identity<T>(val: T) { return val }
 
+/** Returns a function thats always returns the input value */
 export const constant = <T>(val: T) => () => val
 
-export function negate<X = any, I = void>(predicate: Predicate<X, I>) { return (x: X, i: I) => !predicate(x, i) }
+/** Returns a function that is the negative of the input predicate function */
+export function negate<X = any, I = void>(predicate: Predicate<X, I>): Predicate<X, I> { return (x: X, i: I) => !predicate(x, i) }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/** Transforms input function into one that runs only once. 
+ * Subsequent invocations after the first one do nothing and return undefined 
+ */
 export function once<R, A extends any[]>(fn?: (...a: A) => R) {
 	// eslint-disable-next-line fp/no-let
 	let hasRun = false
@@ -54,9 +59,15 @@ export function once<R, A extends any[]>(fn?: (...a: A) => R) {
 		: undefined
 }
 
+/** Transforms input function into one that expects the original arguments in reverse order */
+export function flip<A, B, Ret>(f: (a: A, b: B) => Ret): (b: B, a: A) => Ret {
+	return (b: B, a: A) => f(a, b)
+}
+
+
 /** Transforms a function into a partially applied one.
  * The transformed function takes the same arguments as the original function
- * except for the first one, and returns a function that only takes the original functions first argument.
+ * except for the first one, and returns a function that only takes the original function's first argument.
  */
 export function partial<A, B, Rest extends unknown[]>(fun: (a: A, ...rest: Rest) => B): (...rest: Rest) => (a: A) => B {
 	return (...rest: Rest) => (a: A): B => {
@@ -64,12 +75,7 @@ export function partial<A, B, Rest extends unknown[]>(fun: (a: A, ...rest: Rest)
 	}
 }
 
-/** Transforms a function into one that expects the original arguments in reverse order */
-export function flip<A, B, Ret>(f: (a: A, b: B) => Ret): (b: B, a: A) => Ret {
-	return (b: B, a: A) => f(a, b)
-}
-
-/* https://github.com/kolodny/cury/blob/master/index.ts */
+/** Returns the curried form of input function */
 export function curry<A, R>(fn: (a: A) => R): (a: A) => R
 export function curry<A, B, R>(fn: (a: A, b: B) => R): (a: A) => (b: B) => R
 export function curry<A, B, C, R>(fn: (a: A, b: B, c: C) => R): (a: A) => (b: B) => (c: C) => R
@@ -90,19 +96,25 @@ export function objectCurry<X extends Obj, Y>(fn: (x: X) => Y) {
 	}
 }
 
-export function getRanker<T>(args: { projector: Projector<T, unknown, void>, tryNumeric?: boolean/*=false*/, tryDate?: boolean/*=false*/, reverse?: boolean/*=false*/ }): Ranker<T> {
-	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
+/** Transforms input projector function into a ranker function (that determines which of two values is greater)
+ * @param tryNumeric (default: false) Output ranker function will attempt to compare string arguments as numbers
+ * @param tryDate (default: false) Output ranker function will attempt to compare arguments as dates.
+ */
+export function ranker<T, Y = unknown>(args: { proj: Projector<T, Y, void>, tryNumeric?: boolean, tryDate?: boolean, reverse?: boolean }): Ranker<T> {
 	return (x: T, y: T) => {
-		return compare(x, y, args.projector, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
+		return compare(x, y, args.proj, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
 	}
 }
-export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeric = false, tryDate?: boolean/*=false* reverse = false*/): Comparer<T> {
-	//console.log(`generating comparer, try numeric is ${tryNumeric}, reversed is ${reverse} `)
+/** Transforms input projector function into a comparer function (that determines whether two values are equal)
+ * @param tryNumeric (default: false) Output ranker function will attempt to compare string arguments as numbers
+ * @param tryDate (default: false) Output ranker function will attempt to compare arguments as dates.
+ */
+export function comparer<T, Y = unknown>(projector: Projector<T, Y, void>, tryNumeric = false, tryDate = false): Comparer<T> {
 	return (x: T, y: T) => {
 		return compare(x, y, projector, tryNumeric, tryDate) === 0
 	}
 }
-/** Compares 2 values and sort them, possibly parsing it as date or number beforehand.
+/** Compares 2 values for sorting, possibly parsing them as date or number beforehand.
  * If the values have different types, string values will always be ranked last, 
  * unless the caller chooses (through 'tryNumeric' or 'tryDate') to convert them into numbers or dates for comparison.
  * @param a One value to compare
@@ -111,7 +123,7 @@ export function getComparer<T>(projector: Projector<T, unknown, void>, tryNumeri
  * @param tryNumeric If any or both of the two values are strings, attempt to parse them as number before doing comparison
  * @param tryDate If both values are strings corresponding to dates, they will be parsed as Dates and compared as such.
  */
-export function compare<T>(a: T, b: T, projector?: Projector<T, unknown, void>, tryNumeric = false, tryDate = false): -1 | 0 | 1 {
+export function compare<T, Y = unknown>(a: T, b: T, projector?: Projector<T, Y, void>, tryNumeric = false, tryDate = false): -1 | 0 | 1 {
 	const _a: unknown = projector ? projector(a) : a
 	const _b: unknown = projector ? projector(b) : b
 
