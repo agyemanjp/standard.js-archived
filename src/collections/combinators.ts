@@ -216,17 +216,16 @@ export function* takeWhile<X>(iterable: Iterable<X>, predicate: Predicate<X, num
 	}
 }
 
-/** Skip n elements from start of sequence and take the rest */
+/** Skip n elements from start of collection
+ * If n is negative, no items are skipped
+ * If n equals or exceeds the length of the collection, all items are skipped
+ */
 export function* skip<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 	if (typeof n !== "number")
 		throw new Error(`Invalid type ${typeof n} for argument "n"\nMust be number`)
-	if (n < 0) {
-		// console.warn(`Warning: Negative value ${n} passed to argument <n> of skip()`)
-		return
-	}
 
 	for (const element of iterable) {
-		if (n === 0)
+		if (n <= 0)
 			yield element
 		else
 			n--

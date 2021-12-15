@@ -9,16 +9,22 @@
 		"!*.tsbuildinfo"
 	],
 	"scripts": {
-		"setup": "rm -rf ./node_modules package-lock.json && npm install",
+		"deps": "rm -rf ./node_modules package-lock.json && npm install",
 		"clean": "rm -rf dist/* .eslintcache *-report.json",
 		"lint": "eslint --ext ts --cache 'src/**'",
-		"lint-report": "eslint --ext ts --output-file .lint-report.json --format json-standard --cache 'src/**'",
+		"lintci": "eslint --ext ts --output-file .lint.run.json --format json-standard --cache 'src/**'",
 		"compile": "tsc",
 		"test": "mocha --require ts-node/register test/*.test.*",
-		"test-report": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test-report.json",
-		"build": "npm run clean && npm run lint && npm run compile && npm run test",
-		"package": "git push --follow-tags && cp package.json README.md LICENSE dist && cd dist && npm publish --dry-run",
-		"pub": "cd dist && npm publish --access public"
+		"testci": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test.run.json",
+		"build": "run-s clean lint compile test",
+		"pubstage": "cp package.json LICENSE README.md dist",
+		"package": "npm run pubstage && cd dist && npm publish --dry-run && cd ..",
+		"version:patch": "npm version patch && git push --follow-tags",
+		"version:minor": "npm version minor && git push --follow-tags",
+		"version:major": "npm version major && git push --follow-tags",
+		"publish:patch": "run-s build version:patch pubstage && cd dist && npm publish --access public && cd ..",
+		"publish:minor": "run-s build version:minor pubstage && cd dist && npm publish --access public && cd ..",
+		"publish:major": "run-s build version:major pubstage && cd dist && npm publish --access public && cd .."
 	},
 	"repository": {
 		"type": "git",
@@ -54,6 +60,7 @@
 		"eslint-plugin-fp": "^2.3.0",
 		"mocha": "^8.4.0",
 		"mocha-reporter-json-standard": "^1.0.0",
+		"npm-run-all": "^4.1.5",
 		"source-map-support": "^0.5.19",
 		"ts-node": "^9.0.0",
 		"typescript": "^3.9.3"

@@ -3,7 +3,7 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import { promisify, sleep, notConcurrent, Mutex } from "../dist/async/index.js"
+// import { promisify, sleep, notConcurrent, Mutex } from "../dist/async/index.js"
 
 /*describe("Mutex", () => {
 	it("", () => {

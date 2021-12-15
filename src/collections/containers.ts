@@ -360,3 +360,4 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 			: this.entries().filter(kv => args.predicate(kv[1], kv[0]) === true).map(kv => kv[0])
 	}
 }
+

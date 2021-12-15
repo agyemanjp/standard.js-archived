@@ -124,7 +124,7 @@ export function hasValue<T>(value?: T): value is T {
 		case "undefined":
 			return false
 		case "number":
-			return (value !== null && !isNaN(value) && !Number.isNaN(value) && value !== Number.NaN)
+			return (value !== null && !isNaN(value) && !Number.isNaN(value) /*&& value !== Number.NaN*/)
 		case "string":
 			return value !== undefined && value !== null && value.trim().length > 0 && !/^\s*$/.test(value)
 		/*if(str.replace(/\s/g,"") == "") return false*/

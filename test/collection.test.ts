@@ -5,7 +5,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { isIterable, flatten, chunk, take } from "../dist/collections"
+import { isIterable, flatten, chunk, take, skip } from "../dist/collections"
 
 describe("isIterable", () => {
 	// it("", () => {
@@ -93,6 +93,28 @@ describe('take()', function () {
 	it('should be idempotent for pure iterables', function () {
 		const arr = [10, 20, 99, 3, 30, 40]
 		assert.deepEqual([...take(arr, 4)], [...take(arr, 4)])
+	})
+})
+
+describe('skip()', function () {
+	it('should skip over no items if skip count is 0', function () {
+		assert.deepStrictEqual([...skip([10, 20, 30, 40], 0)], [10, 20, 30, 40])
+	})
+	it('should skip over no items if skip count is negative', function () {
+		assert.deepStrictEqual([...skip([10, 20, 30, 40], -2)], [10, 20, 30, 40])
+	})
+	it('should return empty collection if skip count equals the length of collection', function () {
+		assert.deepStrictEqual([...skip([10, 30, 20, 40], 4)], [])
+	})
+	it('should return empty collection if skip count exceeds length of collection', function () {
+		assert.deepStrictEqual([...skip([10, 30, 20, 40], 7)], [])
+	})
+	it('should skip over the correct number of items', function () {
+		assert.deepStrictEqual([...skip([5, 2, 3, 1, 7], 3)], [1, 7])
+	})
+	it('should be idempotent for pure iterables', function () {
+		const arr = [10, 20, 99, 3, 30, 40]
+		assert.deepStrictEqual([...skip(arr, 4)], [...skip(arr, 4)])
 	})
 })
 

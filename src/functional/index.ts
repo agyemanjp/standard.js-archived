@@ -35,7 +35,7 @@ export function identity<T>(val: T) { return val }
 /** Returns a function thats always returns the input value */
 export const constant = <T>(val: T) => () => val
 
-/** Returns a function that is the negative of the input predicate function */
+/** Returns a function that is the negation of the input predicate function */
 export function negate<X = any, I = void>(predicate: Predicate<X, I>): Predicate<X, I> { return (x: X, i: I) => !predicate(x, i) }
 
 /** Transforms input function into one that runs only once. 
@@ -63,7 +63,6 @@ export function once<R, A extends any[]>(fn?: (...a: A) => R) {
 export function flip<A, B, Ret>(f: (a: A, b: B) => Ret): (b: B, a: A) => Ret {
 	return (b: B, a: A) => f(a, b)
 }
-
 
 /** Transforms a function into a partially applied one.
  * The transformed function takes the same arguments as the original function
