@@ -6,7 +6,7 @@
 import { Obj } from "../utility"
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
-export type Ranker<X = unknown> = (a: X, b: X) => number
+export type Ranker<X = unknown> = (a: X, b: X) => -1 | 0 | 1
 export type RankerAsync<X = unknown> = (a: X, b: X) => Promise<number>
 
 /** Return true if a and b are equal, otherwise returns false */
@@ -101,7 +101,7 @@ export function objectCurry<X extends Obj, Y>(fn: (x: X) => Y) {
  */
 export function ranker<T, Y = unknown>(args: { proj: Projector<T, Y, void>, tryNumeric?: boolean, tryDate?: boolean, reverse?: boolean }): Ranker<T> {
 	return (x: T, y: T) => {
-		return compare(x, y, args.proj, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1)
+		return compare(x, y, args.proj, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1) as -1 | 0 | 1
 	}
 }
 /** Transforms input projector function into a comparer function (that determines whether two values are equal)

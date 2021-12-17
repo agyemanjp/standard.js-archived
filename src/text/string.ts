@@ -13,7 +13,6 @@
 /* eslint-disable fp/no-loops */
 
 import * as char from "./char"
-import { last } from "../collections"
 
 const whitespaceChars = ["\n", "\t", "\v", "\r"]
 const wordTokenSeperatorChars = ["-", "_", "+", "^", "%", "=", " ", "	", "\\", "/", "\t", "\n", "*", "$", "#", "@", "&", "(", ")", "!"]

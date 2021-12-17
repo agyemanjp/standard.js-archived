@@ -76,7 +76,8 @@ export const Tuple = class <X, Y>  {
 	constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> }
 } as { new <X, Y>(x: X, y: Y): [X, Y] }
 
-export type Collection<T> = AsyncIterable<T> | AsyncGenerator<T> | Iterable<T> | Generator<T>
+// export type Collection<T> = Iterable<T> | Generator<T>
+// export type CollectionAsync<T> = AsyncIterable<T> | AsyncGenerator<T> | Iterable<T> | Generator<T>
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never

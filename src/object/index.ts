@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Tuple, Obj, Collection, Merge, isObject, isSymbol } from "../utility"
+import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): K[]
@@ -22,7 +22,7 @@ export function objectFromTuples<T, K extends string = string>(keyValues: Tuple<
 	})
 	return obj
 }
-export async function objectFromTuplesAsync<T, K extends string = string>(keyValues: Collection<Tuple<K, T>>) {
+export async function objectFromTuplesAsync<T, K extends string = string>(keyValues: Iterable<Tuple<K, T>> | AsyncIterable<Tuple<K, T>>) {
 	const obj = {} as Obj<T, K>
 	// eslint-disable-next-line fp/no-loops
 	for await (const kv of keyValues) {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-shadow */
 /* eslint-disable brace-style */
-import { reduce, last, filter, map, sort } from "../collections/combinators"
+import { reduce, last, lastOrDefault, filter, map, sort } from "../collections/combinators"
 import { Ranker } from "../functional"
 import { Tuple, isNumber } from "../utility"
 
@@ -24,14 +24,14 @@ export function max<T>(vector: Iterable<number>): number | undefined
 export function max<T>(vector: Iterable<T>, ranker: Ranker<T>): T | undefined
 export function max(vector: Iterable<unknown>, ranker?: Ranker<unknown>) {
 	if (ranker) {
-		return last(reduce(
+		return lastOrDefault(reduce(
 			vector,
 			undefined as unknown,
 			(prev, curr) => (prev === undefined || (ranker(curr, prev) > 0)) ? curr : prev
 		))
 	}
 	else {
-		return last(reduce(
+		return lastOrDefault(reduce(
 			vector as Iterable<number>,
 			undefined as number | undefined,
 			(prev, curr) => (prev === undefined || curr > prev) ? curr : prev
@@ -40,7 +40,7 @@ export function max(vector: Iterable<unknown>, ranker?: Ranker<unknown>) {
 }
 
 export function sum(vector: number[]): number {
-	return last(reduce(vector, 0, (x, y) => x + y)) || 0
+	return lastOrDefault(reduce(vector, 0, (x, y) => x + y), { defaultValue: 0 })
 }
 
 export function mean(vector: number[], opts?:

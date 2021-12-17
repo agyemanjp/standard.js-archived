@@ -1,9 +1,51 @@
+import { Predicate, PredicateAsync } from "../functional"
+
+/** Collection that is finite (length known in advance) */
+export type Finite = | { readonly size: number } | { readonly length: number }
+
+/** Collection that supports direct/random access by index */
+export type IndexedAccess<T> = | { readonly [n: number]: T } | { get: (index: number) => T }
+
+/** Collection that supports checking whether an item is contained in it */
+export type Container<T> = (
+	| { contains: Predicate<T, any> }
+	| { includes: Predicate<T, any> }
+	| { has: Predicate<T, any> }
+)
+
+/** Collection that supports checking whether an item is contained in it asynchronously */
+export type ContainerAsync<T> = (
+	| { contains: PredicateAsync<T, any> }
+	| { includes: PredicateAsync<T, any> }
+	| { has: PredicateAsync<T, any> }
+)
+
+/** Finite, eager, materialized collection */
+/*export type Materialized<T> = (Iterable<T> &
+	(
+		| { contains: Predicate<T, any> }
+		| { includes: Predicate<T, any> }
+		| { has: Predicate<T, any | never> }
+	) & Finite
+)*/
+
+/** Finite, eager, async, materialized collection */
+/*export type MaterializedAsync<T> = (Iterable<T> | AsyncIterable<T> &
+	(
+		| { contains: Predicate<T, any> | PredicateAsync<T, any> }
+		| { includes: Predicate<T, any> | PredicateAsync<T, any> }
+		| { has: Predicate<T, any> | PredicateAsync<T, any> }
+	) &
+	(
+		| { size: number }
+		| { length: number }
+	)
+)*/
 
 export type Zip<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] extends Iterable<infer T> ? T : never }
 export type ZipAsync<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] extends AsyncIterable<infer T> | Iterable<infer T> ? T : never }
 
 export type AsyncOptions = ({ mode: "parallel", resultOrder: "completion" | "original" } | { mode: "serial" })
-
 
 /*
 export type TableFilter = {

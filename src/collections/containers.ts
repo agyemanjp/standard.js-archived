@@ -5,11 +5,12 @@
 /* eslint-disable fp/no-class */
 
 import {
+	contains,
 	unique,
 	take, takeWhile,
 	skip, skipWhile,
-	first,
-	last,
+	first, firstOrDefault,
+	last, lastOrDefault,
 	map,
 	filter,
 	reduce,
@@ -19,15 +20,18 @@ import {
 	union,
 	some,
 	except,
-	complement
+	complement,
 } from "./combinators"
+
 import {
 	min,
 	max,
 	sum
 } from "../stats"
+
 import { Ranker, Predicate, Projector, Reducer } from "../functional"
 import { Tuple } from "../utility"
+import { IndexedAccess, Container, Finite } from "./types"
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {
@@ -49,16 +53,30 @@ export class Sequence<X> implements Iterable<X> {
 
 
 	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
-	 * @param predicate Optional predicate to filter elements
-	 * @returns First element, or <undefined> if such an element is not found
+	 * @param predicate Optional predicate applied to the elements
+	 * @returns First element (as defined above) of this sequence
+	 * @throws An error if such a first element cannot found
 	 */
 	first(predicate?: Predicate<X>) { return first(this, predicate) }
+	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @param defaultValue Optional default value to return if first element is not found (defaults to <undefined>)
+	 * @returns First element (as defined above) of this sequence, or the defaultValue argument, if not found
+	 */
+	firstOrDefault(predicate?: Predicate<X>, defaultValue?: X) { return firstOrDefault(this, { predicate, defaultValue }) }
 
-	/** Get last element (or last element to satisfy optional predicate argument) of this sequence
-	 * @param predicate Optional predicate to filter elements
-	 * @returns Last element as defined, or <undefined> if such an element is not found
+	/** Get last element (or last element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @returns Last element (as defined above) of this sequence 
+	 * @throws An error if such a last element cannot found
 	 */
 	last(predicate?: Predicate<X>) { return last(this, predicate) }
+	/** Get last element (or last element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @param defaultValue Optional default value to return if last element is not found (defaults to <undefined>)
+	 * @returns Last element (as defined above) of this sequence, or the defaultValue argument, if not found
+	 */
+	lastOrDefault(predicate?: Predicate<X>, defaultValue?: X) { return lastOrDefault(this, { predicate, defaultValue }) }
 
 	filter(predicate: Predicate<X>) { return this.ctor(filter(this, predicate)) }
 	map<Y>(projector: Projector<X, Y>) { return new Sequence(map(this, projector)) }
@@ -135,12 +153,12 @@ export class Set<X> extends Sequence<X> {
 	get size(): number { return this.core.set.size }
 	get length(): number { return this.size }
 
-	/** Synonym of this.contains */
-	has(value: X): boolean { return this.contains(value) }
-	/** Synonym of this.contains */
-	includes(value: X) { return this.contains(value) }
 	/** Returns true if this array contains an element equal to value */
 	contains(value: X) { return this.core.set.has(value) }
+	/** Synonym of contains */
+	has(value: X): boolean { return this.contains(value) }
+	/** Synonym of contains */
+	includes(value: X) { return this.contains(value) }
 
 	some(predicate: Predicate<X>): boolean { return some(this, predicate) }
 	every(predicate: Predicate<X>): boolean { return every(this, predicate) }
@@ -148,9 +166,22 @@ export class Set<X> extends Sequence<X> {
 	map<Y>(projector: Projector<X, Y>) { return new Set<Y>(map(this, projector)) }
 
 	union(collections: Iterable<X>[]) { return this.ctor(union([this, ...collections])) }
-	intersection(collections: globalThis.Array<X>[]) { return this.ctor(intersection(collections)) }
-	except(collections: globalThis.Array<X>[]): Iterable<X> { return this.ctor(except(this, ...collections)) }
+
+	intersection(others: (Iterable<X> & Finite)[]) { return this.ctor(intersection(others)) }
+
+	/** All items in this set, except those in any of the input arrays */
+	except(...excluded: (Iterable<X> & Finite)[]): Iterable<X> { return this.ctor(except(this, ...excluded)) }
+
+	/** All items in input collection but not in this set */
 	complement(universe: Iterable<X>): Iterable<X> { return complement([...this], universe) }
+
+	equals(other: Set<X>) { return (this.size === other.size) && this.every(x => other.has(x)) }
+	static equals<T>(...collections: (Iterable<T> & Finite)[]) {
+		const _first = first(collections)
+		const size = "length" in _first ? _first.length : _first.size
+		return collections.every(c => ("length" in c ? c.length : c.size) === size && every(c, x => contains(collections[0], x)))
+	}
+
 
 	// eslint-disable-next-line fp/no-mutating-methods
 	sort(comparer?: Ranker<X>) { return this.ctor([...this].sort(comparer)) }

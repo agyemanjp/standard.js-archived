@@ -7,9 +7,9 @@
 
 
 import { Ranker, RankerAsync, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "../functional"
-import { Obj, Primitive, Tuple, Collection, TypeGuard, ExtractByType, hasValue } from "../utility"
+import { Obj, Primitive, Tuple, TypeGuard, ExtractByType, hasValue } from "../utility"
 import { entries, objectFromTuples, objectFromTuplesAsync } from "../object"
-import { Zip, ZipAsync } from "./types"
+import { Zip, ZipAsync, IndexedAccess, Finite, Container } from "./types"
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
 type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T
@@ -27,7 +27,7 @@ export function isAsyncIterable<T, _>(val: AsyncIterable<T> | _): val is _ exten
 	return hasValue(val) && typeof (val as any)[Symbol.asyncIterator] === "function"
 }
 /** General collection type guard */
-export function isCollection<T, _>(val: Collection<T> | _): val is _ extends Collection<infer X> ? never : Collection<T> {
+export function isCollection<T, _>(val: Iterable<T> | AsyncIterable<T> | _): val is _ extends Iterable<infer X> | AsyncIterable<infer X> ? never : Iterable<T> | AsyncIterable<T> {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return hasValue(val) && (isIterable(val) || isAsyncIterable(val))
 }
@@ -170,7 +170,7 @@ export async function* zipAsync<T extends readonly (AsyncIterable<unknown> | Ite
 export function* indexed<T>(items: Iterable<T>, from = 0) {
 	yield* zip(integers({ from, direction: "upwards" }), items)
 }
-export async function* indexedAsync<T>(items: Collection<T>, from = 0) {
+export async function* indexedAsync<T>(items: Iterable<T> | AsyncIterable<T>, from = 0) {
 	yield* zipAsync(integers({ from, direction: "upwards" }), items)
 }
 
@@ -189,7 +189,7 @@ export function* take<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 		}
 	}
 }
-export async function* takeAsync<T>(collection: Collection<T>, n: number): AsyncIterable<T> {
+export async function* takeAsync<T>(collection: Iterable<T> | AsyncIterable<T>, n: number): AsyncIterable<T> {
 	if (typeof n !== "number")
 		throw new Error(`take(): Invalid type ${typeof n} for argument "n"\nMust be number`)
 	if (n < 0) {
@@ -231,7 +231,7 @@ export function* skip<T>(iterable: Iterable<T>, n: number): Iterable<T> {
 			n--
 	}
 }
-export async function* skipAsync<T>(iterable: Collection<T>, n: number): AsyncIterable<T> {
+export async function* skipAsync<T>(iterable: Iterable<T> | AsyncIterable<T>, n: number): AsyncIterable<T> {
 	if (typeof n !== "number")
 		throw new Error(`Invalid type ${typeof n} for argument "n"\nMust be number`)
 	if (n < 0) {
@@ -274,8 +274,8 @@ export function* map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projecto
 }
 
 export function mapAsync<X, Y>(collection: Obj<X>, projector: ProjectorAsync<X, Y, string>): Promise<Obj<Y>>
-export function mapAsync<X, Y>(collection: Collection<X>, projector: ProjectorAsync<X, Y, number>): AsyncIterableIterator<Y>
-export async function* mapAsync<X, Y>(collection: Collection<X> | Obj<X>, projector: ProjectorAsync<X, Y, any>): AsyncIterableIterator<Y> | Promise<Obj<Y>> {
+export function mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X>, projector: ProjectorAsync<X, Y, number>): AsyncIterableIterator<Y>
+export async function* mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X> | Obj<X>, projector: ProjectorAsync<X, Y, any>): AsyncIterableIterator<Y> | Promise<Obj<Y>> {
 	if (isCollection(collection)) {
 		for await (const tuple of indexedAsync(collection)) {
 			yield projector(tuple[1], tuple[0])
@@ -292,7 +292,7 @@ export function* reduce<X, Y>(iterable: Iterable<X>, initial: Y, reducer: Reduce
 		yield initial
 	}
 }
-export async function* reduceAsync<X, Y>(iterable: Collection<X>, initial: Y, reducer: ReducerAsync<X, Y>): AsyncIterable<Y> {
+export async function* reduceAsync<X, Y>(iterable: Iterable<X> | AsyncIterable<X>, initial: Y, reducer: ReducerAsync<X, Y>): AsyncIterable<Y> {
 	for await (const tuple of indexedAsync(iterable)) {
 		initial = await reducer(initial, tuple[1], tuple[0])
 		yield initial
@@ -322,12 +322,12 @@ export function* filter<X, X1 extends X>(elements: Iterable<X> | Obj<X>, predica
 export function filterAsync<T extends Obj>(obj: T, predicate: PredicateAsync<T[keyof T], keyof T>): Partial<T>
 export function filterAsync<X>(obj: Obj<X>, predicate: PredicateAsync<X, string>): Partial<Obj<X>>
 export function filterAsync<X, X1 extends X>(obj: Obj<X>, predicate: TypeGuard<X, X1>): Partial<Obj<X>>
-export function filterAsync<X>(iterable: Collection<X>, predicate: PredicateAsync<X, number>): AsyncIterable<X>
-export function filterAsync<X, X1 extends X>(iterable: Collection<X>, predicate: TypeGuard<X, X1>): AsyncIterable<X1>
-export async function* filterAsync<X, X1 extends X>(elements: Collection<X> | Obj<X>, predicate: PredicateAsync<X, any> | TypeGuard<X, X1>) {
+export function filterAsync<X>(iterable: Iterable<X> | AsyncIterable<X>, predicate: Predicate<X, number> | PredicateAsync<X, number>): AsyncIterable<X>
+export function filterAsync<X, X1 extends X>(iterable: Iterable<X> | AsyncIterable<X>, predicate: TypeGuard<X, X1>): AsyncIterable<X1>
+export async function* filterAsync<X, X1 extends X>(elements: Iterable<X> | AsyncIterable<X> | Obj<X>, predicate: Predicate<X, any> | PredicateAsync<X, any> | TypeGuard<X, X1>) {
 	if (isCollection(elements))
 		for await (const tuple of indexedAsync(elements)) {
-			if (await predicate(tuple[1], tuple[0]))
+			if ((await predicate(tuple[1], tuple[0])) === true)
 				yield tuple[1]
 			else
 				continue
@@ -346,7 +346,7 @@ export function contains<A>(iterable: Iterable<A>, value: A) {
 
 	return false
 }
-export async function containsAsync<T>(iterable: Collection<T>, value: T) {
+export async function containsAsync<T>(iterable: Iterable<T> | AsyncIterable<T>, value: T) {
 	for await (const x of iterable) {
 		if (x === value) return true
 	}
@@ -389,6 +389,8 @@ export function* chunk<T>(iter: Iterable<T>, chunkSize: number): Iterable<T[]> {
 
 // eslint-disable-next-line fp/no-mutating-methods
 export function sort<T>(items: Iterable<T>, comparer?: Ranker<T>) { return [...items].sort(comparer) }
+// eslint-disable-next-line fp/no-mutating-methods
+export async function sortAsync<T>(data: Iterable<T> | AsyncIterable<T>, comparer?: Ranker<T> /*| RankerAsync<T>*/) { return (await toArrayAsync(data)).sort(comparer) }
 
 export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedIterable<X>> {
 	// console.log(`\nInput to flatten: ${JSON.stringify(nestedIterable)}`)
@@ -422,71 +424,148 @@ export async function forEachAsync<T>(iterable: Iterable<T> | Generator<T> | Asy
 	}
 }
 
-
-/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
- * @param predicate Optional predicate to filter elements
- * @returns First element, or <undefined> if such an element is not found
+/** Get first element (or first element to satisfy a predicate, if supplied) of some data
+ * @param data The input data, as an iterable collection
+ * @param predicate Optional predicate applied to the data
+ * @returns First element (as defined above) of data 
+ * @throws An error if such a first element cannot found
  */
-export function first<T>(iterable: Iterable<T>, predicate?: Predicate<T>): T | undefined {
-	for (const tuple of indexed(iterable)) {
+export function first<T>(data: Iterable<T>, predicate?: Predicate<T>): T {
+	const _first = firstOrDefault(data, { predicate })
+	if (_first)
+		return _first
+	else
+		throw new Error(`First element not found`)
+}
+/** Get first element (or first element to satisfy a predicate, if supplied) of iterable data
+ * @param data The input data, as an iterable collection
+ * @param predicate Optional predicate applied to the data
+ * @param defaultValue Optional default value to return if first element is not found (defaults to <undefined>)
+ * @returns First element (as defined above) of data, or the defaultValue argument, if not found
+ */
+export function firstOrDefault<T>(data: Iterable<T>): T | undefined
+export function firstOrDefault<T, D extends T | null | undefined>(data: Iterable<T>, options: { predicate?: Predicate<T>, defaultValue?: D }): T | D
+export function firstOrDefault<T>(data: Iterable<T>, options?: { predicate?: Predicate<T>, defaultValue?: T }) {
+	const { predicate, defaultValue } = options ?? {}
+	for (const tuple of indexed(data)) {
 		if (predicate === undefined || predicate(tuple[1], tuple[0]))
 			return tuple[1]
 	}
-	return undefined
+	return (typeof defaultValue === "undefined") ? undefined : defaultValue
 }
-export async function firstAsync<T>(items: Iterable<T> | Generator<T> | AsyncIterable<T> | AsyncGenerator<T>, predicate?: Predicate<T>): Promise<T | undefined>
-export async function firstAsync<T>(items: Iterable<T> | Generator<T> | AsyncIterable<T> | AsyncGenerator<T>, predicate?: PredicateAsync<T>): Promise<T | undefined>
-export async function firstAsync<T>(items: Iterable<T> | Generator<T> | AsyncIterable<T> | AsyncGenerator<T>, predicate?: Predicate<T> | PredicateAsync<T>): Promise<T | undefined> {
-	for await (const tuple of indexedAsync(items)) {
+/** Get first element (or first element to satisfy a predicate, if supplied) of (possibly async) iterable data
+ * @param data The iterable data to process
+ * @param predicate Optional predicate applied to the data
+ * @returns First element (as defined above) of data 
+ * @throws An error if such a first element cannot found
+ */
+export async function firstAsync<T>(data: Iterable<T> | AsyncIterable<T>, predicate?: Predicate<T> | PredicateAsync<T>): Promise<T | undefined> {
+	const _first = await firstOrDefaultAsync(data, { predicate })
+	if (_first)
+		return _first
+	else
+		throw new Error(`Last element not found`)
+}
+
+/** Get first element (or first element to satisfy a predicate, if supplied) of (possibly async) iterable data
+ * @param data The iterable data to process
+ * @param predicate Optional predicate applied to the data
+ * @param defaultValue Optional default value to return if first element is not found (defaults to <undefined>)
+ * @returns First element (as defined above) of data, or the defaultValue argument, if not found
+ */
+export async function firstOrDefaultAsync<T>(data: Iterable<T> | AsyncIterable<T>): Promise<T | undefined>
+export async function firstOrDefaultAsync<T, D extends null | undefined | T>(data: Iterable<T> | AsyncIterable<T>, options: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: D }): Promise<T | D>
+export async function firstOrDefaultAsync<T>(data: Iterable<T> | AsyncIterable<T>, options?: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: T }) {
+	const { predicate, defaultValue } = options ?? {}
+	for await (const tuple of indexedAsync(data)) {
 		if (predicate === undefined || predicate(tuple[1], tuple[0]))
 			return tuple[1]
 	}
-	return undefined
+	return (typeof defaultValue === "undefined") ? undefined : defaultValue
 }
 
-/** Get last element (or last element to satisfy optional predicate argument) of this sequence
- * @param getter Optional direct access getter, for improved performance for array-like collections
- * @param predicate Optional predicate to filter elements
- * @returns Last element as defined, or <undefined> if such an element is not found
+/** Get last element (or last element to satisfy a predicate, if supplied) of some data
+ * @param data The input data, as an iterable (ensure it is finite) or finite, indexed-access collection
+ * @param predicate Optional predicate applied to the data
+ * @returns Last element (as defined above) of data 
+ * @throws An error if such a last element cannot found
  */
-export function last<T>(collection: Iterable<T> | ArrayLike<T> | { length: number, get: (index: number) => T }, predicate?: Predicate<T>): T | undefined {
-	if ("length" in collection) { // Arraylike-specific implementation of last() for better performance using direct elements access
-		const accessor = (i: number) => ("get" in collection) ? collection.get(i) : collection[i]
-		for (let i = collection.length - 1; i >= 0; i--) {
+export function last<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T>): T | undefined {
+	const _last = lastOrDefault(data, { predicate })
+	if (_last)
+		return _last
+	else
+		throw new Error(`Last element not found`)
+}
+/** Get last element (or last element to satisfy a predicate, if supplied) of some data
+ * @param data The input data, as an iterable collection
+ * @param predicate Optional predicate applied to the data
+ * @param defaultValue Optional default value to return if last element is not found (defaults to <undefined>)
+ * @returns Last element (as defined above) of data, or the defaultValue argument, if not found
+ */
+export function lastOrDefault<T>(data: Iterable<T> | (IndexedAccess<T> & Finite)): T | undefined
+export function lastOrDefault<T, D extends T | null | undefined>(data: Iterable<T> | (IndexedAccess<T> & Finite), options: { predicate?: Predicate<T>, defaultValue?: D }): T | D
+export function lastOrDefault<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), options?: { predicate?: Predicate<T>, defaultValue?: T }) {
+	const { predicate, defaultValue } = options ?? {}
+	const effectiveDefaultValue = (typeof defaultValue === "undefined") ? undefined : defaultValue
+
+	if ("size" in data || "length" in data) { // materialized-collection-specific implementation for better performance using direct elements access
+		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
+		const size = "size" in data ? data.size : data.length
+		for (let i = size - 1; i >= 0; i--) {
 			const element = accessor(i)
 			if (predicate === undefined || predicate(element, i))
 				return element
 		}
-		return undefined
+		return effectiveDefaultValue
 	}
 	else {
-		console.assert(isIterable(collection))
+		console.assert(isIterable(data))
 		// eslint-disable-next-line fp/no-let
-		let _last = undefined as T | undefined
-		const iterable = predicate === undefined ? collection : filter(collection, predicate)
-		for (const element of iterable) {
+		let _last = effectiveDefaultValue
+		for (const element of (predicate === undefined ? data : filter(data, predicate))) {
 			_last = element
 		}
 		return _last
 	}
 }
-export async function lastAsync<T>(collection: AsyncIterable<T> | Iterable<T> | ArrayLike<T> | { length: number, get: (index: number) => T }, predicate?: Predicate<T, number>): Promise<T | undefined>
-export async function lastAsync<T>(collection: AsyncIterable<T> | Iterable<T> | ArrayLike<T> | { length: number, get: (index: number) => T }, predicate?: PredicateAsync<T, number>): Promise<T | undefined>
-export async function lastAsync<T>(collection: AsyncIterable<T> | Iterable<T> | ArrayLike<T> | { length: number, get: (index: number) => T }, predicate?: Predicate<T, number> | PredicateAsync<T, number>): Promise<T | undefined> {
-	if ("length" in collection) { // Array-like-specific implementation of last() for better performance using direct elements access
-		const accessor = (i: number) => ("get" in collection) ? collection.get(i) : collection[i]
-		for (let i = collection.length - 1; i >= 0; i--) {
+
+export async function lastAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T> | PredicateAsync<T>): Promise<T | undefined> {
+	const _last = await lastOrDefaultAsync(data, { predicate })
+	if (_last)
+		return _last
+	else
+		throw new Error(`Last element not found`)
+}
+
+/** Get first element (or first element to satisfy a predicate, if supplied) of (possibly async) iterable data
+ * @param data The iterable data to process
+ * @param predicate Optional predicate applied to the data
+ * @param defaultValue Optional default value to return if first element is not found (defaults to <undefined>)
+ * @returns First element (as defined above) of data, or the defaultValue argument, if not found
+ */
+export async function lastOrDefaultAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite)): Promise<T | undefined>
+export async function lastOrDefaultAsync<T, D extends null | undefined | T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), options: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: D }): Promise<T | D>
+export async function lastOrDefaultAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), options?: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: T }): Promise<T | undefined> {
+	const { predicate, defaultValue } = options ?? {}
+	const effectiveDefaultValue = (typeof defaultValue === "undefined") ? undefined : defaultValue
+
+	if ("length" in data || "size" in data) { // materialized-collection-specific implementation for better performance using direct elements access
+		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
+		const size = "size" in data ? data.size : data.length
+		for (let i = size - 1; i >= 0; i--) {
 			const element = accessor(i)
-			if (predicate === undefined || predicate(element, i))
+			// eslint-disable-next-line no-await-in-loop
+			if (predicate === undefined || (await predicate(element, i) === true))
 				return element
 		}
 		return undefined
 	}
 	else {
-		console.assert(isAsyncIterable(collection))
+		console.assert(isAsyncIterable(data))
 		// eslint-disable-next-line fp/no-let
 		let _last = undefined as T | undefined
-		const iterable = predicate === undefined ? collection : filterAsync(collection, predicate as any)
+		const iterable = predicate === undefined ? data : filterAsync(data, predicate)
 		for await (const element of iterable) {
 			_last = element
 		}
@@ -509,7 +588,6 @@ export async function someAsync<T>(iter: Iterable<T> | Generator<T> | AsyncItera
 	}
 	return false
 }
-
 
 /**  */
 export function every<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
@@ -540,19 +618,24 @@ export function union<T>(collections: Iterable<Iterable<T>>): Iterable<T> {
 	})())
 }
 
-/**  */
-export function intersection<T>(collections: ArrayLike<T>[]): Iterable<T> {
+/** All items that are present in all the input collections */
+export function intersection<T>(collections: (Iterable<T> & Finite)[]): Iterable<T> {
 	throw new Error(`Not Implemented`)
 }
 
-/**  */
-export function except<T>(src: Iterable<T>, ...exclusions: ArrayLike<T>[]): Iterable<T> {
-	throw new Error(`Not Implemented`)
+/** All items in <src>, except those in any of the <exclusions> collections 
+ * @argument src The source iterable collection
+ * @argument excluded An array of (finite) collections whose elements are to be excluded from the result
+ */
+export function except<T>(src: Iterable<T>, ...excluded: (Iterable<T> & Finite)[]): Iterable<T> {
+	const s = new Set(union(excluded))
+	return filter(src, item => !s.has(item))
 }
 
-/** */
-export function complement<T>(target: ArrayLike<T>, universe: Iterable<T>): Iterable<T> {
-	throw new Error(`Not Implemented`)
+/** All items in <universe> but not in <target> collection */
+export function complement<T>(src: Iterable<T> & Finite, universe: Iterable<T>): Iterable<T> {
+	const s = new Set(src)
+	return filter(universe, item => !s.has(item))
 }
 
 /** */
@@ -568,7 +651,7 @@ export function* repeat(val: unknown, count?: number) {
 	}
 }
 
-export async function toArrayAsync<T>(iterable: Collection<T>) {
+export async function toArrayAsync<T>(iterable: Iterable<T> | AsyncIterable<T>) {
 	const arr = [] as Array<T>
 	for await (const element of iterable) {
 		// eslint-disable-next-line fp/no-mutating-methods
@@ -602,3 +685,18 @@ export async function toArrayAsync<T>(iterable: Collection<T>) {
 	}
 }
 */
+
+
+
+/*export function simplifyMaterialized<T>(collection: Partial<Finite & IndexedAccess<T> & Container<T>>) {
+	return Object.assign([...collection], {
+		contains: "contains" in collection
+			? collection.contains
+			: "includes" in collection
+				? collection.includes
+				: collection.has,
+		size: "size" in collection
+			? collection.size
+			: collection.length
+	})
+}*/
