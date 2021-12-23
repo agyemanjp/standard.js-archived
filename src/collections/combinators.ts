@@ -459,7 +459,7 @@ export function firstOrDefault<T>(data: Iterable<T>, options?: { predicate?: Pre
  * @returns First element (as defined above) of data 
  * @throws An error if such a first element cannot found
  */
-export async function firstAsync<T>(data: Iterable<T> | AsyncIterable<T>, predicate?: Predicate<T> | PredicateAsync<T>): Promise<T | undefined> {
+export async function firstAsync<T>(data: Iterable<T> | AsyncIterable<T>, predicate?: Predicate<T> | PredicateAsync<T>): Promise<T> {
 	const _first = await firstOrDefaultAsync(data, { predicate })
 	if (_first)
 		return _first
@@ -490,7 +490,7 @@ export async function firstOrDefaultAsync<T>(data: Iterable<T> | AsyncIterable<T
  * @returns Last element (as defined above) of data 
  * @throws An error if such a last element cannot found
  */
-export function last<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T>): T | undefined {
+export function last<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T>): T {
 	const _last = lastOrDefault(data, { predicate })
 	if (_last)
 		return _last
@@ -530,7 +530,7 @@ export function lastOrDefault<T>(data: Iterable<T> | (IndexedAccess<T> & Finite)
 	}
 }
 
-export async function lastAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T> | PredicateAsync<T>): Promise<T | undefined> {
+export async function lastAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T> | PredicateAsync<T>): Promise<T> {
 	const _last = await lastOrDefaultAsync(data, { predicate })
 	if (_last)
 		return _last
