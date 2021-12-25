@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable fp/no-let */
+/* eslint-disable fp/no-mutation */
+/* eslint-disable fp/no-loops */
+/* eslint-disable brace-style */
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -5,7 +10,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { isIterable, flatten, chunk, take, skip } from "../dist/collections"
+import { isIterable, flatten, chunk, take, skip, first, last, reduce } from "../dist/collections"
 
 describe("isIterable", () => {
 	// it("", () => {
@@ -115,6 +120,85 @@ describe('skip()', function () {
 	it('should be idempotent for pure iterables', function () {
 		const arr = [10, 20, 99, 3, 30, 40]
 		assert.deepStrictEqual([...skip(arr, 4)], [...skip(arr, 4)])
+	})
+})
+
+describe('first()', function () {
+	it('should return first element when passed an infinite iterable', function () {
+		const iterable: Iterable<number> = (function* () { let seed = Number.MAX_SAFE_INTEGER; while (true) yield seed-- })()
+		assert.strictEqual(first(iterable), Number.MAX_SAFE_INTEGER)
+	})
+	it('should return first element when passed a finite iterable', function () {
+		assert.strictEqual(first((function* () { yield 3; yield 6; yield 1 })()), 3)
+		assert.strictEqual(first(["e", "u", "r", "e", "k", "a"]), "e")
+
+		const f = { num: 1 }
+		assert.strictEqual(first([f, { str: "x" }, "a"]), f)
+	})
+	it('should throw an error when passed an empty collection', function () {
+		assert.throws(() => first((function* () { })()))
+		assert.throws(() => first([]))
+	})
+	it('should throw an error when first element cannot be found', function () {
+		assert.throws(() => first((function* () { yield 1; yield 2; yield 3 })(), x => x <= 0))
+		assert.throws(() => first(["eureka", "hello"], x => x === "me"))
+	})
+	it('should be idempotent for pure iterables', function () {
+		const arr = [10, 20, 99, 3, 30, 40]
+		assert.strictEqual(first(arr), first(arr))
+	})
+})
+
+describe('last()', function () {
+	it('should return last element when passed a finite iterable', function () {
+		assert.strictEqual(last((function* () { yield 3; yield 6; yield 1 })()), 1)
+		assert.strictEqual(last(["e", "u", "r", "e", "k", "a"]), "a")
+
+		const obj = { num: 1 }
+		assert.strictEqual(last(["f", { str: "x" }, "a", obj]), obj)
+	})
+	it('should throw an error when passed an empty collection', function () {
+		assert.throws(() => last((function* () { })()))
+		assert.throws(() => last([]))
+	})
+	it('should throw an error when last element cannot be found', function () {
+		assert.throws(() => last((function* () { yield 1; yield 2; yield 3 })(), x => x <= 0))
+		assert.throws(() => last(["eureka", "hello"], x => x === "me"))
+	})
+	it('should be idempotent for pure iterables', function () {
+		const arr = [10, 20, 99, 3, 30, 40]
+		assert.strictEqual(last(arr), last(arr))
+	})
+})
+
+describe('reduce()', function () {
+	it('should yield initial value as first item, even if input collection is empty', function () {
+		const iterable: Iterable<number> = (function* () { while (true) yield 1 })()
+		assert.strictEqual(first(reduce(iterable, 53, (prev, curr) => prev + curr)), 53)
+
+		assert.deepStrictEqual([...reduce([], 7, (prev, curr) => 123)], [7])
+		assert.deepStrictEqual([...reduce([], null, (prev, curr) => curr)], [null])
+		assert.deepStrictEqual([...reduce([], undefined, (prev, curr) => curr)], [undefined])
+	})
+	it('should yield only first item if passed an empty iterable', function () {
+		assert.strictEqual([...reduce([] as string[], "hello", (prev, curr) => prev + curr)].length, 1)
+		assert.strictEqual([...reduce([] as number[], 7, (prev, curr) => prev + curr)].length, 1)
+		assert.strictEqual([...reduce([], null, (prev, curr) => curr)].length, 1)
+
+		const r = [...reduce([], 46, (prev, curr) => prev + curr)]
+		assert.strictEqual(last(r), first(r))
+		assert.strictEqual(r.length, 1)
+
+	})
+	it('should yield the correct successive reduced values', function () {
+		assert.deepStrictEqual([...reduce((function* () { yield 1; yield 2; yield 3 })(), 53, (p, c) => p + c)], [53, 54, 56, 59])
+		assert.deepStrictEqual([...reduce((function* () { yield "e"; yield "ll"; yield "o" })(), "h", (p, c) => p + c)], ['h', 'he', 'hell', "hello"])
+		assert.deepStrictEqual([...reduce((function* () { yield null; yield 2 })(), "undefined", (_, c) => typeof c)], ["undefined", "object", "number"])
+	})
+
+	it('should be idempotent for pure iterables', function () {
+		const arr = [10, 20, 99, 3, 30, 40]
+		assert.deepStrictEqual([...reduce(arr, 4, () => null)], [...reduce(arr, 4, () => null)])
 	})
 })
 

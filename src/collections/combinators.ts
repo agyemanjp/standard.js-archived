@@ -287,6 +287,7 @@ export async function* mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X>
 }
 
 export function* reduce<X, Y>(iterable: Iterable<X>, initial: Y, reducer: Reducer<X, Y>): Iterable<Y> {
+	yield initial
 	for (const tuple of indexed(iterable)) {
 		initial = reducer(initial, tuple[1], tuple[0])
 		yield initial

@@ -114,7 +114,7 @@ export type Merge5<A, B, C, D, E> = Merge<A, Merge<B, Merge<C, Merge<D, E>>>>
 // type test = M<[1, 2]>
 
 /** Determines if input argument has a value */
-export function hasValue<T>(value?: T): value is T {
+export function hasValue<T>(value?: T | null | undefined): value is T {
 	switch (typeof value) {
 		case "function":
 		case "boolean":
