@@ -10,7 +10,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { isIterable, flatten, chunk, take, skip, first, last, reduce } from "../dist/collections"
+import { flatten, chunk, take, skip, first, last, reduce } from "../dist/collections"
 
 describe("isIterable", () => {
 	// it("", () => {

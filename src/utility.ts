@@ -204,6 +204,51 @@ export function isFunction(payload: any): payload is Function {
 	return getType(payload) === 'Function'
 }
 
+// type Iter<X> = Iterable<X> | AsyncIterable<X>
+
+/** Iterable (or async iterable) type guard */
+export function isIterable<T>(value: T): value is T extends Iterable<any> | AsyncIterable<any> ? T : never {
+	try {
+		return isAsyncIterable(value) || (typeof (value as any)[Symbol.iterator] === 'function')
+	}
+	catch {
+		return false
+	}
+}
+
+/** AsyncIterable type guard */
+export function isAsyncIterable<T>(val: T): val is T extends AsyncIterable<any> ? T : never {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	try {
+		return typeof (val as any)[Symbol.asyncIterator] === "function"
+	}
+	catch {
+		return false
+	}
+}
+
+/** Generator type guard */
+export function isGenerator<T>(val: T): val is T extends Generator<any> | AsyncGenerator<any> ? T : never {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	try {
+		return isAsyncGenerator(val) || ((isIterable(val) && "next" in val && typeof (val as any).next === "function"))
+	}
+	catch {
+		return false
+	}
+}
+
+/** AsyncIterable type guard */
+export function isAsyncGenerator<T>(val: T): val is T extends AsyncGenerator<any> ? T : never {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	try {
+		return isAsyncIterable(val) && ("next" in val) && (typeof (val as any).next === "function")
+	}
+	catch {
+		return false
+	}
+}
+
 /** Returns whether the payload is an array
  * @param {*} payload
  * @returns {payload is undefined}

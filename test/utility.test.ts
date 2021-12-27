@@ -6,7 +6,10 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import { ExtractByType, TypeAssert, Merge, Merge1, Merge2, Merge3, hasValue, isArray } from "../dist/utility.js"
+import {
+	ExtractByType, TypeAssert, Merge, Merge1, Merge2, Merge3, hasValue,
+	isArray, isIterable
+} from "../dist/utility.js"
 
 describe('hasValue', function () {
 	it('should return true for an empty array', function () {
@@ -310,6 +313,36 @@ describe("Merge", () => {
 
 		assert.ok(true)
 	})
+})
+
+describe("IsIterable", () => {
+	// eslint-disable-next-line init-declarations, fp/no-let
+	let union: (
+		| never
+		| null
+		| undefined
+		| boolean
+		| symbol
+		| number
+		| BigInt
+		| RegExp
+		| string[]
+		| Set<string>
+		| Map<symbol, string>
+		| Generator<bigint>
+		| Iterator<number>
+		| Record<'a' | 'b', boolean>
+		| 1
+		| AsyncIterable<object>
+	)
+
+	if (isIterable(union)) {
+		const test: TypeAssert<
+			typeof union,
+			string[] | Set<string> | Map<symbol, string> | Generator<bigint, any, unknown> | AsyncIterable<object>
+		> = "true"
+	}
+	assert.ok(true)
 })
 
 

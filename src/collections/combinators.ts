@@ -7,7 +7,7 @@
 
 
 import { Ranker, RankerAsync, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "../functional"
-import { Obj, Primitive, Tuple, TypeGuard, ExtractByType, hasValue } from "../utility"
+import { Obj, Primitive, Tuple, TypeGuard, ExtractByType, hasValue, isIterable, isAsyncIterable } from "../utility"
 import { entries, objectFromTuples, objectFromTuplesAsync } from "../object"
 import { Zip, ZipAsync, IndexedAccess, Finite, Container } from "./types"
 
@@ -16,21 +16,6 @@ type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T
 type UnwrapIterable3<T> = T extends Iterable<infer X> ? UnwrapIterable2<X> : T
 export type UnwrapNestedIterable<T> = T extends Iterable<infer X> ? UnwrapIterable3<X> : T
 
-/** Iterable type guard */
-export function isIterable<T, _>(val: Iterable<T> | _): val is _ extends Iterable<infer X> ? never : Iterable<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return hasValue(val) && typeof (val as any)[Symbol.iterator] === "function"
-}
-/** AsyncIterable type guard */
-export function isAsyncIterable<T, _>(val: AsyncIterable<T> | _): val is _ extends AsyncIterable<infer X> ? never : AsyncIterable<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return hasValue(val) && typeof (val as any)[Symbol.asyncIterator] === "function"
-}
-/** General collection type guard */
-export function isCollection<T, _>(val: Iterable<T> | AsyncIterable<T> | _): val is _ extends Iterable<infer X> | AsyncIterable<infer X> ? never : Iterable<T> | AsyncIterable<T> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return hasValue(val) && (isIterable(val) || isAsyncIterable(val))
-}
 
 /** Generate a sequence of integers */
 export function* integers(args: { from: number, to: number } | { from: number, direction: "upwards" | "downwards" }) {
@@ -106,10 +91,7 @@ export async function* zipAsync<T extends readonly (AsyncIterable<unknown> | Ite
 	// console.assert(iterables.every(iter => isAsyncIterable(iter)))
 
 	//const iterators = iterables.map(i => i[Symbol.asyncIterator]() as AsyncIterator<unknown>)
-	const iters = iterables.map(arg =>
-		isIterable(arg)
-			? arg[Symbol.iterator]()
-			: arg[Symbol.asyncIterator]())
+	const iters = iterables.map(arg => isAsyncIterable(arg) ? arg[Symbol.asyncIterator]() : arg[Symbol.iterator]())
 	const itersDone = iters.map(iter => ({ done: false as boolean | undefined, iter }))
 
 	try {
@@ -276,7 +258,7 @@ export function* map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projecto
 export function mapAsync<X, Y>(collection: Obj<X>, projector: ProjectorAsync<X, Y, string>): Promise<Obj<Y>>
 export function mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X>, projector: ProjectorAsync<X, Y, number>): AsyncIterableIterator<Y>
 export async function* mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X> | Obj<X>, projector: ProjectorAsync<X, Y, any>): AsyncIterableIterator<Y> | Promise<Obj<Y>> {
-	if (isCollection(collection)) {
+	if (isIterable(collection)) {
 		for await (const tuple of indexedAsync(collection)) {
 			yield projector(tuple[1], tuple[0])
 		}
@@ -326,7 +308,7 @@ export function filterAsync<X, X1 extends X>(obj: Obj<X>, predicate: TypeGuard<X
 export function filterAsync<X>(iterable: Iterable<X> | AsyncIterable<X>, predicate: Predicate<X, number> | PredicateAsync<X, number>): AsyncIterable<X>
 export function filterAsync<X, X1 extends X>(iterable: Iterable<X> | AsyncIterable<X>, predicate: TypeGuard<X, X1>): AsyncIterable<X1>
 export async function* filterAsync<X, X1 extends X>(elements: Iterable<X> | AsyncIterable<X> | Obj<X>, predicate: Predicate<X, any> | PredicateAsync<X, any> | TypeGuard<X, X1>) {
-	if (isCollection(elements))
+	if (isIterable(elements))
 		for await (const tuple of indexedAsync(elements)) {
 			if ((await predicate(tuple[1], tuple[0])) === true)
 				yield tuple[1]
