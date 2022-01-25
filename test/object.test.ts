@@ -2,7 +2,7 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import { pick, deepMerge, /*filterObject, mapObject,*/ omit, keys, entries, objectFromTuples } from "../dist/object"
+import { pick, deepMerge, shallowEquals, omit, keys, entries, objectFromTuples } from "../dist/object"
 
 
 describe('keys', () => {
@@ -39,7 +39,7 @@ describe('keys', () => {
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
 		const mapped = mapObject(obj, () => { })
 
-		// expect(mapfn).toHaveBeenCalledTimes(0)
+		// assert.deepStrictEqual(mapfn).toHaveBeenCalledTimes(0)
 		assert.deepEqual(mapped, {})
 	})
 })
@@ -75,60 +75,55 @@ describe('pick', () => {
 })
 
 describe('merge', () => {
-	/*it('returns default empty object if inputs are undefined', () => {
-		expect(deepmerge()).toEqual({})
+	it('returns default empty object if inputs are undefined', () => {
+		assert.deepStrictEqual(deepMerge({}), {})
 	})
 
-	it('returns empty object if inputs are null', () => {
-		expect(deepmerge(null, null)).toEqual({})
+	it('returns null if inputs are null', () => {
+		assert.deepStrictEqual(deepMerge(null, null), null)
 	})
 
 	it('returns default object if inputs are undefined', () => {
-		expect(deepmerge(undefined, undefined, { foo: 'bar' })).toEqual({
-			foo: 'bar',
-		})
+		assert.deepStrictEqual(deepMerge(undefined, undefined, { foo: 'bar' }), { foo: 'bar', })
 	})
 
 	it('returns default object if inputs are null', () => {
-		expect(deepmerge(null, null, { foo: 'bar' })).toEqual({ foo: 'bar' })
+		assert.deepStrictEqual(deepMerge(null, null, { foo: 'bar' }), { foo: 'bar' })
 	})
 
 	it('returns merged objects for multiple inputs', () => {
-		expect(
-			deepmerge(null, null, { foo: 'bar' }, null, {}, { foo: 'baz' })
-		).toEqual({ foo: 'baz' })
+		assert.deepStrictEqual(
+			deepMerge(null, null, { foo: 'bar' }, null, {}, { foo: 'baz' })
+			, { foo: 'baz' })
 	})
 
-	it('throws exception if first input is a string', () => {
-		expect(() => deepmerge('foo', null)).toThrow(
-			'All merge parameters are expected to be objects, null, or undefined.'
-		)
-	})
+	// it('throws exception if first input is a string', () => {
+	// 	assert.throws(() => deepMerge('foo', null), 'All merge parameters are expected to be objects, null, or undefined.'
+	// 	)
+	// })
 
-	it('throws exception if second input is a string', () => {
-		expect(() => deepmerge({}, 'foo')).toThrow(
-			'All merge parameters are expected to be objects, null, or undefined.'
-		)
-	})
+	// it('throws exception if second input is a string', () => {
+	// 	assert.throws(() => deepMerge({}, 'foo'), 'All merge parameters are expected to be objects, null, or undefined.')
+	// })
 
 	it('returns object one if input two is undefined', () => {
-		expect(deepmerge({ foo: 'bar' })).toEqual({ foo: 'bar' })
+		assert.deepStrictEqual(deepMerge({ foo: 'bar' }), { foo: 'bar' })
 	})
 
-	it('returns object one if input two is null', () => {
-		expect(deepmerge({ foo: 'bar' }, null)).toEqual({ foo: 'bar' })
+	it('returns null if input two is null', () => {
+		assert.deepStrictEqual(deepMerge({ foo: 'bar' }, null), null /*{ foo: 'bar' }*/)
 	})
 
 	it('returns object two if input one is undefined', () => {
-		expect(deepmerge(undefined, { foo: 'bar' })).toEqual({ foo: 'bar' })
+		assert.deepStrictEqual(deepMerge(undefined, { foo: 'bar' }), { foo: 'bar' })
 	})
 
 	it('returns object two if input one is null', () => {
-		expect(deepmerge(null, { foo: 'bar' })).toEqual({ foo: 'bar' })
+		assert.deepStrictEqual(deepMerge(null, { foo: 'bar' }), { foo: 'bar' })
 	})
 
 	it('does perform deep merge', () => {
-		expect(deepmerge({ foo: { bar: 'baz' } }, { foo: { baz: 'bar' } })).toEqual(
+		assert.deepStrictEqual(deepMerge({ foo: { bar: 'baz' } }, { foo: { baz: 'bar' } }),
 			{
 				foo: { bar: 'baz', baz: 'bar' },
 			}
@@ -136,18 +131,12 @@ describe('merge', () => {
 	})
 
 	it('does perform deep merge on multiple parameters', () => {
-		expect(
-			deepmerge(
-				{ foo: { bar: 'baz' } },
-				{ foo: { baz: 'bar' } },
-				{ baz: 'foo' }
-			)
-		).toEqual({
-			foo: { bar: 'baz', baz: 'bar' },
-			baz: 'foo',
-		})
+		assert.deepStrictEqual(
+			deepMerge({ foo: { bar: 'baz' } }, { foo: { baz: 'bar' } }, { baz: 'foo' }),
+			{ foo: { bar: 'baz', baz: 'bar' }, baz: 'foo', }
+		)
 	})
-	*/
+
 	/*it('throws error if first argument is not an array', function () {
 		assert.throws(() => deepMerge(null, {}))
 	})*/
@@ -222,4 +211,26 @@ describe('merge', () => {
 
 	})*/
 
+})
+
+describe('equalsShallow', () => {
+	it('returns true when comparing empty objects', () => {
+		assert(shallowEquals({}, {}))
+		assert(!shallowEquals({}, { foo: {} }))
+	})
+
+	it('Properly compares each object property irrespective of their order', () => {
+		assert(shallowEquals({ str: "hello", num: 1 }, { num: 1, str: "hello" }))
+		assert(!shallowEquals({ str: "str", num: 1 }, { num: 1, str: "hello" }))
+	})
+
+	it('Properly compares reference properties', () => {
+		const obj = { str: "hello", num: 1 }
+		assert(shallowEquals({ obj, foo: "bar" }, { foo: "bar", obj }))
+		assert(!shallowEquals({ obj }, { obj: { str: "hello", num: 1 } }))
+	})
+
+	it('Properly compares objects with single a property', () => {
+		assert(shallowEquals({ str: "hello" }, { str: "hello" }))
+	})
 })

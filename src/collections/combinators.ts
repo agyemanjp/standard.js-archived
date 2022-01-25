@@ -186,12 +186,23 @@ export async function* takeAsync<T>(collection: Iterable<T> | AsyncIterable<T>, 
 		}
 	}
 }
+
 /** Return all elements while a condition is not violated */
 export function* takeWhile<X>(iterable: Iterable<X>, predicate: Predicate<X, number | void>): Iterable<X> {
 	if (typeof predicate !== "function") throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
 
 	for (const element of indexed(iterable)) {
 		if (predicate(element[1], element[0]))
+			yield element[1]
+		else
+			break
+	}
+}
+export async function* takeWhileAsync<X>(iterable: Iterable<X> | AsyncIterable<X>, predicate: PredicateAsync<X, number | void>): AsyncIterable<X> {
+	if (typeof predicate !== "function")
+		throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
+	for await (const element of indexedAsync(iterable)) {
+		if (await predicate(element[1], element[0]))
 			yield element[1]
 		else
 			break
@@ -228,12 +239,24 @@ export async function* skipAsync<T>(iterable: Iterable<T> | AsyncIterable<T>, n:
 			n--
 	}
 }
+
 /** Return all remaining elements beginning from when condition is violated */
 export function* skipWhile<T>(iterable: Iterable<T>, predicate: Predicate<T, number | void>): Iterable<T> {
 	if (typeof predicate !== "function") throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
 
 	for (const element of indexed(iterable)) {
 		if (predicate(element[1], element[0]))
+			continue
+		else
+			yield element[1]
+	}
+}
+export async function* skipWhileAsync<T>(iterable: Iterable<T> | AsyncIterable<T>, predicate: PredicateAsync<T, number | void>): AsyncIterable<T> {
+	if (typeof predicate !== "function")
+		throw new Error(`Invalid type ${typeof predicate} for 2nd argument "predicate"\nMust be function`)
+
+	for await (const element of indexedAsync(iterable)) {
+		if (await predicate(element[1], element[0]))
 			continue
 		else
 			yield element[1]
@@ -284,7 +307,6 @@ export async function* reduceAsync<X, Y>(iterable: Iterable<X> | AsyncIterable<X
 
 export function filter<T extends Obj>(obj: T, predicate: Predicate<T[keyof T], keyof T>): Partial<T>
 export function filter<T extends Obj<V>, V, V1 extends V>(obj: T, predicate: TypeGuard<V, V1>): ExtractByType<T, V1>
-
 export function filter<X>(object: Obj<X>, predicate: Predicate<X, string>): Partial<Obj<X>>
 export function filter<X>(collection: Iterable<X>, predicate: Predicate<X, number>): Iterable<X>
 export function filter<X, X1 extends X>(collection: Iterable<X>, predicate: TypeGuard<X, X1>): Iterable<X1>
@@ -353,6 +375,23 @@ export function* unique<T>(iterable: Iterable<T>, projector?: Projector<T, Primi
 
 	}
 }
+export async function* uniqueAsync<T>(iterable: Iterable<T> | AsyncIterable<T>, projector?: ProjectorAsync<T, Primitive, void>): AsyncIterable<T> {
+	const seen = new globalThis.Set()
+
+	outer:
+	for await (const element of iterable) {
+		const elt = projector ? await projector(element) : element
+		if (seen.has(elt))
+			continue outer
+		else {
+			// eslint-disable-next-line fp/no-unused-expression
+			seen.add(elt)
+		}
+		// eslint-disable-next-line fp/no-unused-expression
+		yield element
+
+	}
+}
 
 export function* chunk<T>(iter: Iterable<T>, chunkSize: number): Iterable<T[]> {
 	// console.log(`\n\tStarting chunk()`)
@@ -369,10 +408,15 @@ export function* chunk<T>(iter: Iterable<T>, chunkSize: number): Iterable<T[]> {
 		yield* chunk(skip(iter, chunkSize), chunkSize)
 	}
 }
+export async function* chunkAsync<T>(iter: Iterable<T> | AsyncIterable<T>, chunkSize: number): AsyncIterable<T[]> {
+	const batch = [...(await toArrayAsync(takeAsync(iter, chunkSize)))]
+	if (batch.length > 0) {
+		yield batch
+		yield* chunkAsync(skipAsync(iter, chunkSize), chunkSize)
+	}
+}
 
-// eslint-disable-next-line fp/no-mutating-methods
 export function sort<T>(items: Iterable<T>, comparer?: Ranker<T>) { return [...items].sort(comparer) }
-// eslint-disable-next-line fp/no-mutating-methods
 export async function sortAsync<T>(data: Iterable<T> | AsyncIterable<T>, comparer?: Ranker<T> /*| RankerAsync<T>*/) { return (await toArrayAsync(data)).sort(comparer) }
 
 export function* flatten<X>(nestedIterable: Iterable<X>): Iterable<UnwrapNestedIterable<X>> {
@@ -557,7 +601,7 @@ export async function lastOrDefaultAsync<T>(data: AsyncIterable<T> | Iterable<T>
 }
 
 /**  */
-export function some<T>(iterable: Iterable<T>, predicate: Predicate<T>): boolean {
+export function some<T>(iterable: Iterable<T>, predicate: Predicate<T, number>): boolean {
 	for (const tuple of indexed(iterable)) {
 		if (predicate(tuple[1], tuple[0]) === true) return true
 	}
@@ -573,7 +617,7 @@ export async function someAsync<T>(iter: Iterable<T> | Generator<T> | AsyncItera
 }
 
 /**  */
-export function every<T>(iterable: Iterable<T>, predicate: Predicate<T>) {
+export function every<T>(iterable: Iterable<T>, predicate: Predicate<T, number>) {
 	for (const tuple of indexed(iterable)) {
 		if (predicate(tuple[1], tuple[0]) === false) return false
 	}

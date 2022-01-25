@@ -21,6 +21,7 @@ import {
 	some,
 	except,
 	complement,
+	indexed
 } from "./combinators"
 
 import {
@@ -160,8 +161,8 @@ export class Set<X> extends Sequence<X> {
 	/** Synonym of contains */
 	includes(value: X) { return this.contains(value) }
 
-	some(predicate: Predicate<X>): boolean { return some(this, predicate) }
-	every(predicate: Predicate<X>): boolean { return every(this, predicate) }
+	some(predicate: Predicate<X, number>): boolean { return some(this, predicate) }
+	every(predicate: Predicate<X, number>): boolean { return every(this, predicate) }
 
 	map<Y>(projector: Projector<X, Y>) { return new Set<Y>(map(this, projector)) }
 
@@ -177,11 +178,9 @@ export class Set<X> extends Sequence<X> {
 
 	equals(other: Set<X>) { return (this.size === other.size) && this.every(x => other.has(x)) }
 	static equals<T>(...collections: (Iterable<T> & Finite)[]) {
-		const _first = first(collections)
-		const size = "length" in _first ? _first.length : _first.size
-		return collections.every(c => ("length" in c ? c.length : c.size) === size && every(c, x => contains(collections[0], x)))
+		const firstSet = new Set(collections[0])
+		return new Array(collections).skip(1).every(st => new Set(st).equals(firstSet))
 	}
-
 
 	// eslint-disable-next-line fp/no-mutating-methods
 	sort(comparer?: Ranker<X>) { return this.ctor([...this].sort(comparer)) }
@@ -241,6 +240,12 @@ export class Array<X> extends Set<X> {
 		}
 	}
 
+	equals(other: Array<X>) { return (this.size === other.size) && this.every((x, index) => x === other.get(index)) }
+	static equals<T>(...collections: (Iterable<T> & Finite)[]) {
+		const firstArray = new Array(collections[0])
+		return new Array(collections).skip(1).every(collection => new Array(collection).equals(firstArray))
+	}
+
 	/** Get the indexes where a value occurs or a certain predicate/condition is met */
 	indexesOf(args: ({ value: X } | { predicate: Predicate<X> })) {
 		return 'value' in args
@@ -273,7 +278,6 @@ export class Array<X> extends Set<X> {
 		// eslint-disable-next-line fp/no-mutating-methods
 		return this.ctor([...this].splice(fromIndex, toIndex - fromIndex + 1))
 	}
-
 
 	/** Insert items into the array at specific index. It returns a new created array with the added items
 	 * @param index the index of the array at which insert the items

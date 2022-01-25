@@ -57,8 +57,14 @@ export function omit<T extends Obj, K extends keyof T>(obj: T, ..._keys: K[]): O
 }
 
 /** Return a shallow clone of an object literal */
-export function cloneShallow<T>(val: T): T {
+export function shallowClone<T>(val: T): T {
 	return Object.assign({}, val)
+}
+
+export function shallowEquals<T extends Obj>(a: T, b: T): boolean {
+	const keysA = keys(a)
+	const keysB = keys(b)
+	return keysA.length === keysB.length && keysA.every(k => a[k] === b[k])
 }
 
 /** Merge anything recursively. Objects get merged, special objects (classes etc.) are re-assigned "as is". Basic types overwrite objects or other basic types.
@@ -71,6 +77,7 @@ export function deepMerge<T1, T2>(a1: T1, a2: T2): Merge<T1, T2>
 export function deepMerge<T1, T2, T3>(a1: T1, a2: T2, a3: T3): Merge<T1, Merge<T2, T3>>
 export function deepMerge<T1, T2, T3, T4>(a1: T1, a2: T2, a3: T3, a4: T4): Merge<T1, Merge<T2, Merge<T3, T4>>>
 export function deepMerge<T1, T2, T3, T4, T5>(a1: T1, a2: T2, a3: T3, a4: T4, a5: T5): Merge<T1, Merge<T2, Merge<T3, Merge<T4, T5>>>>
+export function deepMerge<T1, T2, T3, T4, T5, T6>(a1: T1, a2: T2, a3: T3, a4: T4, a5: T5, a6: T6): Merge<T1, Merge<T2, Merge<T3, Merge<T4, Merge<T5, T6>>>>>
 export function deepMerge(...args: any[])/*: O.Compact<T, Tn, 'deep'>*/ {
 	function assignProp(carry: Obj, key: string, newVal: any, originalObject: Obj): void {
 		const propType = {}.propertyIsEnumerable.call(originalObject, key) ? 'enumerable' : 'nonenumerable'
