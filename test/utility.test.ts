@@ -1,3 +1,4 @@
+/* eslint-disable brace-style */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable camelcase */
@@ -82,6 +83,25 @@ describe("isArray", () => {
 		}
 	})
 
+})
+
+describe("isIterable", () => {
+	it("should return false for an object", () => {
+		assert.strictEqual(isIterable({
+			"/": (x: number) => true,
+			"/splash": (x: number) => x > 0,
+			"/dashboard": (x: number) => isNaN(x)
+		}), false)
+	})
+
+	it("should return true for an array", () => {
+		assert.strictEqual(isIterable([1, 4, 2]), true)
+
+	})
+
+	it("should return true for a generator", () => {
+		assert.strictEqual(isIterable((function* () { yield 1; yield 2 })()), true)
+	})
 })
 
 /*

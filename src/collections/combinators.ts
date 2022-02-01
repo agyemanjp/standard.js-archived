@@ -265,13 +265,16 @@ export async function* skipWhileAsync<T>(iterable: Iterable<T> | AsyncIterable<T
 
 export function map<X, Y>(collection: Obj<X>, projector: Projector<X, Y, string>): Obj<Y>
 export function map<X, Y>(collection: Iterable<X>, projector: Projector<X, Y, number>): Iterable<Y>
-export function* map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projector<X, Y, any>) {
-	if (isIterable(collection))
-		// yield* zip(integers({ from, direction: "upwards" }), items)
-		for (const tuple of indexed(collection)) {
-			yield projector(tuple[1], tuple[0])
-		}
+export function map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projector<X, Y, any>) {
+	if (isIterable(collection)) {
+		return (function* () {
+			for (const tuple of indexed(collection)) {
+				yield projector(tuple[1], tuple[0])
+			}
+		})()
+	}
 	else {
+		console.log(`Map(): Collection ${JSON.stringify(collection)} is not iterable`)
 		return objectFromTuples(entries(collection).map(kv =>
 			new Tuple(kv[0], projector(kv[1], kv[0])))
 		)
@@ -279,15 +282,17 @@ export function* map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projecto
 }
 
 export function mapAsync<X, Y>(collection: Obj<X>, projector: ProjectorAsync<X, Y, string>): Promise<Obj<Y>>
-export function mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X>, projector: ProjectorAsync<X, Y, number>): AsyncIterableIterator<Y>
-export async function* mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X> | Obj<X>, projector: ProjectorAsync<X, Y, any>): AsyncIterableIterator<Y> | Promise<Obj<Y>> {
+export function mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X>, projector: ProjectorAsync<X, Y, number>): AsyncIterable<Y>
+export function mapAsync<X, Y>(collection: Iterable<X> | AsyncIterable<X> | Obj<X>, projector: ProjectorAsync<X, Y, any>): Promise<Obj<Y>> | AsyncIterable<Y> {
 	if (isIterable(collection)) {
-		for await (const tuple of indexedAsync(collection)) {
-			yield projector(tuple[1], tuple[0])
-		}
+		return (async function* () {
+			for await (const tuple of indexedAsync(collection)) {
+				yield projector(tuple[1], tuple[0])
+			}
+		})()
 	}
 	else {
-		return objectFromTuplesAsync(mapAsync(entries(collection), async kv => new Tuple(kv[0], projector(kv[1], kv[0]))))
+		return objectFromTuplesAsync(mapAsync(entries(collection), async kv => new Tuple(kv[0], await projector(kv[1], kv[0]))))
 	}
 }
 

@@ -10,23 +10,8 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { flatten, chunk, take, skip, first, last, reduce } from "../dist/collections"
-
-describe("isIterable", () => {
-	// it("", () => {
-	// 	function f1(x) {
-	// 		if (isIterable(x)) {
-	// 			const iter = x[Symbol.iterator]()
-	// 		}
-	// 	}
-
-	// 	function f2(x: Iterable<number> | Promise<any> | string) {
-	// 		if (isIterable(x)) {
-	// 			const iter = x[Symbol.iterator]()
-	// 		}
-	// 	}
-	// })
-})
+import { map, flatten, chunk, take, skip, first, last, reduce, indexed } from "../dist/collections"
+import { noop, identity, constant, negate, flip, Projector } from "../dist/functional"
 
 describe('flatten()', function () {
 	it('should return a result that excludes empty arrays', function () {
@@ -49,13 +34,13 @@ describe('flatten()', function () {
 			"annotation_level": "warning"
 		}]
 
-		assert.deepEqual(actual, expected)
+		assert.deepStrictEqual(actual, expected)
 	})
 
 	it('should treat strings as primitives, not iterables', function () {
 		const actual = [...flatten([["annotation"], ["simplicity"]])]
 		const expected = ["annotation", "simplicity"]
-		assert.deepEqual(actual, expected)
+		assert.deepStrictEqual(actual, expected)
 	})
 
 	it('should be able to handle null or undefined elements inside input iterables', function () {
@@ -66,7 +51,7 @@ describe('flatten()', function () {
 			actual = [...flatten([["annotation"], [undefined, 1, null, [undefined]], ["simplicity"]])]
 		})
 		const expected = ["annotation", undefined, 1, null, undefined, "simplicity"]
-		assert.deepEqual(actual, expected)
+		assert.deepStrictEqual(actual, expected)
 	})
 
 	it('should be able to handle null or undefined elements among other input iterables', function () {
@@ -77,27 +62,27 @@ describe('flatten()', function () {
 			actual = [...flatten([["annotation"], null, undefined, ["simplicity"]])]
 		})
 		const expected = ["annotation", null, undefined, "simplicity"]
-		assert.deepEqual(actual, expected)
+		assert.deepStrictEqual(actual, expected)
 	})
 })
 
 describe('take()', function () {
 	it('should return array with length equal to the smaller of input array length and take count', function () {
-		assert.deepEqual([...take([10, 20, 30, 40], 7)], [10, 20, 30, 40])
-		assert.deepEqual([...take([10, 20, 30, 40], 2)], [10, 20])
+		assert.deepStrictEqual([...take([10, 20, 30, 40], 7)], [10, 20, 30, 40])
+		assert.deepStrictEqual([...take([10, 20, 30, 40], 2)], [10, 20])
 	})
 	it('should return empty array for an input empty array', function () {
-		assert.deepEqual([...take([], 7)], [])
+		assert.deepStrictEqual([...take([], 7)], [])
 	})
 	it('should return empty array for take count of 0', function () {
-		assert.deepEqual([...take([5, 2, 3, 1], 0)], [])
+		assert.deepStrictEqual([...take([5, 2, 3, 1], 0)], [])
 	})
 	it('should return empty array for negative take count', function () {
-		assert.deepEqual([...take([5, 2, 3, 1], -3)], [])
+		assert.deepStrictEqual([...take([5, 2, 3, 1], -3)], [])
 	})
 	it('should be idempotent for pure iterables', function () {
 		const arr = [10, 20, 99, 3, 30, 40]
-		assert.deepEqual([...take(arr, 4)], [...take(arr, 4)])
+		assert.deepStrictEqual([...take(arr, 4)], [...take(arr, 4)])
 	})
 })
 
@@ -204,7 +189,7 @@ describe('reduce()', function () {
 
 describe('chunk()', function () {
 	it('should return empty array when given empty array', function () {
-		assert.deepEqual([...chunk([], 50)], [])
+		assert.deepStrictEqual([...chunk([], 50)], [])
 	})
 	it('should return a one-element array for an input array of length less than chunk size', function () {
 		const actual = [...chunk([{
@@ -223,6 +208,30 @@ describe('chunk()', function () {
 			"annotation_level": "warning"
 		}]]
 
-		assert.deepEqual(actual, expected)
+		assert.deepStrictEqual(actual, expected)
+	})
+})
+
+describe('map()', function () {
+	it('should return empty array when given empty array', function () {
+		assert.deepStrictEqual([...map([], x => x)], [])
+	})
+
+
+	it('should work on objects', function () {
+		const obj = {
+			"/": (x: number) => true,
+			"/splash": (x: number) => x > 0,
+			"/dashboard": (x: number) => isNaN(x)
+		}
+		const actual = map(obj, (fn: any) => negate(fn))
+
+		assert(actual)
+		assert.strictEqual(Object.keys(actual).length, 3)
+		assert.deepStrictEqual(Object.keys(actual), ["/", "/splash", "/dashboard"])
+		assert(Object.values(actual).every(x => typeof x === "function"))
+		assert.strictEqual(Object.values(actual)[0](0), false)
+		assert.deepStrictEqual(map({ a: 'first', b: 32 }, (value, key) => `${key}-${value}`), { a: 'a-first', b: 'b-32' })
+		assert.deepStrictEqual(map({}, () => { }), {})
 	})
 })

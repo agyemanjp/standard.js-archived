@@ -5,6 +5,30 @@ import * as assert from "assert"
 import { pick, deepMerge, shallowEquals, omit, keys, entries, objectFromTuples } from "../dist/object"
 
 
+describe('objectFromTuples', () => {
+	it('should return an empty for an emtpy collection of tuples', () => {
+		assert.deepStrictEqual(objectFromTuples([]), {})
+	})
+
+	it('should return an object that matches input collection of tuples', () => {
+		const fn = (x: any) => x
+		assert.deepStrictEqual(
+			objectFromTuples<unknown, string>([["/", false], ["str", 'str'], ["num", 1], ['fn', fn]]),
+			{ "/": false, str: "str", num: 1, fn }
+		)
+
+		assert.deepStrictEqual(
+			objectFromTuples<unknown, string>([["num", 1], ['fn', fn], ["str", 'str']]),
+			{ num: 1, fn, str: "str" }
+		)
+
+		assert.deepStrictEqual(
+			objectFromTuples<unknown, string>([["x", true]]),
+			{ x: true }
+		)
+	})
+})
+
 describe('keys', () => {
 	it('should return a typed array of objects keys', () => {
 		// eslint-disable-next-line no-undef
@@ -24,41 +48,6 @@ describe('keys', () => {
 	// 	assert.throws(() => keys(value), 'object.keys argument must be a plain object')
 	// })
 })
-
-/*describe('mapObject', () => {
-	it('should return transformed object', () => {
-		const obj = { a: 'first', b: 32 }
-		const mapped = mapObject(obj, (value, key) => `${key}-${value}`)
-
-		assert.deepEqual(mapped, { a: 'a-first', b: 'b-32' })
-	})
-
-	it('should return empty object when given an empty object', () => {
-		const obj = {}
-		// const mapfn = jest.fn()
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		const mapped = mapObject(obj, () => { })
-
-		// assert.deepStrictEqual(mapfn).toHaveBeenCalledTimes(0)
-		assert.deepEqual(mapped, {})
-	})
-})
-
-describe('filterObject', () => {
-	it('should remove fields not matching predicate', () => {
-		const obj = { a: 'first', b: 2, c: 'third' }
-		const result = filterObject(obj, ((field, key) => `${key}-${field}` !== 'b-2'))
-		assert.deepEqual(result, { a: 'first', c: 'third' })
-	})
-
-	it('should remove fields not matching guard and cast values that match using the guard', () => {
-		//const obj = { a: 'first', b: 2, c: 'third' }
-		//const isString = (value) => typeof value === 'string'
-		//const result = filterObject(obj, isString)
-		//assert.deepEqual(result, { a: 'first', c: 'third', })
-	})
-})
-*/
 
 describe('pick', () => {
 	const obj = { a: 'first', b: 2, c: 'third' }
@@ -234,3 +223,20 @@ describe('equalsShallow', () => {
 		assert(shallowEquals({ str: "hello" }, { str: "hello" }))
 	})
 })
+
+
+/*describe('filterObject', () => {
+	it('should remove fields not matching predicate', () => {
+		const obj = { a: 'first', b: 2, c: 'third' }
+		const result = filterObject(obj, ((field, key) => `${key}-${field}` !== 'b-2'))
+		assert.deepEqual(result, { a: 'first', c: 'third' })
+	})
+
+	it('should remove fields not matching guard and cast values that match using the guard', () => {
+		//const obj = { a: 'first', b: 2, c: 'third' }
+		//const isString = (value) => typeof value === 'string'
+		//const result = filterObject(obj, isString)
+		//assert.deepEqual(result, { a: 'first', c: 'third', })
+	})
+})
+*/
