@@ -99,16 +99,19 @@ export function objectCurry<X extends Obj, Y>(fn: (x: X) => Y) {
  * @param tryNumeric (default: false) Output ranker function will attempt to compare string arguments as numbers
  * @param tryDate (default: false) Output ranker function will attempt to compare arguments as dates.
  */
-export function ranker<T, Y = unknown>(args: { proj: Projector<T, Y, void>, tryNumeric?: boolean, tryDate?: boolean, reverse?: boolean }): Ranker<T> {
+export function createRanker<T, Y = unknown>(projector: Projector<T, Y, void>, args?:
+	{
+		tryNumeric?: boolean, tryDate?: boolean, reverse?: boolean
+	}): Ranker<T> {
 	return (x: T, y: T) => {
-		return compare(x, y, args.proj, args.tryNumeric, args.tryDate) * (args.reverse === true ? -1 : 1) as -1 | 0 | 1
+		return compare(x, y, projector, args?.tryNumeric, args?.tryDate) * (args?.reverse === true ? -1 : 1) as -1 | 0 | 1
 	}
 }
 /** Transforms input projector function into a comparer function (that determines whether two values are equal)
  * @param tryNumeric (default: false) Output ranker function will attempt to compare string arguments as numbers
  * @param tryDate (default: false) Output ranker function will attempt to compare arguments as dates.
  */
-export function comparer<T, Y = unknown>(projector: Projector<T, Y, void>, tryNumeric = false, tryDate = false): Comparer<T> {
+export function createComparer<T, Y = unknown>(projector: Projector<T, Y, void>, tryNumeric = false, tryDate = false): Comparer<T> {
 	return (x: T, y: T) => {
 		return compare(x, y, projector, tryNumeric, tryDate) === 0
 	}
@@ -186,7 +189,6 @@ export function compare<T, Y = unknown>(a: T, b: T, projector?: Projector<T, Y, 
 
 	}
 }
-
 
 
 /* https://github.com/caderek/arrows/blob/master/packages/composition/src/curry.ts */

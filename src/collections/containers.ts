@@ -1,10 +1,20 @@
+/* eslint-disable fp/no-mutating-methods */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-unused-expression */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable fp/no-class */
 
+/* eslint-disable fp/no-mutation */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable indent */
+/* eslint-disable fp/no-loops */
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable brace-style */
+
 import {
+	zip,
 	contains,
 	unique,
 	take, takeWhile,
@@ -27,12 +37,20 @@ import {
 import {
 	min,
 	max,
-	sum
+	sum,
+	mean,
+	deviation
 } from "../stats"
 
-import { Ranker, Predicate, Projector, Reducer } from "../functional"
-import { Tuple } from "../utility"
-import { IndexedAccess, Container, Finite } from "./types"
+import { Ranker, Predicate, Projector, Reducer, createRanker } from "../functional"
+import { Tuple, Obj, Primitive, hasValue } from "../utility"
+import {
+	IndexedAccess, Container, Finite,
+	PagingOptions, SortOptions, FilterOptions,
+	TableFilter, FilterGroup, SortOrder
+} from "./types"
+
+
 
 /** Lazy collection of elements accessed sequentially, not known in advance */
 export class Sequence<X> implements Iterable<X> {
@@ -395,4 +413,240 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 			: this.entries().filter(kv => args.predicate(kv[1], kv[0]) === true).map(kv => kv[0])
 	}
 }
+
+/** Provides functionality for manipulating data table in memory */
+export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
+	protected readonly ROW_NUM_COL_NAME: string
+	protected readonly _idVector: number[]
+	protected readonly _colVectors: Dictionary<Record<keyof T, T[keyof T][]>>
+
+	/** Contruct from a collection of objects
+	 * @param rowObjects Iterable collection of row object literals
+	 * @param idVector 
+	 */
+	constructor(rowObjects: Iterable<T>, idVector?: Iterable<number>, rowNumColName?: string)
+
+	/** Construct from an object literal of columns
+	 * @param columnVectors
+	 * @param idVector 
+	 */
+	constructor(columnVectors: Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>, rowNumColName?: string)
+
+	/** Actual implementation of constructor variants
+	 * @param source Either rows or columns as defined above
+	 * @param idVector Optional vector of row indexes indicating which which rows are part of this data table
+	 */
+	constructor(source: Iterable<T> | Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>, rowNumColName = "rowNum") {
+		// eslint-disable-next-line fp/no-mutation, @typescript-eslint/no-explicit-any
+		this._colVectors = (typeof (source as any)[Symbol.iterator] === "function")
+			? new Dictionary(DataTable.rowsToColumns(source as Iterable<T>))
+			: new Dictionary(source as Record<keyof T, T[keyof T][]>)
+
+		// eslint-disable-next-line fp/no-mutation
+		this._idVector = idVector
+			? [...idVector]
+			: this._colVectors.size > 0
+				? [...globalThis.Array([...this._colVectors][0][1].length).keys()]
+				: []
+
+		// eslint-disable-next-line fp/no-unused-expression
+		// console.log(`\nDataTable took ${new Date().getTime() - start}ms to instantiate`)
+		this.ROW_NUM_COL_NAME = rowNumColName
+	}
+
+	static fromColumns<X extends Obj = Obj>(columnVectors: Record<keyof X, X[keyof X][]>, idVector?: Iterable<number>) {
+		return new DataTable(columnVectors, idVector)
+	}
+	static fromRows<X extends Obj = Obj>(rowObjects: Iterable<X>, idVector?: Iterable<number>) {
+		return new DataTable(rowObjects, idVector)
+	}
+
+	get idVector() { return this._idVector }
+
+	/** Columns vectors excluding row ids vector */
+	get columnVectors() { return this._colVectors }
+
+	/** Return data as an iterable of rows that includes a sequential row number property */
+	get rowObjects(): Iterable<T> {
+		return (function* (me): IterableIterator<T> {
+			for (const originalRowNum of me._idVector) {
+				const row = {
+					...me._colVectors.map(vector => vector[originalRowNum]).asObject() as any as T
+				}
+				yield row
+			}
+		})(this)
+	}
+	get rowObjectsNumbered(): Iterable<T & { origRowNum: number, sequentialRowNum: number }> {
+		return (function* (me): IterableIterator<T & { origRowNum: number, sequentialRowNum: number }> {
+			for (const rowNumInfo of zip(Sequence.integers({ from: 0, to: me.length - 1 }), me._idVector)) {
+				const [sequentialRowNum, originalRowNum] = rowNumInfo
+
+				const row: T & { origRowNum: number, sequentialRowNum: number } = {
+					origRowNum: originalRowNum,
+					sequentialRowNum: sequentialRowNum + 1,
+					...me._colVectors.map(vector => vector[originalRowNum]).asObject() as any as T
+				}
+
+				yield row
+			}
+		})(this)
+	}
+
+	get length() { return this._idVector.length }
+	get originalLength() { return this._colVectors.get(this._colVectors.keys()[0])?.length || 0 }
+
+	/** Return a new data table that excludes data disallowed by the passed filters */
+	filter(args: { filter?: Predicate<T, void> | TableFilter | FilterGroup, options?: FilterOptions }): DataTable<T> {
+
+		const shouldRetain = (row: T, _filter: Predicate<T, void> | TableFilter | FilterGroup): boolean => {
+			if ("filters" in _filter) {
+				switch (_filter.combinator) {
+					case undefined:
+					case "AND": return _filter.filters.every(f => shouldRetain(row, f))
+					case "OR": return _filter.filters.some(f => shouldRetain(row, f))
+					default: {
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						const _: never = _filter.combinator
+						throw new Error(`Unknown filter group combinator: ${_filter.combinator}`)
+					}
+				}
+			}
+			else if ("fieldName" in _filter) {
+				// eslint-disable-next-line fp/no-let
+				let averageAndDev: { average: number, std: number } = { average: 0, std: 0 }
+				if (_filter.operator === "is_outlier_by") {
+					const originalIdVector = this.idVector
+					const colVector: unknown[] | undefined = _filter.fieldName === "rowId"
+						? originalIdVector
+						: this._colVectors.get(_filter.fieldName as keyof T)
+					if (colVector === undefined) {
+						throw new Error(`Trying to apply a filter on column ${_filter.fieldName}, but no such column in the dataTable`)
+					}
+					const vector: number[] = colVector.filter(v => v !== undefined).map(val => Number.parseFloat(String(val)))
+					const columnMean = mean(vector)
+					const stdv = deviation(vector, { mean: columnMean, forSample: true })
+					if (columnMean === undefined) { throw new Error("Undefined mean, cannot filter by standard deviation") }
+					if (stdv === undefined) { throw new Error("Undefined std dev, cannot filter by standard deviation") }
+
+					averageAndDev = {
+						average: columnMean,
+						std: stdv
+					}
+				}
+
+				const _test = _filter.negated ? false : true
+				const _val = row[_filter.fieldName as keyof T]
+
+				switch (_filter.operator) {
+					case "equal":
+						return (_val == _filter.value) === _test
+					case "not_equal":
+						return (_val != _filter.value) === _test
+					case "greater":
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						return (parseFloat(String(_val)) > parseFloat(_filter.value as any)) === _test
+					case "greater_or_equal":
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						return (parseFloat(String(_val)) >= parseFloat(_filter.value as any)) === _test
+					case "less":
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						return (parseFloat(String(_val)) < parseFloat(_filter.value as any)) === _test
+					case "less_or_equal":
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						return (parseFloat(String(_val)) <= parseFloat(_filter.value as any)) === _test
+					case "is_outlier_by": {
+						const belowMin = parseFloat(String(_val)) < averageAndDev.average - parseFloat(_filter.value as any) * averageAndDev.std
+						const aboveMax = parseFloat(String(_val)) > averageAndDev.average + parseFloat(_filter.value as any) * averageAndDev.std
+						return (belowMin || aboveMax) === _test
+					}
+					case "contains":
+						return (hasValue(_val) && String(_val).indexOf(_filter.value) >= 0) === _test
+					case "is-contained":
+						return (hasValue(_val) && _filter.value.indexOf(String(_val)) >= 0) === _test
+					case "starts_with":
+						return (_val !== undefined && _val !== null && String(_val).startsWith(_filter.value)) === _test
+					case "ends_with":
+						return (_val !== undefined && _val !== null && String(_val).endsWith(_filter.value)) === _test
+					case "blank":
+						return _val === undefined || _val === null === _test
+
+					default: {
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						throw new Error(`Unknown filter operator: ${(_filter as any).operator}`)
+					}
+				}
+			}
+			else {
+				return _filter(row)
+			}
+		}
+
+		const effectiveIdVector = args.options?.scope === "original"
+			? Sequence.integers({ from: 0, to: this.originalLength - 1 })
+			: this._idVector
+		const idColumnVectorFiltered = effectiveIdVector.filter(rowNum => {
+			if (args.filter === undefined) return true
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const row = this._colVectors.map(v => v[rowNum]).asObject() as any as T
+			return shouldRetain(row, args.filter)
+		})
+
+		return new DataTable<T>(this._colVectors.asObject(), idColumnVectorFiltered)
+	}
+
+	sort(args: { columnName: /*typeof this.ROW_NUM_COL_NAME |*/ keyof T, order: SortOrder, options?: SortOptions }) {
+		if (args.columnName !== this.ROW_NUM_COL_NAME && this._colVectors.get(args.columnName) === undefined)
+			throw new Error(`Unknown column ${args.columnName}`)
+
+		const idColumnVectorSorted = [...this._idVector].sort(
+			createRanker<number>(rowNum => args.columnName === this.ROW_NUM_COL_NAME
+				? rowNum
+				: this._colVectors.get(args.columnName)![rowNum],
+				{
+					tryNumeric: args.options?.tryNumericSort ?? true,
+					reverse: args.order === "descending"
+				}
+			)
+		)
+
+		return new DataTable<T>(this._colVectors.asObject(), idColumnVectorSorted)
+	}
+
+	page(args: { size: number, index: number, options?: PagingOptions }) {
+		const effectiveIdVector = args.options?.scope === "original"
+			? [...Sequence.integers({ from: 0, to: this.originalLength - 1 })]
+			: this._idVector
+
+		const idColumnVectorPaged = effectiveIdVector.slice(args.index * args.size, (args.index + 1) * args.size)
+		return new DataTable<T>(this._colVectors.asObject(), idColumnVectorPaged)
+	}
+
+	map<Y>(projector: Projector<T[keyof T], Y>) {
+		return new DataTable(this._colVectors.map(vector => vector.map(projector)).asObject()) as DataTable<Obj<Y>>
+	}
+
+	static rowsToColumns = <X extends Obj = Record<string, Primitive>>(rows: Iterable<X>) => {
+		const srcArray = [...rows as Iterable<X>]
+		const columnVectors = {} as Record<keyof X, X[keyof X][]>
+		// eslint-disable-next-line fp/no-unused-expression
+		srcArray.forEach((row, index) => {
+			const rowKeys = new Dictionary(row).keys()
+			if (rowKeys.some(key => hasValue(row[key]))) { // ensure row is not empty
+				// eslint-disable-next-line fp/no-unused-expression
+				rowKeys.forEach(colName => {
+					if (!columnVectors[colName])
+						// eslint-disable-next-line fp/no-mutation
+						columnVectors[colName] = new globalThis.Array(srcArray.length).fill(undefined)
+					// eslint-disable-next-line fp/no-mutation
+					columnVectors[colName][index] = row[colName]
+				})
+			}
+		})
+		return columnVectors
+	}
+}
+
+
 
