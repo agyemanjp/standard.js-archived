@@ -2,6 +2,7 @@
 import { Obj } from "../utility"
 import { trimRight } from "../text"
 
+/** MIME content types */
 export const MIME_TYPES = Object.freeze({
 	Url: "x-www-form-urlencoded",
 	Json: "application/json",
@@ -12,7 +13,7 @@ export const MIME_TYPES = Object.freeze({
 	Text: "text/plain"
 })
 
-/** Hypertext Transfer Protocol (HTTP) response status codes.
+/** HTTP response status codes.
  * @see {@link https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}
  */
 export const HTTP_STATUS_CODES = Object.freeze({
@@ -328,15 +329,45 @@ export const HTTP_STATUS_CODES = Object.freeze({
 	NETWORK_AUTHENTICATION_REQUIRED: 511
 })
 
+/** HTTP methods */
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
+export async function getAsync(args: RequestArgs): Promise<Response>
+export async function getAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function getAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _({ ...args, method: "GET" }, responseHandler)
+}
 
-async function _(url: string, opts: RequestArgs & { method: Method }): Promise<Response>
-async function _<T>(url: string, opts: RequestArgs & { method: Method }, responseHandler: (r: Response) => T): Promise<T>
-async function _<T>(url: string, opts: RequestArgs & { method: Method }, responseHandler: (r: Response) => T = r => r as any) {
+export async function postAsync(args: RequestArgs): Promise<Response>
+export async function postAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function postAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _({ ...args, method: "POST" }, responseHandler)
+}
+
+export async function putAsync(args: RequestArgs): Promise<Response>
+export async function putAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function putAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _({ ...args, method: "PUT" }, responseHandler)
+}
+
+export async function patchAsync(args: RequestArgs): Promise<Response>
+export async function patchAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function patchAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _({ ...args, method: "PATCH" }, responseHandler)
+}
+
+export async function deleteAsync(args: RequestArgs): Promise<Response>
+export async function deleteAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function deleteAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _({ ...args, method: "DELETE" }, responseHandler)
+}
+
+async function _(args: RequestArgs & { method: Method }): Promise<Response>
+async function _<T>(args: RequestArgs & { method: Method }, responseHandler: (r: Response) => T): Promise<T>
+async function _<T>(args: RequestArgs & { method: Method }, responseHandler: (r: Response) => T = r => r as any) {
 	return new Promise((resolve, reject) => {
-		const queryParams = opts?.query ? `?${queryString(opts.query)}` : "";
-		(opts.customFetch ?? fetch)(`${trimRight(url, "/")}${queryParams}`, opts)
+		const queryParams = args?.query ? `?${queryString(args.query)}` : "";
+		(args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
 			.then(response => {
 				if (!response.status.toString().startsWith("2")) {
 					reject(new Error(`${response.statusText}\n${response.body}`))
@@ -344,36 +375,6 @@ async function _<T>(url: string, opts: RequestArgs & { method: Method }, respons
 				resolve(responseHandler(response))
 			})
 	})
-}
-
-export async function getAsync(url: string, opts: RequestArgs): Promise<Response>
-export async function getAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function getAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _(url, { ...opts, method: "GET" }, responseHandler)
-}
-
-export async function postAsync(url: string, opts: RequestArgs): Promise<Response>
-export async function postAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function postAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _(url, { ...opts, method: "POST" }, responseHandler)
-}
-
-export async function putAsync(url: string, opts: RequestArgs): Promise<Response>
-export async function putAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function putAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _(url, { ...opts, method: "PUT" }, responseHandler)
-}
-
-export async function patchAsync(url: string, opts: RequestArgs): Promise<Response>
-export async function patchAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function patchAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _(url, { ...opts, method: "PATCH" }, responseHandler)
-}
-
-export async function deleteAsync(url: string, opts: RequestArgs): Promise<Response>
-export async function deleteAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function deleteAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _(url, { ...opts, method: "DELETE" }, responseHandler)
 }
 
 /** Generate query string from query object */
@@ -384,24 +385,25 @@ export function queryString<T extends Obj<string> = Obj<string>>(obj: T, exclude
 		.join("&")
 }
 
-type RequestArgs = Omit<RequestInit, "method"> & {
+export type RequestArgs = Omit<RequestInit, "method"> & {
+	url: string,
 	query?: Obj<string>,
 	customFetch?: typeof fetch
 }
 
-type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
-export interface Json { [x: string]: string | number | boolean | Date | Json | JsonArray }
-export interface EncodedUrlData { type: "url", body: Obj<string> }
-export interface JSONData { type: "json", body: Json }
-export interface TextData { type: "text", body: string }
-export interface RawData { type: "raw", body: Uint8Array[] }
-export interface StreamData { type: "stream", body: NodeJS.ReadableStream }
-export interface FileData { type: "file", name: string, body: NodeJS.ReadableStream }
-export interface BufferData { type: "buffer", body: Buffer }
-export type BasicRequestData = EncodedUrlData | JSONData | RawData | StreamData | BufferData | FileData | TextData
+// type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
+// export interface Json { [x: string]: string | number | boolean | Date | Json | JsonArray }
+// export interface EncodedUrlData { type: "url", body: Obj<string> }
+// export interface JSONData { type: "json", body: Json }
+// export interface TextData { type: "text", body: string }
+// export interface RawData { type: "raw", body: Uint8Array[] }
+// export interface StreamData { type: "stream", body: NodeJS.ReadableStream }
+// export interface FileData { type: "file", name: string, body: NodeJS.ReadableStream }
+// export interface BufferData { type: "buffer", body: Buffer }
+// export type BasicRequestData = EncodedUrlData | JSONData | RawData | StreamData | BufferData | FileData | TextData
 
-export interface MultiPartFormData { type: "multi", body: Obj<unknown> }
-export interface MultiPartRelatedData { type: "related", body: BasicRequestData[] }
-export interface ChunkedMultiPartRelatedData { chunked: true, type: "multi-related-chunked", body: RawData[] }
+// export interface MultiPartFormData { type: "multi", body: Obj<unknown> }
+// export interface MultiPartRelatedData { type: "related", body: BasicRequestData[] }
+// export interface ChunkedMultiPartRelatedData { chunked: true, type: "multi-related-chunked", body: RawData[] }
 
-export type RequestData = BasicRequestData | MultiPartFormData | MultiPartRelatedData
+// export type RequestData = BasicRequestData | MultiPartFormData | MultiPartRelatedData
