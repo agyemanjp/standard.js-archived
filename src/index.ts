@@ -8,4 +8,5 @@ export * from "./text"
 export * from "./utility"
 export * from "./object"
 export * from "./stats"
+export * from "./web"
 
