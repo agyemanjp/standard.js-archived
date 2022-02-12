@@ -328,22 +328,13 @@ export const HTTP_STATUS_CODES = Object.freeze({
 	NETWORK_AUTHENTICATION_REQUIRED: 511
 })
 
-/** Generate query string from query object */
-export function queryString<T extends Obj<string> = Obj<string>>(obj: T, excludedValues: unknown[] = [undefined, null]) {
-	return Object.keys(obj)
-		.filter(k => /*obj.hasOwnProperty(k) &&*/ !excludedValues.includes(obj[k]))
-		.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`)
-		.join("&")
-}
+export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
-type RequestArgs = RequestInit & {
-	query?: Obj<string>,
-	customFetch?: typeof fetch
-}
-export async function fetchAsync<T = Response>(url: string, opts: RequestArgs): Promise<Response>
-export async function fetchAsync<T = Response>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function fetchAsync<T = Response>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return new Promise<typeof responseHandler extends undefined ? Response : T>((resolve, reject) => {
+
+async function _(url: string, opts: RequestArgs & { method: Method }): Promise<Response>
+async function _<T>(url: string, opts: RequestArgs & { method: Method }, responseHandler: (r: Response) => T): Promise<T>
+async function _<T>(url: string, opts: RequestArgs & { method: Method }, responseHandler: (r: Response) => T = r => r as any) {
+	return new Promise((resolve, reject) => {
 		const queryParams = opts?.query ? `?${queryString(opts.query)}` : "";
 		(opts.customFetch ?? fetch)(`${trimRight(url, "/")}${queryParams}`, opts)
 			.then(response => {
@@ -355,6 +346,48 @@ export async function fetchAsync<T = Response>(url: string, opts: RequestArgs, r
 	})
 }
 
+export async function getAsync(url: string, opts: RequestArgs): Promise<Response>
+export async function getAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function getAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _(url, { ...opts, method: "GET" }, responseHandler)
+}
+
+export async function postAsync(url: string, opts: RequestArgs): Promise<Response>
+export async function postAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function postAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _(url, { ...opts, method: "POST" }, responseHandler)
+}
+
+export async function putAsync(url: string, opts: RequestArgs): Promise<Response>
+export async function putAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function putAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _(url, { ...opts, method: "PUT" }, responseHandler)
+}
+
+export async function patchAsync(url: string, opts: RequestArgs): Promise<Response>
+export async function patchAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function patchAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _(url, { ...opts, method: "PATCH" }, responseHandler)
+}
+
+export async function deleteAsync(url: string, opts: RequestArgs): Promise<Response>
+export async function deleteAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
+export async function deleteAsync<T>(url: string, opts: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
+	return _(url, { ...opts, method: "DELETE" }, responseHandler)
+}
+
+/** Generate query string from query object */
+export function queryString<T extends Obj<string> = Obj<string>>(obj: T, excludedValues: unknown[] = [undefined, null]) {
+	return Object.keys(obj)
+		.filter(k => /*obj.hasOwnProperty(k) &&*/ !excludedValues.includes(obj[k]))
+		.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`)
+		.join("&")
+}
+
+type RequestArgs = Omit<RequestInit, "method"> & {
+	query?: Obj<string>,
+	customFetch?: typeof fetch
+}
 
 type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
 export interface Json { [x: string]: string | number | boolean | Date | Json | JsonArray }
