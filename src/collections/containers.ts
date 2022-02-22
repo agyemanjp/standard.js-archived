@@ -47,7 +47,7 @@ import { Tuple, Obj, Primitive, hasValue } from "../utility"
 import {
 	IndexedAccess, Container, Finite,
 	PagingOptions, SortOptions, FilterOptions,
-	TableFilter, FilterGroup, SortOrder
+	Filter, FilterGroup, SortOrder
 } from "./types"
 
 
@@ -497,9 +497,9 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 	get originalLength() { return this._colVectors.get(this._colVectors.keys()[0])?.length || 0 }
 
 	/** Return a new data table that excludes data disallowed by the passed filters */
-	filter(args: { filter?: Predicate<T, void> | TableFilter | FilterGroup, options?: FilterOptions }): DataTable<T> {
+	filter(args: { filter?: Predicate<T, void> | Filter<T> | FilterGroup<T>, options?: FilterOptions }): DataTable<T> {
 
-		const shouldRetain = (row: T, _filter: Predicate<T, void> | TableFilter | FilterGroup): boolean => {
+		const shouldRetain = (row: T, _filter: Predicate<T, void> | Filter<T> | FilterGroup<T>): boolean => {
 			if ("filters" in _filter) {
 				switch (_filter.combinator) {
 					case undefined:

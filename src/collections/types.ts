@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Predicate, PredicateAsync } from "../functional"
 import { Obj, ExtractByType, Primitive } from "../utility"
 
@@ -49,12 +50,6 @@ export type ZipAsync<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] 
 export type AsyncOptions = ({ mode: "parallel", resultOrder: "completion" | "original" } | { mode: "serial" })
 
 
-export type TableFilter = {
-	fieldName: string,
-	operator: Filter["operator"],
-	value: any,
-	negated?: boolean
-}
 export type FilterBase<TObj extends Obj = Obj, TVal = any> = {
 	fieldName: keyof (ExtractByType<TObj, TVal>),
 	value: TVal,
@@ -71,18 +66,31 @@ export type FilterTextual<T extends Obj> = FilterBase<T, string> & {
 }
 export type FilterStatistical<T extends Obj> = FilterBase<T, number> & {
 	operator: "is_outlier_by" | "blank", // number of std. deviations (possibly fractional)
-
 }
+
 export type Filter<T extends Obj = Obj> = (
 	| FilterCategorical<T>
 	| FilterOrdinal<T>
 	| FilterTextual<T>
 	| FilterStatistical<T>
 )
-export type FilterGroup = {
-	filters: Array<TableFilter | FilterGroup>
+export type FilterGroup<T extends Obj = Obj> = {
+	filters: Array<Filter<T> | FilterGroup<T>>
 	combinator?: "AND" | "OR"
 }
+
+export type FilterSimple = {
+	fieldName: string,
+	operator: Filter["operator"],
+	value: any,
+	negated?: boolean
+}
+export type FilterGroupSimple = {
+	filters: Array<FilterSimple | FilterGroupSimple>
+	combinator?: "AND" | "OR"
+}
+
+
 export type SortOrder = "ascending" | "descending" | "none"
 export interface SortOptions {
 	tryNumericSort: boolean
