@@ -90,6 +90,7 @@ export type FilterGroupSimple = {
 	combinator?: "AND" | "OR"
 }
 
+export type ColumnarData<T extends Obj = Obj> = { [k in keyof T]: globalThis.Array<T[k]> }
 
 export type SortOrder = "ascending" | "descending" | "none"
 export interface SortOptions {

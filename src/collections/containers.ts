@@ -1,3 +1,4 @@
+/* eslint-disable fp/no-rest-parameters */
 /* eslint-disable fp/no-mutating-methods */
 /* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable brace-style */
@@ -15,7 +16,6 @@
 
 import {
 	zip,
-	contains,
 	unique,
 	take, takeWhile,
 	skip, skipWhile,
@@ -30,8 +30,7 @@ import {
 	union,
 	some,
 	except,
-	complement,
-	indexed
+	complement
 } from "./combinators"
 
 import {
@@ -43,11 +42,12 @@ import {
 } from "../stats"
 
 import { Ranker, Predicate, Projector, Reducer, createRanker } from "../functional"
-import { Tuple, Obj, Primitive, hasValue } from "../utility"
+import { Tuple, Obj, isIterable, hasValue } from "../utility"
 import {
-	IndexedAccess, Container, Finite,
+	Finite,
 	PagingOptions, SortOptions, FilterOptions,
-	Filter, FilterGroup, SortOrder
+	Filter, FilterGroup, SortOrder,
+	ColumnarData
 } from "./types"
 
 
@@ -399,7 +399,13 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 		return this.entries().reduce((prev, curr) => reducer(prev, curr[1], curr[0]), initial)
 	}
 
-	get(selector: keyof T): T[keyof T] | undefined { return this.obj[selector] }
+	get(selector: keyof T): T[keyof T] {
+		if ([null, undefined].includes(this.obj[selector] as any))
+			throw new Error()
+		else
+			return this.obj[selector]
+	}
+	tryGet(selector: keyof T): T[keyof T] | undefined { return this.obj[selector] }
 	getAll(selector: Iterable<keyof T>): Iterable<T[keyof T] | undefined> { return map(selector, index => this.obj[index]) }
 
 	set(key: keyof T, value: T[keyof T]) {
@@ -418,7 +424,7 @@ export class Dictionary<T extends Record<string, unknown>> implements Iterable<T
 export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 	protected readonly ROW_NUM_COL_NAME: string
 	protected readonly _idVector: number[]
-	protected readonly _colVectors: Dictionary<Record<keyof T, T[keyof T][]>>
+	protected readonly _colVectors: Dictionary<ColumnarData<T>>
 
 	/** Contruct from a collection of objects
 	 * @param rowObjects Iterable collection of row object literals
@@ -430,17 +436,17 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 	 * @param columnVectors
 	 * @param idVector 
 	 */
-	constructor(columnVectors: Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>, rowNumColName?: string)
+	constructor(columnVectors: ColumnarData<T>, idVector?: Iterable<number>, rowNumColName?: string)
 
 	/** Actual implementation of constructor variants
 	 * @param source Either rows or columns as defined above
 	 * @param idVector Optional vector of row indexes indicating which which rows are part of this data table
 	 */
-	constructor(source: Iterable<T> | Record<keyof T, T[keyof T][]>, idVector?: Iterable<number>, rowNumColName = "rowNum") {
+	constructor(source: Iterable<T> | ColumnarData<T>, idVector?: Iterable<number>, rowNumColName = "rowNum") {
 		// eslint-disable-next-line fp/no-mutation, @typescript-eslint/no-explicit-any
-		this._colVectors = (typeof (source as any)[Symbol.iterator] === "function")
-			? new Dictionary(DataTable.rowsToColumns(source as Iterable<T>))
-			: new Dictionary(source as Record<keyof T, T[keyof T][]>)
+		this._colVectors = isIterable(source)
+			? new Dictionary(DataTable.rowsToColumns(source))
+			: new Dictionary(source)
 
 		// eslint-disable-next-line fp/no-mutation
 		this._idVector = idVector
@@ -454,7 +460,7 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 		this.ROW_NUM_COL_NAME = rowNumColName
 	}
 
-	static fromColumns<X extends Obj = Obj>(columnVectors: Record<keyof X, X[keyof X][]>, idVector?: Iterable<number>) {
+	static fromColumns<X extends Obj = Obj>(columnVectors: ColumnarData<X>, idVector?: Iterable<number>) {
 		return new DataTable(columnVectors, idVector)
 	}
 	static fromRows<X extends Obj = Obj>(rowObjects: Iterable<X>, idVector?: Iterable<number>) {
@@ -603,7 +609,7 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 		const idColumnVectorSorted = [...this._idVector].sort(
 			createRanker<number>(rowNum => args.columnName === this.ROW_NUM_COL_NAME
 				? rowNum
-				: this._colVectors.get(args.columnName)![rowNum],
+				: this._colVectors.get(args.columnName)[rowNum],
 				{
 					tryNumeric: args.options?.tryNumericSort ?? true,
 					reverse: args.order === "descending"
@@ -627,9 +633,9 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 		return new DataTable(this._colVectors.map(vector => vector.map(projector)).asObject()) as DataTable<Obj<Y>>
 	}
 
-	static rowsToColumns = <X extends Obj = Record<string, Primitive>>(rows: Iterable<X>) => {
+	static rowsToColumns = <X extends Obj = Obj>(rows: Iterable<X>): ColumnarData<X> => {
 		const srcArray = [...rows as Iterable<X>]
-		const columnVectors = {} as Record<keyof X, X[keyof X][]>
+		const columnVectors = {} as ColumnarData<X>
 		// eslint-disable-next-line fp/no-unused-expression
 		srcArray.forEach((row, index) => {
 			const rowKeys = new Dictionary(row).keys()
@@ -647,6 +653,5 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 		return columnVectors
 	}
 }
-
 
 
