@@ -224,7 +224,7 @@ export class String extends global.String {
 
 	toTitleCase = this.wrap(toTitleCase)
 	toSnakeCase = this.wrap(toSnakeCase)
-	toCamelCase = this.wrap(toCamelCase)
+	toCamelCase = this.wrap(toCamelCase as (s: string) => string)
 	toSpace = this.wrap(toSpaces)
 
 	/** Truncate this string by removing a specified number of characters from the end */
