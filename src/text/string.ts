@@ -12,6 +12,7 @@
 /* eslint-disable fp/no-mutation */
 /* eslint-disable fp/no-loops */
 
+import { ToCamel } from "../utility"
 import * as char from "./char"
 
 const whitespaceChars = ["\n", "\t", "\v", "\r"]
@@ -99,7 +100,7 @@ export const isLowerCase = (str: string) => str.toLowerCase() === str.valueOf()
 export const capitalize = (str: string) => str[0].toUpperCase() + str.substring(1).toLowerCase()
 export const toSnakeCase = (str: string) => [...tokenizeWords(str)].map(token => token.toLowerCase()).join("_")
 export const toDashCase = (str: string) => [...tokenizeWords(str)].map(token => token.toLowerCase()).join("-")
-export const toCamelCase = (str: string) => [...tokenizeWords(str)].map((word, index) => index > 0 ? capitalize(word) : word.toLowerCase()).join("")
+export const toCamelCase = <S extends string = string>(str: S) => [...tokenizeWords(str)].map((word, index) => index > 0 ? capitalize(word) : word.toLowerCase()).join("") as ToCamel<S>
 export const toTitleCase = (str: string) => [...tokenizeWords(str, { sepChars: [" "] })].map(s => capitalize(s)).join(" ")
 export const toSpaces = (str: string) => [...tokenizeWords(str)].join(" ")
 
@@ -199,7 +200,6 @@ export const split = (str: string, arg: { [Symbol.split](string: string, limit?:
 		return chunks
 	}
 }
-
 
 
 export class String extends global.String {

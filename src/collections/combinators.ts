@@ -274,7 +274,7 @@ export function map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projector
 		})()
 	}
 	else {
-		console.log(`Map(): Collection ${JSON.stringify(collection)} is not iterable`)
+		// console.log(`Map(): Collection ${JSON.stringify(collection)} is not iterable`)
 		return objectFromTuples(entries(collection).map(kv =>
 			new Tuple(kv[0], projector(kv[1], kv[0])))
 		)

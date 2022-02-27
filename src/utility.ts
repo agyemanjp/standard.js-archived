@@ -56,6 +56,7 @@ export type Fx<Ret, Args extends any[]> = (...args: Args) => Ret
 export type ArgsType<F extends (...x: any[]) => any> = F extends (...x: infer A) => any ? A : never
 export type Primitive = number | string | bigint | boolean | symbol
 export type Obj<TValue = unknown, TKey extends string | number = string> = { [key in TKey]: TValue }
+export type ValueOf<O> = O[keyof O]
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
 export type RecursiveRequired<T> = { [P in keyof T]-?: Required<T[P]> }
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
@@ -76,15 +77,22 @@ export const Tuple = class <X, Y>  {
 	constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> }
 } as { new <X, Y>(x: X, y: Y): [X, Y] }
 
+export type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+export type DigitNonZero = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
 // export type Collection<T> = Iterable<T> | Generator<T>
 // export type CollectionAsync<T> = AsyncIterable<T> | AsyncGenerator<T> | Iterable<T> | Generator<T>
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
+export type Head<L extends ReadonlyArray<any>> = L extends [...(infer head), infer tail] ? head : never
+
 /** Type of last element of array */
 export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
+
+export type ToCamel<S extends string> = S extends `${infer head}_${infer tail}` ? `${head}${Capitalize<ToCamel<tail>>}` : S;
 
 export type Merge<A, B> = (
 	undefined extends A
