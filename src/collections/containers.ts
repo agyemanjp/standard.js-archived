@@ -160,7 +160,7 @@ export class SequenceAsync<X> implements AsyncIterable<X> {
 	to<C extends AsyncIterable<X>>(container: { (items: AsyncIterable<X>): C }) { return container(this) }
 
 	takeAsync(n: number) { return this.ctor(takeAsync(this, n)) }
-	skip(n: number) { return this.ctor(skipAsync(this, n)) }
+	skipAsync(n: number) { return this.ctor(skipAsync(this, n)) }
 
 	takeWhileAsync(predicate: PredicateAsync<X, number | void>) { return this.ctor(takeWhileAsync(this, predicate)) }
 	skipWhileAsync(predicate: PredicateAsync<X, number | void>) { return this.ctor(skipWhileAsync(this, predicate)) }
