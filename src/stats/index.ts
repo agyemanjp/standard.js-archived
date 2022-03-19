@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-shadow */
 /* eslint-disable brace-style */
-import { reduce, last, lastOrDefault, filter, map, sort } from "../collections/combinators"
-import { Ranker } from "../functional"
 import { Tuple, isNumber } from "../utility"
+import { reduce, lastOrDefault, filter, map, sort } from "../collections/combinators"
+import { Ranker } from "../functional"
 
 export function min(vector: Iterable<number>): number | undefined
 export function min<T>(vector: Iterable<T>, ranker: Ranker<T>): T | undefined
@@ -105,6 +105,7 @@ export function deviation(vector: number[], opts?:
 	return _variance !== undefined ? Math.sqrt(_variance) : undefined
 }
 
+/** Returns the median of an array, alphabetically by default */
 export function median<T>(vector: Array<T>): T | undefined {
 	// eslint-disable-next-line fp/no-mutating-methods
 	const _ordered = vector.sort()

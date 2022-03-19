@@ -17,20 +17,25 @@
 import {
 	zip,
 	unique,
-	take, takeWhile,
-	skip, skipWhile,
-	first, firstOrDefault,
-	last, lastOrDefault,
-	map,
-	filter,
-	reduce,
-	forEach,
+	take, takeAsync,
+	takeWhile, takeWhileAsync,
+	skip, skipAsync,
+	skipWhile, skipWhileAsync,
+	first, firstAsync,
+	firstOrDefault, firstOrDefaultAsync,
+	last, lastAsync,
+	lastOrDefault, lastOrDefaultAsync,
+	map, mapAsync,
+	filter, filterAsync,
+	reduce, reduceAsync,
+	forEach, forEachAsync,
 	intersection,
-	every,
+	every, everyAsync,
 	union,
-	some,
+	some, someAsync,
 	except,
-	complement
+	complement,
+	toArrayAsync
 } from "./combinators"
 
 import {
@@ -41,8 +46,8 @@ import {
 	deviation
 } from "../stats"
 
-import { Ranker, Predicate, Projector, Reducer, createRanker } from "../functional"
-import { Tuple, Obj, isIterable, hasValue } from "../utility"
+import { Ranker, Predicate, PredicateAsync, Projector, ProjectorAsync, Reducer, ReducerAsync, createRanker } from "../functional"
+import { Tuple, Obj, isIterable, isAsyncIterable, hasValue } from "../utility"
 import {
 	Finite,
 	PagingOptions, SortOptions, FilterOptions,
@@ -139,6 +144,59 @@ export class Sequence<X> implements Iterable<X> {
 			}
 		})())
 	}
+}
+
+export class SequenceAsync<X> implements AsyncIterable<X> {
+	protected _iterable: AsyncIterable<X>
+	// eslint-disable-next-line fp/no-nil, fp/no-mutation
+	constructor(iterable: AsyncIterable<X> | Iterable<X>) {
+		this._iterable = isAsyncIterable(iterable) ? iterable : (async function* () { yield* iterable })()
+	}
+	protected ctor(iterable: AsyncIterable<X>): this { return new SequenceAsync(iterable) as this }
+
+	[Symbol.asyncIterator](): AsyncIterator<X> { return this._iterable[Symbol.asyncIterator]() }
+
+	/** Convert to another iterable container type */
+	to<C extends AsyncIterable<X>>(container: { (items: AsyncIterable<X>): C }) { return container(this) }
+
+	takeAsync(n: number) { return this.ctor(takeAsync(this, n)) }
+	skip(n: number) { return this.ctor(skipAsync(this, n)) }
+
+	takeWhileAsync(predicate: PredicateAsync<X, number | void>) { return this.ctor(takeWhileAsync(this, predicate)) }
+	skipWhileAsync(predicate: PredicateAsync<X, number | void>) { return this.ctor(skipWhileAsync(this, predicate)) }
+
+
+	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to the elements
+	 * @returns First element (as defined above) of this sequence
+	 * @throws An error if such a first element cannot found
+	 */
+	firstAsync(predicate?: Predicate<X>) { return firstAsync(this, predicate) }
+	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @param defaultValue Optional default value to return if first element is not found (defaults to <undefined>)
+	 * @returns First element (as defined above) of this sequence, or the defaultValue argument, if not found
+	 */
+	firstOrDefaultAsync(predicate?: Predicate<X>, defaultValue?: X) { return firstOrDefaultAsync(this, { predicate, defaultValue }) }
+
+	/** Get last element (or last element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @returns Last element (as defined above) of this sequence 
+	 * @throws An error if such a last element cannot found
+	 */
+	lastAsync(predicate?: Predicate<X>) { return lastAsync(this, predicate) }
+	/** Get last element (or last element to satisfy a predicate, if supplied) of this sequence
+	 * @param predicate Optional predicate applied to elements
+	 * @param defaultValue Optional default value to return if last element is not found (defaults to <undefined>)
+	 * @returns Last element (as defined above) of this sequence, or the defaultValue argument, if not found
+	 */
+	lastOrDefaultAsync(predicate?: Predicate<X>, defaultValue?: X) { return lastOrDefaultAsync(this, { predicate, defaultValue }) }
+
+	filterAsync(predicate: PredicateAsync<X>) { return this.ctor(filterAsync(this, predicate)) }
+	mapAsync<Y>(projector: ProjectorAsync<X, Y>) { return new SequenceAsync(mapAsync(this, projector)) }
+	reduceAsync<Y>(initial: Y, reducer: ReducerAsync<X, Y>) { return new SequenceAsync(reduceAsync(this, initial, reducer)) }
+	forEachAsync(action: Projector<X>) { return forEachAsync(this, action) }
+
 }
 
 /** Set of unique elements, known in advance, without any specific order */
