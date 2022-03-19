@@ -304,6 +304,7 @@ export function* reduce<X, Y>(iterable: Iterable<X>, initial: Y, reducer: Reduce
 	}
 }
 export async function* reduceAsync<X, Y>(iterable: Iterable<X> | AsyncIterable<X>, initial: Y, reducer: ReducerAsync<X, Y>): AsyncIterable<Y> {
+	yield initial
 	for await (const tuple of indexedAsync(iterable)) {
 		initial = await reducer(initial, tuple[1], tuple[0])
 		yield initial

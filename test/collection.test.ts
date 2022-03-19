@@ -10,7 +10,7 @@
 
 // import mocha from "mocha"
 import * as assert from "assert"
-import { map, flatten, chunk, take, skip, first, last, reduce, indexed } from "../dist/collections"
+import { map, flatten, chunk, take, skip, first, firstAsync, last, reduce, reduceAsync, indexed, toArrayAsync } from "../dist/collections"
 import { noop, identity, constant, negate, flip, Projector } from "../dist/functional"
 
 describe('flatten()', function () {
@@ -156,16 +156,17 @@ describe('last()', function () {
 	})
 })
 
-describe('reduce()', function () {
-	it('should yield initial value as first item, even if input collection is empty', function () {
+describe('reduce() & reduceAsync', function () {
+	it('should yield initial value as first item, even if input collection is empty', async function () {
 		const iterable: Iterable<number> = (function* () { while (true) yield 1 })()
 		assert.strictEqual(first(reduce(iterable, 53, (prev, curr) => prev + curr)), 53)
+		assert.strictEqual(await firstAsync(reduceAsync(iterable, 53, async (prev, curr) => prev + curr)), 53)
 
 		assert.deepStrictEqual([...reduce([], 7, (prev, curr) => 123)], [7])
 		assert.deepStrictEqual([...reduce([], null, (prev, curr) => curr)], [null])
 		assert.deepStrictEqual([...reduce([], undefined, (prev, curr) => curr)], [undefined])
 	})
-	it('should yield only first item if passed an empty iterable', function () {
+	it('should yield only first item if passed an empty iterable', async function () {
 		assert.strictEqual([...reduce([] as string[], "hello", (prev, curr) => prev + curr)].length, 1)
 		assert.strictEqual([...reduce([] as number[], 7, (prev, curr) => prev + curr)].length, 1)
 		assert.strictEqual([...reduce([], null, (prev, curr) => curr)].length, 1)
