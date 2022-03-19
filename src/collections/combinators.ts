@@ -524,11 +524,31 @@ export async function firstOrDefaultAsync<T>(data: Iterable<T> | AsyncIterable<T
  * @throws An error if such a last element cannot found
  */
 export function last<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T>): T {
-	const _last = lastOrDefault(data, { predicate })
-	if (_last)
-		return _last
-	else
-		throw new Error(`Last element not found`)
+	if ("size" in data || "length" in data) {
+		// materialized-collection-specific implementation for better performance using direct elements access
+		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
+		const size = "size" in data ? data.size : data.length
+		for (let i = size - 1; i >= 0; i--) {
+			const element = accessor(i)
+			if (predicate === undefined || predicate(element, i))
+				return element
+		}
+		throw (`Last element not found`)
+	}
+	else {
+		console.assert(isIterable(data))
+		// eslint-disable-next-line fp/no-let
+		let _found = false
+		let _last = undefined
+		for (const element of (predicate === undefined ? data : filter(data, predicate))) {
+			_last = element
+			_found = true
+		}
+		if (_found)
+			return _last as T
+		else
+			throw (`Last element not found`)
+	}
 }
 /** Get last element (or last element to satisfy a predicate, if supplied) of some data
  * @param data The input data, as an iterable collection
@@ -539,36 +559,41 @@ export function last<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), predica
 export function lastOrDefault<T>(data: Iterable<T> | (IndexedAccess<T> & Finite)): T | undefined
 export function lastOrDefault<T, D extends T | null | undefined>(data: Iterable<T> | (IndexedAccess<T> & Finite), options: { predicate?: Predicate<T>, defaultValue?: D }): T | D
 export function lastOrDefault<T>(data: Iterable<T> | (IndexedAccess<T> & Finite), options?: { predicate?: Predicate<T>, defaultValue?: T }) {
-	const { predicate, defaultValue } = options ?? {}
-	const effectiveDefaultValue = (typeof defaultValue === "undefined") ? undefined : defaultValue
-
-	if ("size" in data || "length" in data) { // materialized-collection-specific implementation for better performance using direct elements access
-		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
-		const size = "size" in data ? data.size : data.length
-		for (let i = size - 1; i >= 0; i--) {
-			const element = accessor(i)
-			if (predicate === undefined || predicate(element, i))
-				return element
-		}
-		return effectiveDefaultValue
+	try {
+		return last(data, options?.predicate)
 	}
-	else {
-		console.assert(isIterable(data))
-		// eslint-disable-next-line fp/no-let
-		let _last = effectiveDefaultValue
-		for (const element of (predicate === undefined ? data : filter(data, predicate))) {
-			_last = element
-		}
-		return _last
+	catch (e) {
+		return options?.defaultValue
 	}
 }
 
 export async function lastAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), predicate?: Predicate<T> | PredicateAsync<T>): Promise<T> {
-	const _last = await lastOrDefaultAsync(data, { predicate })
-	if (_last)
-		return _last
-	else
-		throw new Error(`Last element not found`)
+	if ("size" in data || "length" in data) {
+		// materialized-collection-specific implementation for better performance using direct elements access
+		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
+		const size = "size" in data ? data.size : data.length
+		for (let i = size - 1; i >= 0; i--) {
+			const element = accessor(i)
+			// eslint-disable-next-line no-await-in-loop
+			if (predicate === undefined || (await predicate(element, i)) === true)
+				return element
+		}
+		throw (`Last element not found`)
+	}
+	else {
+		// console.assert(isIterable(data))
+		// eslint-disable-next-line fp/no-let
+		let _found = false
+		let _last = undefined
+		for await (const element of (predicate === undefined ? data : filterAsync(data, predicate))) {
+			_last = element
+			_found = true
+		}
+		if (_found)
+			return _last as any as Promise<T>
+		else
+			throw (`Last element not found`)
+	}
 }
 
 /** Get first element (or first element to satisfy a predicate, if supplied) of (possibly async) iterable data
@@ -580,29 +605,11 @@ export async function lastAsync<T>(data: AsyncIterable<T> | Iterable<T> | (Index
 export async function lastOrDefaultAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite)): Promise<T | undefined>
 export async function lastOrDefaultAsync<T, D extends null | undefined | T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), options: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: D }): Promise<T | D>
 export async function lastOrDefaultAsync<T>(data: AsyncIterable<T> | Iterable<T> | (IndexedAccess<T> & Finite), options?: { predicate?: Predicate<T> | PredicateAsync<T>, defaultValue?: T }): Promise<T | undefined> {
-	const { predicate, defaultValue } = options ?? {}
-	const effectiveDefaultValue = (typeof defaultValue === "undefined") ? undefined : defaultValue
-
-	if ("length" in data || "size" in data) { // materialized-collection-specific implementation for better performance using direct elements access
-		const accessor = (i: number) => ("get" in data) ? data.get(i) : data[i]
-		const size = "size" in data ? data.size : data.length
-		for (let i = size - 1; i >= 0; i--) {
-			const element = accessor(i)
-			// eslint-disable-next-line no-await-in-loop
-			if (predicate === undefined || (await predicate(element, i) === true))
-				return element
-		}
-		return undefined
+	try {
+		return lastAsync(data, options?.predicate)
 	}
-	else {
-		console.assert(isAsyncIterable(data))
-		// eslint-disable-next-line fp/no-let
-		let _last = undefined as T | undefined
-		const iterable = predicate === undefined ? data : filterAsync(data, predicate)
-		for await (const element of iterable) {
-			_last = element
-		}
-		return _last
+	catch (e) {
+		return options?.defaultValue
 	}
 }
 
