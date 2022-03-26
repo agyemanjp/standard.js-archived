@@ -121,6 +121,7 @@ export type Merge5<A, B, C, D, E> = Merge<A, Merge<B, Merge<C, Merge<D, E>>>>
 // type M<a extends ReadonlyArray<any>> = Unwrap<MergeReduce<a>>
 // type test = M<[1, 2]>
 
+
 /** Determines if input argument has a value */
 export function hasValue<T>(value?: T | null | undefined): value is T {
 	switch (typeof value) {
@@ -182,8 +183,20 @@ export function isNull(payload: any): payload is null {
  * @returns {payload is {[key: string]: any}}
  */
 export function isObject(payload: any): payload is { [key: string]: any } {
-	if (getType(payload) !== 'Object') return false
-	return payload.constructor === Object && Object.getPrototypeOf(payload) === Object.prototype
+	//if (getType(payload) !== 'Object') return false
+	//return payload.constructor === Object && Object.getPrototypeOf(payload) === Object.prototype
+
+	// eslint-disable-next-line no-unreachable
+	if (typeof payload === "object" && payload !== null) {
+		if (typeof Object.getPrototypeOf === "function") {
+			const prototype = Object.getPrototypeOf(payload)
+			return prototype === Object.prototype || prototype === null
+		}
+
+		return Object.prototype.toString.call(payload) === "[object Object]"
+	}
+	return false
+
 }
 
 /** Returns whether the payload is a an empty object (excluding special classes or objects with other prototypes)

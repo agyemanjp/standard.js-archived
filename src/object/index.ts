@@ -78,7 +78,7 @@ export function deepMerge<T1, T2, T3>(a1: T1, a2: T2, a3: T3): Merge<T1, Merge<T
 export function deepMerge<T1, T2, T3, T4>(a1: T1, a2: T2, a3: T3, a4: T4): Merge<T1, Merge<T2, Merge<T3, T4>>>
 export function deepMerge<T1, T2, T3, T4, T5>(a1: T1, a2: T2, a3: T3, a4: T4, a5: T5): Merge<T1, Merge<T2, Merge<T3, Merge<T4, T5>>>>
 export function deepMerge<T1, T2, T3, T4, T5, T6>(a1: T1, a2: T2, a3: T3, a4: T4, a5: T5, a6: T6): Merge<T1, Merge<T2, Merge<T3, Merge<T4, Merge<T5, T6>>>>>
-export function deepMerge(...args: any[])/*: O.Compact<T, Tn, 'deep'>*/ {
+export function deepMerge(...args: any[]) {
 	function assignProp(carry: Obj, key: string, newVal: any, originalObject: Obj): void {
 		const propType = {}.propertyIsEnumerable.call(originalObject, key) ? 'enumerable' : 'nonenumerable'
 		// eslint-disable-next-line fp/no-mutation
@@ -136,4 +136,58 @@ export function deepMerge(...args: any[])/*: O.Compact<T, Tn, 'deep'>*/ {
 		return mergeRecursively(result, newComer)
 	}, args[0]) //as O.Compact<T, Tn, 'deep'>
 }
+
+/*export const mergeDeep = (options?: { mergeArrays: boolean, undefinedOverwrites: boolean }) => (
+	<T extends any[]>(...objects: T) => objects.reduce((result, current) => {
+		if (!isObject(current) || !isObject(result))
+			return current
+		// eslint-disable-next-line fp/no-unused-expression
+		Object.keys(current).forEach((key) => {
+			if (Array.isArray(result[key]) && Array.isArray(current[key])) {
+				// eslint-disable-next-line fp/no-mutation
+				result[key] = (options?.mergeArrays ?? false)
+					? Array.from(new Set((result[key] as unknown[]).concat(current[key])))
+					: current[key]
+			}
+			else if (isObject(result[key]) && isObject(current[key])) {
+				// eslint-disable-next-line fp/no-mutation
+				result[key] = mergeDeep(options)(result[key] as IObject, current[key] as IObject)
+			}
+			else {
+				if ((options?.undefinedOverwrites ?? false) || typeof current[key] !== "undefined")
+					result[key] = current[key]
+			}
+		})
+		return result
+	}, {}) as TUnionToIntersection<T[number]>
+)*/
+
+
+/*export const mergeDeep = (options?: { mergeArrays: boolean, undefinedOverwrites: boolean }) => (
+	<T extends IObject[]>(...objects: T) => objects.reduce((result, current) => {
+		// eslint-disable-next-line fp/no-unused-expression
+		Object.keys(current).forEach((key) => {
+			if (Array.isArray(result[key]) && Array.isArray(current[key])) {
+				// eslint-disable-next-line fp/no-mutation
+				result[key] = (options?.mergeArrays ?? false)
+					? Array.from(new Set((result[key] as unknown[]).concat(current[key])))
+					: current[key]
+			}
+			else if (isObject(result[key]) && isObject(current[key])) {
+				// eslint-disable-next-line fp/no-mutation
+				result[key] = mergeDeep(options)(result[key] as IObject, current[key] as IObject)
+			}
+			else {
+				if ((options?.undefinedOverwrites ?? false) || typeof current[key] !== "undefined")
+					result[key] = current[key]
+			}
+		})
+		return result
+	}, {}) as TUnionToIntersection<T[number]>
+)*/
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface IObject { [key: string]: any; length?: never; }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TUnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 

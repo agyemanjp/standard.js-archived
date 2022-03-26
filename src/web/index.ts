@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /* eslint-disable fp/no-unused-expression */
 import { Obj } from "../utility"
 import { trimRight } from "../text"
@@ -332,47 +333,47 @@ export const HTTP_STATUS_CODES = Object.freeze({
 /** HTTP methods */
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
-export async function getAsync(args: RequestArgs): Promise<Response>
-export async function getAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function getAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _({ ...args, method: "GET" }, responseHandler)
+export function request(args: RequestArgs) {
+	return {
+		get: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
+			return __({ ...args, method: "GET" }, opts.responseType)
+		},
+		put: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
+			return __({ ...args, method: "PUT" }, opts.responseType)
+		},
+		post: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
+			return __({ ...args, method: "POST" }, opts.responseType)
+		},
+		patch: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
+			return __({ ...args, method: "PATCH" }, opts.responseType)
+		},
+		delete: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
+			return __({ ...args, method: "DELETE" }, opts.responseType)
+		},
+	}
 }
+// const x = request({ url: "" }).delete({ responseType: "text" })
 
-export async function postAsync(args: RequestArgs): Promise<Response>
-export async function postAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function postAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _({ ...args, method: "POST" }, responseHandler)
-}
-
-export async function putAsync(args: RequestArgs): Promise<Response>
-export async function putAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function putAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _({ ...args, method: "PUT" }, responseHandler)
-}
-
-export async function patchAsync(args: RequestArgs): Promise<Response>
-export async function patchAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function patchAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _({ ...args, method: "PATCH" }, responseHandler)
-}
-
-export async function deleteAsync(args: RequestArgs): Promise<Response>
-export async function deleteAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T): Promise<T>
-export async function deleteAsync<T>(args: RequestArgs, responseHandler: (r: Response) => T = r => r as any) {
-	return _({ ...args, method: "DELETE" }, responseHandler)
-}
-
-async function _(args: RequestArgs & { method: Method }): Promise<Response>
-async function _<T>(args: RequestArgs & { method: Method }, responseHandler: (r: Response) => T): Promise<T>
-async function _<T>(args: RequestArgs & { method: Method }, responseHandler: (r: Response) => T = r => r as any) {
+async function __(args: RequestArgs & { method: Method }): Promise<Response>
+async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
+async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType?: T) {
 	return new Promise((resolve, reject) => {
 		const queryParams = args?.query ? `?${queryString(args.query)}` : "";
 		(args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
 			.then(response => {
-				if (!response.status.toString().startsWith("2")) {
-					reject(new Error(`${response.statusText}\n${response.body}`))
+				if (!String(response.status).startsWith("2")) {
+					reject(`${response.statusText}\n${response.body}`)
 				}
-				resolve(responseHandler(response))
+
+				try {
+					if (responseType)
+						resolve(response[responseType]())
+					else
+						resolve(response)
+				}
+				catch (e) {
+					reject(`Error transforming request response to ${responseType}\n${e}`)
+				}
 			})
 	})
 }
@@ -389,6 +390,13 @@ export type RequestArgs = Omit<RequestInit, "method"> & {
 	url: string,
 	query?: Obj<string>,
 	customFetch?: typeof fetch
+}
+
+type ResponseDataTypes = {
+	"json": Obj
+	"text": string
+	"blob": Blob
+	"arrayBuffer": ArrayBuffer
 }
 
 // type JsonArray = Array<string | number | boolean | Date | Json | JsonArray>
