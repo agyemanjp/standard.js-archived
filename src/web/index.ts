@@ -362,23 +362,26 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType?: T) {
 	// return new Promise(async (resolve, reject) => {
 	const queryParams = args?.query ? `?${queryString(args.query)}` : ""
-	try {
-		const response = await (args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
-		if (!String(response.status).startsWith("2"))
-			throw `${response.statusText}\n${response.body}`
-
+	const response = await (() => {
 		try {
-			if (responseType)
-				return await response[responseType]()
-			else
-				return undefined
+			return (args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
 		}
 		catch (e) {
-			throw (`Error converting response from ${args.url} to ${responseType}\n${e}`)
+			throw `Error making request to ${args.url}\n${e}`
 		}
+	})()
+
+	if (!String(response.status).startsWith("2"))
+		throw `${response.statusText}\n${response.body}`
+
+	try {
+		if (responseType)
+			return await response[responseType]()
+		else
+			return undefined
 	}
 	catch (e) {
-		throw `Error making request to ${args.url}\n${e}`
+		throw (`Error converting response from ${args.url} to ${responseType}\n${e}`)
 	}
 }
 
