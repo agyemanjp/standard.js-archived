@@ -334,6 +334,16 @@ export const HTTP_STATUS_CODES = Object.freeze({
 /** HTTP methods */
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
+export function request(args: RequestArgs) {
+	return {
+		get: methodFn(args, "GET"),
+		put: methodFn(args, "PUT"),
+		post: methodFn(args, "POST"),
+		patch: methodFn(args, "PATCH"),
+		delete: methodFn(args, "DELETE"),
+	}
+}
+
 function methodFn(args: RequestArgs, method: Method) {
 	async function f(): Promise<void>
 	async function f<R extends keyof ResponseDataTypes>(opts: { responseType: R }): Promise<ResponseDataTypes[R]>
@@ -345,17 +355,6 @@ function methodFn(args: RequestArgs, method: Method) {
 
 	return f
 }
-
-export function request(args: RequestArgs) {
-	return {
-		get: methodFn(args, "GET"),
-		put: methodFn(args, "PUT"),
-		post: methodFn(args, "POST"),
-		patch: methodFn(args, "PATCH"),
-		delete: methodFn(args, "DELETE"),
-	}
-}
-// const x = request({ url: "" }).get({responseType: "text"})
 
 async function __(args: RequestArgs & { method: Method }): Promise<void>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
@@ -372,7 +371,7 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 	})()
 
 	if (!String(response.status).startsWith("2"))
-		throw `${response.statusText}\n${response.body}`
+		throw `${response.statusText}`
 
 	try {
 		if (responseType)
@@ -381,7 +380,7 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 			return undefined
 	}
 	catch (e) {
-		throw (`Error converting response from ${args.url} to ${responseType}\n${e}`)
+		throw (`Cannot convert response from ${args.url} to ${responseType}\n${e}`)
 	}
 }
 
