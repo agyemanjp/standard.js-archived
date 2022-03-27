@@ -335,7 +335,7 @@ export const HTTP_STATUS_CODES = Object.freeze({
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
 function methodFn(args: RequestArgs, method: Method) {
-	async function f<R extends keyof ResponseDataTypes>(): Promise<Response>
+	async function f(): Promise<Response>
 	async function f<R extends keyof ResponseDataTypes>(opts: { responseType: R }): Promise<ResponseDataTypes[R]>
 	async function f<R extends keyof ResponseDataTypes>(opts?: { responseType: R }) {
 		return opts
