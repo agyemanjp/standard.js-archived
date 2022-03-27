@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable indent */
 /* eslint-disable fp/no-unused-expression */
 import { Obj } from "../utility"
@@ -333,26 +334,28 @@ export const HTTP_STATUS_CODES = Object.freeze({
 /** HTTP methods */
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
+function methodFn(args: RequestArgs, method: Method) {
+	async function f<R extends keyof ResponseDataTypes>(): Promise<Response>
+	async function f<R extends keyof ResponseDataTypes>(opts: { responseType: R }): Promise<ResponseDataTypes[R]>
+	async function f<R extends keyof ResponseDataTypes>(opts?: { responseType: R }) {
+		return opts
+			? __({ ...args, method }, opts.responseType)
+			: __({ ...args, method })
+	}
+
+	return f
+}
+
 export function request(args: RequestArgs) {
 	return {
-		get: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
-			return __({ ...args, method: "GET" }, opts.responseType)
-		},
-		put: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
-			return __({ ...args, method: "PUT" }, opts.responseType)
-		},
-		post: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
-			return __({ ...args, method: "POST" }, opts.responseType)
-		},
-		patch: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
-			return __({ ...args, method: "PATCH" }, opts.responseType)
-		},
-		delete: <R extends keyof ResponseDataTypes>(opts: { responseType: R }) => {
-			return __({ ...args, method: "DELETE" }, opts.responseType)
-		},
+		get: methodFn(args, "GET"),
+		put: methodFn(args, "PUT"),
+		post: methodFn(args, "POST"),
+		patch: methodFn(args, "PATCH"),
+		delete: methodFn(args, "DELETE"),
 	}
 }
-// const x = request({ url: "" }).delete({ responseType: "text" })
+// const x = request({ url: "" }).get({responseType: "text"})
 
 async function __(args: RequestArgs & { method: Method }): Promise<Response>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
@@ -393,7 +396,7 @@ export type RequestArgs = Omit<RequestInit, "method"> & {
 }
 
 type ResponseDataTypes = {
-	"json": Obj
+	"json": any
 	"text": string
 	"blob": Blob
 	"arrayBuffer": ArrayBuffer
