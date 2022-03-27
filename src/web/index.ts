@@ -360,26 +360,26 @@ export function request(args: RequestArgs) {
 async function __(args: RequestArgs & { method: Method }): Promise<void>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType?: T) {
-	return new Promise((resolve, reject) => {
-		const queryParams = args?.query ? `?${queryString(args.query)}` : "";
-		(args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
-			.then(response => {
-				if (!String(response.status).startsWith("2")) {
-					reject(`${response.statusText}\n${response.body}`)
-				}
+	// return new Promise(async (resolve, reject) => {
+	const queryParams = args?.query ? `?${queryString(args.query)}` : ""
+	try {
+		const response = await (args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
+		if (!String(response.status).startsWith("2"))
+			throw `${response.statusText}\n${response.body}`
 
-				if (responseType)
-					resolve(response[responseType]()
-						.catch(e => {
-							reject(`Error converting response from ${args.url} to ${responseType}\n${e}`)
-						}))
-				else
-					resolve(undefined)
-			})
-			.catch(e => {
-				reject(`Error making request to ${args.url}\n${e}`)
-			})
-	})
+		try {
+			if (responseType)
+				return await response[responseType]()
+			else
+				return undefined
+		}
+		catch (e) {
+			throw (`Error converting response from ${args.url} to ${responseType}\n${e}`)
+		}
+	}
+	catch (e) {
+		throw `Error making request to ${args.url}\n${e}`
+	}
 }
 
 /** Generate query string from query object */
