@@ -396,7 +396,7 @@ export type RequestArgs = Omit<RequestInit, "method"> & {
 }
 
 type ResponseDataTypes = {
-	"json": Obj
+	"json": any
 	"text": string
 	"blob": Blob
 	"arrayBuffer": ArrayBuffer
