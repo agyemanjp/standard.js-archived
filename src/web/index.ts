@@ -368,15 +368,16 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 					reject(`${response.statusText}\n${response.body}`)
 				}
 
-				try {
-					if (responseType)
-						resolve(response[responseType]())
-					else
-						resolve(undefined)
-				}
-				catch (e) {
-					reject(`Error transforming request response to ${responseType}\n${e}`)
-				}
+				if (responseType)
+					resolve(response[responseType]()
+						.catch(e => {
+							reject(`Error converting response from ${args.url} to ${responseType}\n${e}`)
+						}))
+				else
+					resolve(undefined)
+			})
+			.catch(e => {
+				reject(`Error making request to ${args.url}\n${e}`)
 			})
 	})
 }
