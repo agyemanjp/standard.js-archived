@@ -335,7 +335,7 @@ export const HTTP_STATUS_CODES = Object.freeze({
 export type Method = "GET" | "POST" | "DELETE" | "PATCH" | "PUT"
 
 function methodFn(args: RequestArgs, method: Method) {
-	async function f(): Promise<Response>
+	async function f(): Promise<void>
 	async function f<R extends keyof ResponseDataTypes>(opts: { responseType: R }): Promise<ResponseDataTypes[R]>
 	async function f<R extends keyof ResponseDataTypes>(opts?: { responseType: R }) {
 		return opts
@@ -357,7 +357,7 @@ export function request(args: RequestArgs) {
 }
 // const x = request({ url: "" }).get({responseType: "text"})
 
-async function __(args: RequestArgs & { method: Method }): Promise<Response>
+async function __(args: RequestArgs & { method: Method }): Promise<void>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType?: T) {
 	return new Promise((resolve, reject) => {
@@ -372,7 +372,7 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 					if (responseType)
 						resolve(response[responseType]())
 					else
-						resolve(response)
+						resolve(undefined)
 				}
 				catch (e) {
 					reject(`Error transforming request response to ${responseType}\n${e}`)
@@ -396,7 +396,7 @@ export type RequestArgs = Omit<RequestInit, "method"> & {
 }
 
 type ResponseDataTypes = {
-	"json": any
+	"json": Obj
 	"text": string
 	"blob": Blob
 	"arrayBuffer": ArrayBuffer
