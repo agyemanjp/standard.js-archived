@@ -371,7 +371,7 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 	})()
 
 	if (!String(response.status).startsWith("2"))
-		throw `${response.statusText}`
+		throw `HTTP error response from request to ${args.url}\n${response.statusText}`
 
 	try {
 		if (responseType)
