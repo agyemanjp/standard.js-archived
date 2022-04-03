@@ -6,7 +6,7 @@ import * as assert from "assert"
 import {
 	String, isWhitespace, isEmptyOrWhitespace,
 	toCamelCase, toSnakeCase, toDashCase, toTitleCase,
-	plural
+	plural, trimLeft, trimRight
 } from "../dist/text/string.js"
 import { CharASCII } from "../dist/text/char.js"
 
@@ -125,7 +125,6 @@ describe("isUrl()", () => {
 	})
 
 })
-
 
 describe('camelCase', function () {
 	it('should return the camel case of a string', function () {
@@ -359,7 +358,6 @@ describe('dashCase', function () {
 	})
 })
 
-
 describe('isWhitespace', function () {
 	it('should return false when no whitespace exists', function () {
 		assert(!isWhitespace('foo'))
@@ -384,5 +382,29 @@ describe('isWhitespace', function () {
 	// })
 	it('should not be true for the zero-width space', function () {
 		assert(!isWhitespace('\u200b'))
+	})
+})
+
+describe('trimLeft', function () {
+	it('should trim all subsequent argument strings from main argument', function () {
+		const str = "GH&#8373; 2,000"
+		const toTrim = ["GH₵", "GH&#8373;", "GHC", "USD", "GBP"]
+		assert.strictEqual(trimLeft(str, ...toTrim), " 2,000")
+	})
+	it('should trim spaces if desired', function () {
+		const str = " 2,000"
+		assert.strictEqual(trimLeft(str, " "), "2,000")
+	})
+})
+
+describe('trimRight', function () {
+	it('should trim all subsequent argument strings from main argument', function () {
+		const str = "2,000 GH&#8373;"
+		const toTrim = ["GH₵", "GH&#8373;", "GHC", "USD", "GBP"]
+		assert.strictEqual(trimRight(str, ...toTrim), "2,000 ")
+	})
+	it('should trim spaces if desired', function () {
+		const str = " 2,000 "
+		assert.strictEqual(trimRight(str, " "), " 2,000")
 	})
 })

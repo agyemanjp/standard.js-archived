@@ -102,7 +102,7 @@ export const toSnakeCase = (str: string) => [...tokenizeWords(str)].map(token =>
 export const toDashCase = (str: string) => [...tokenizeWords(str)].map(token => token.toLowerCase()).join("-")
 export const toCamelCase = <S extends string = string>(str: S) => [...tokenizeWords(str)].map((word, index) => index > 0 ? capitalize(word) : word.toLowerCase()).join("") as ToCamel<S>
 export const toTitleCase = (str: string) => [...tokenizeWords(str, { sepChars: [" "] })].map(s => capitalize(s)).join(" ")
-export const toSpaces = (str: string) => [...tokenizeWords(str)].join(" ")
+export const toSpaceCase = (str: string) => [...tokenizeWords(str)].join(" ")
 
 export const isWhitespace = (str: string): boolean => str.replace(/^\s+|\s+$/g, '').length === 0
 export const isEmptyOrWhitespace = (str: string) => strip(str, [" ", ...whitespaceChars]).length === 0
@@ -126,11 +126,15 @@ export const isURL = (str: string): boolean => new RegExp('^(https?:\\/\\/)?' + 
 	'(\\#[-a-z\\d_]*)?$', 'i' // fragment locator
 ).test(str)
 export const trimLeft = (str: string, ...strings: string[]) => strings.reduce((prev, curr) =>
-	(prev.toUpperCase().startsWith(curr.toUpperCase())) ? prev.substr(prev.length) : prev,
+	(prev.toUpperCase().startsWith(curr.toUpperCase()))
+		? prev.substring(curr.length)
+		: prev,
 	str // initial value
 )
 export const trimRight = (str: string, ...strings: string[]) => strings.reduce((prev, curr) =>
-	(prev.toUpperCase().endsWith(curr.toUpperCase())) ? prev.substr(0, prev.length - curr.length) : prev,
+	(prev.toUpperCase().endsWith(curr.toUpperCase()))
+		? prev.substring(0, prev.length - curr.length)
+		: prev,
 	str // initial value
 )
 export const plural = (str: string) => {
@@ -225,7 +229,7 @@ export class String extends global.String {
 	toTitleCase = this.wrap(toTitleCase)
 	toSnakeCase = this.wrap(toSnakeCase)
 	toCamelCase = this.wrap(toCamelCase as (s: string) => string)
-	toSpace = this.wrap(toSpaces)
+	toSpace = this.wrap(toSpaceCase)
 
 	/** Truncate this string by removing a specified number of characters from the end */
 	truncate = this.wrap(truncate)
