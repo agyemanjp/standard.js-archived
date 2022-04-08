@@ -83,7 +83,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "less", value: 25 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "less_than", value: 25 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjectsNumbered]), '[{"origRowNum":4,"sequentialRowNum":1,"v":25,"color":"Red"},{"origRowNum":5,"sequentialRowNum":2,"v":36,"color":"Red"}]')
 		})
 		it(`should return numbered enumerable row objects, original and sequential numbers being correct after filtering & sorting`, () => {
@@ -99,7 +99,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "less", value: 25 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "less_than", value: 25 } })
 				.sort({ columnName: "v", order: "descending" })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjectsNumbered]), '[{"origRowNum":5,"sequentialRowNum":1,"v":36,"color":"Red"},{"origRowNum":4,"sequentialRowNum":2,"v":25,"color":"Red"}]')
 		})
@@ -117,7 +117,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "less", value: 25 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "less_than", value: 25 } })
 				.sort({ columnName: "v", order: "descending" })
 			assert.strictEqual(filteredDT.length, 2)
 			assert.strictEqual(filteredDT.originalLength, 10)
@@ -196,7 +196,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "greater", value: 35 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "greater_than", value: 35 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":1,"color":"Green"},{"v":5,"color":"Orange"},{"v":1,"color":"Green"},{"v":2,"color":"Green"},{"v":25,"color":"Red"},{"v":7,"color":"Orange"},{"v":3,"color":"Green"},{"v":2,"color":"Green"},{"v":1,"color":"Green"}]')
 		})
 
@@ -213,7 +213,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "less", value: 25 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "less_than", value: 25 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":25,"color":"Red"},{"v":36,"color":"Red"}]')
 		})
 
@@ -230,7 +230,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: false, fieldName: "v", operator: "equal", value: 1 } })
+				.filter({ filter: { negated: false, fieldName: "v", operator: "equals", value: 1 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":1,"color":"Green"},{"v":1,"color":"Green"},{"v":1,"color":"Green"}]')
 		})
 
@@ -247,7 +247,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: false, fieldName: "color", operator: "equal", value: "Red" } })
+				.filter({ filter: { negated: false, fieldName: "color", operator: "equals", value: "Red" } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":25,"color":"Red"},{"v":36,"color":"Red"}]')
 		})
 
@@ -264,7 +264,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "greater_or_equal", value: 7 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "greater_than_or_equals", value: 7 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":1,"color":"Green"},{"v":5,"color":"Orange"},{"v":1,"color":"Green"},{"v":2,"color":"Green"},{"v":3,"color":"Green"},{"v":2,"color":"Green"},{"v":1,"color":"Green"}]')
 		})
 
@@ -281,7 +281,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "less_or_equal", value: 7 } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "less_than_or_equals", value: 7 } })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":25,"color":"Red"},{"v":36,"color":"Red"}]')
 		})
 
@@ -315,7 +315,14 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: false, fieldName: "color", operator: "is-contained", value: "InfraRed Laser" } })
+				.filter({
+					filter: {
+						negated: false,
+						fieldName: "color",
+						operator: "is_contained_in",
+						value: "InfraRed Laser"
+					} as const
+				})
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":25,"color":"Red"},{"v":36,"color":"Red"}]')
 		})
 
@@ -366,7 +373,7 @@ describe("Table", () => {
 				{ v: 2, color: "Green" },
 				{ v: 1, color: "Green" }])
 			const filteredDT = startingDT
-				.filter({ filter: { negated: true, fieldName: "v", operator: "blank", value: "" } })
+				.filter({ filter: { negated: true, fieldName: "v", operator: "is_blank" } as const })
 			assert.strictEqual(JSON.stringify([...filteredDT.rowObjects]), '[{"v":1,"color":"Green"},{"v":5,"color":"Orange"},{"v":1,"color":"Green"},{"v":2,"color":"Green"},{"v":25,"color":"Red"},{"v":36,"color":"Red"},{"v":3,"color":"Green"},{"v":2,"color":"Green"},{"v":1,"color":"Green"}]')
 		})
 
@@ -386,8 +393,8 @@ describe("Table", () => {
 				.filter({
 					filter: {
 						filters: [
-							{ negated: true, fieldName: "v", operator: "less", value: 6 },
-							{ negated: true, fieldName: "color", operator: "equal", value: "Red" }
+							{ negated: true, fieldName: "v", operator: "less_than", value: 6 },
+							{ negated: true, fieldName: "color", operator: "equals", value: "Red" }
 						], combinator: "AND"
 					}
 				})
@@ -410,8 +417,8 @@ describe("Table", () => {
 				.filter({
 					filter: {
 						filters: [
-							{ negated: true, fieldName: "v", operator: "greater", value: 6 },
-							{ negated: true, fieldName: "color", operator: "equal", value: "Orange" }
+							{ negated: true, fieldName: "v", operator: "greater_than", value: 6 },
+							{ negated: true, fieldName: "color", operator: "equals", value: "Orange" }
 						], combinator: "OR"
 					}
 				})
@@ -471,14 +478,14 @@ describe("Table", () => {
 		it(`should return the original rows after filtering if the original scope is required`, () => {
 			const startingDT = new DataTable([{ v: 1 }, { v: 2 }, { v: 3 }, { v: 4 }, { v: 5 }, { v: 6 }, { v: 7 }, { v: 8 }, { v: 9 }, { v: 10 }])
 			const filteredDT = startingDT
-				.filter({ filter: { fieldName: "v", negated: false, operator: "less_or_equal", value: 4 } })
+				.filter({ filter: { fieldName: "v", negated: false, operator: "less_than_or_equals", value: 4 } })
 				.filter({ filter: { filters: [], combinator: "AND" }, options: { scope: "original" } })
 			assert.strictEqual(filteredDT.length, 10)
 		})
 		it(`should discard original rows with the regular filter function`, () => {
 			const startingDT = new DataTable([{ v: 1 }, { v: 2 }, { v: 3 }, { v: 4 }, { v: 5 }, { v: 6 }, { v: 7 }, { v: 8 }, { v: 9 }, { v: 10 }])
 			const filteredDT = startingDT
-				.filter({ filter: { fieldName: "v", negated: false, operator: "less_or_equal", value: 4 } })
+				.filter({ filter: { fieldName: "v", negated: false, operator: "less_than_or_equals", value: 4 } })
 				.filter({ filter: { filters: [], combinator: "AND" } })
 			assert.strictEqual(filteredDT.length, 4)
 		})
@@ -519,7 +526,7 @@ describe("Table", () => {
 	describe("Combinations of paging, sorting and filtering", () => {
 		it(`should return 5 rows, when we filtered 2 out (discard) then paged 5 (no discard)`, () => {
 			const startingDT = new DataTable([{ v: 1 }, { v: 2 }, { v: 3 }, { v: 4 }, { v: 5 }, { v: 6 }, { v: 7 }, { v: 8 }, { v: 9 }, { v: 10 }])
-			const filteredDT = startingDT.filter({ filter: { fieldName: "v", negated: false, operator: "less_or_equal", value: 8 } })
+			const filteredDT = startingDT.filter({ filter: { fieldName: "v", negated: false, operator: "less_than_or_equals", value: 8 } })
 			const pagedDT = filteredDT.page({ size: 5, index: 0, options: { scope: "original" } })
 			assert.strictEqual(pagedDT.length, 5)
 		})
@@ -531,7 +538,7 @@ describe("Table", () => {
 		})
 		it(`should return rows 7, 6, 5, 4, 3 after filtering, sorting and paging`, () => {
 			const startingDT = new DataTable([{ v: 1 }, { v: 2 }, { v: 3 }, { v: 4 }, { v: 5 }, { v: 6 }, { v: 7 }, { v: 8 }, { v: 9 }, { v: 10 }])
-			const filteredDT = startingDT.filter({ filter: { negated: true, fieldName: "v", operator: "greater_or_equal", value: 8 } })
+			const filteredDT = startingDT.filter({ filter: { negated: true, fieldName: "v", operator: "greater_than_or_equals", value: 8 } })
 			const sortedDT = filteredDT.sort({ columnName: "v", order: "descending" })
 			const pagedDT = sortedDT.page({ size: 5, index: 0 })
 			assert.strictEqual(JSON.stringify([...pagedDT.rowObjects].map(r => r.v)), JSON.stringify([7, 6, 5, 4, 3]))

@@ -599,24 +599,24 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 					}
 				}
 
-				const _test = _filter.negated ? false : true
+				const _test = "negated" in _filter && _filter.negated ? false : true
 				const _val = row[_filter.fieldName as keyof T]
 
 				switch (_filter.operator) {
-					case "equal":
+					case "equals":
 						return (_val == _filter.value) === _test
-					case "not_equal":
+					case "not_equal_to":
 						return (_val != _filter.value) === _test
-					case "greater":
+					case "greater_than":
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						return (parseFloat(String(_val)) > parseFloat(_filter.value as any)) === _test
-					case "greater_or_equal":
+					case "greater_than_or_equals":
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						return (parseFloat(String(_val)) >= parseFloat(_filter.value as any)) === _test
-					case "less":
+					case "less_than":
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						return (parseFloat(String(_val)) < parseFloat(_filter.value as any)) === _test
-					case "less_or_equal":
+					case "less_than_or_equals":
 						// eslint-disable-next-line @typescript-eslint/no-explicit-any
 						return (parseFloat(String(_val)) <= parseFloat(_filter.value as any)) === _test
 					case "is_outlier_by": {
@@ -626,14 +626,18 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 					}
 					case "contains":
 						return (hasValue(_val) && String(_val).indexOf(_filter.value) >= 0) === _test
-					case "is-contained":
+					case "is_contained_in":
 						return (hasValue(_val) && _filter.value.indexOf(String(_val)) >= 0) === _test
 					case "starts_with":
 						return (_val !== undefined && _val !== null && String(_val).startsWith(_filter.value)) === _test
 					case "ends_with":
 						return (_val !== undefined && _val !== null && String(_val).endsWith(_filter.value)) === _test
-					case "blank":
+					case "is_blank":
 						return _val === undefined || _val === null === _test
+
+					case "in": return globalThis.Array.isArray(_filter.value)
+						? _filter.value.includes(_val)
+						: _filter.value !== undefined && _filter.value !== null && String(_filter.value).split(",").includes(String(_val))
 
 					default: {
 						// eslint-disable-next-line @typescript-eslint/no-unused-vars

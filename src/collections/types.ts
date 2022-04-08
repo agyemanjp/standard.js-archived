@@ -55,24 +55,47 @@ export type FilterBase<TObj extends Obj = Obj, TVal = any> = {
 	value: TVal,
 	negated?: boolean
 }
+
+export type FilterBlank<T extends Obj> = {
+	fieldName: keyof (ExtractByType<T, Primitive | null | undefined>),
+	operator: "is_blank",
+	negated?: boolean
+}
+export type FilterArray<T extends Obj> = FilterBase<T, any> & {
+	operator:
+	| "in"
+}
 export type FilterCategorical<T extends Obj> = FilterBase<T, Primitive | null> & {
-	operator: "equal" | "not_equal" | "blank",
+	operator:
+	| "equals"
+	| "not_equal_to"
 }
 export type FilterOrdinal<T extends Obj> = FilterBase<T, number> & {
-	operator: "greater" | "greater_or_equal" | "less" | "less_or_equal" | "blank",
+	operator:
+	| "greater_than"
+	| "greater_than_or_equals"
+	| "less_than"
+	| "less_than_or_equals"
 }
 export type FilterTextual<T extends Obj> = FilterBase<T, string> & {
-	operator: "contains" | "is-contained" | "starts_with" | "ends_with" | "blank",
+	operator:
+	| "contains"
+	| "is_contained_in"
+	| "starts_with"
+	| "ends_with"
 }
-export type FilterStatistical<T extends Obj> = FilterBase<T, number> & {
-	operator: "is_outlier_by" | "blank", // number of std. deviations (possibly fractional)
+export type FilterNumeric<T extends Obj> = FilterBase<T, number> & {
+	operator:
+	| "is_outlier_by" // number of std. deviations (possibly fractional)
 }
 
 export type Filter<T extends Obj = Obj> = (
+	| FilterBlank<T>
+	| FilterArray<T>
 	| FilterCategorical<T>
 	| FilterOrdinal<T>
 	| FilterTextual<T>
-	| FilterStatistical<T>
+	| FilterNumeric<T>
 )
 export type FilterGroup<T extends Obj = Obj> = {
 	filters: Array<Filter<T> | FilterGroup<T>>
