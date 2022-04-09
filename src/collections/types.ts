@@ -50,9 +50,9 @@ export type ZipAsync<A extends ReadonlyArray<unknown>> = { [K in keyof A]: A[K] 
 export type AsyncOptions = ({ mode: "parallel", resultOrder: "completion" | "original" } | { mode: "serial" })
 
 
-export type FilterBase<TObj extends Obj = Obj, TVal = any> = {
-	fieldName: keyof (ExtractByType<TObj, TVal>),
-	value: TVal,
+export type FilterBase<T extends Obj = Obj, V = any> = {
+	fieldName: keyof (ExtractByType<T, V>),
+	value: V,
 	negated?: boolean
 }
 
@@ -61,9 +61,9 @@ export type FilterBlank<T extends Obj> = {
 	operator: "is_blank",
 	negated?: boolean
 }
-export type FilterArray<T extends Obj> = FilterBase<T, any> & {
-	operator:
-	| "in"
+export type FilterArray<T extends Obj, V = any> = FilterBase<T, V> & {
+	operator: "in",
+	values: V[]
 }
 export type FilterCategorical<T extends Obj> = FilterBase<T, Primitive | null> & {
 	operator:
