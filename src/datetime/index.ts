@@ -42,7 +42,7 @@ export function dateToRelativeTime(date: Date): string {
 }
 
 /** Returns a string representing the date object formated as "YYMMDD hh:mm:ss" */
-export function dateToYMDString(date: Date): string {
+export function dateToYearMonthDayHourMinuteSecond(date: Date): string {
 	const yyyy = date.getFullYear().toString()
 	let dd = date.getDate().toString()
 	let mm = (date.getMonth() + 1).toString()
@@ -68,4 +68,11 @@ export function dateToYMDString(date: Date): string {
 		seconds = "0" + seconds
 
 	return currentDate + " " + hours + ":" + minutes + ":" + seconds
+}
+
+export function dateToYearMonthDay(date: Date) {
+	const d = date.getDate()
+	const m = date.getMonth() + 1 //Month from 0 to 11
+	const y = date.getFullYear()
+	return '' + y + '-' + (m <= 9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d)
 }

@@ -55,7 +55,6 @@ export type FilterBase<T extends Obj = Obj, V = any> = {
 	value: V,
 	negated?: boolean
 }
-
 export type FilterBlank<T extends Obj> = {
 	fieldName: keyof (ExtractByType<T, Primitive | null | undefined>),
 	operator: "is_blank",

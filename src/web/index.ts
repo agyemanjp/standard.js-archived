@@ -355,12 +355,11 @@ function methodFn(args: RequestArgs, method: Method) {
 
 	return f
 }
-
 async function __(args: RequestArgs & { method: Method }): Promise<void>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType: T): Promise<ResponseDataTypes[T]>
 async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { method: Method }, responseType?: T) {
 	// return new Promise(async (resolve, reject) => {
-	const queryParams = args?.query ? `?${queryString(args.query)}` : ""
+	const queryParams = args?.query ? `?${getQueryString(args.query)}` : ""
 	const response = await (() => {
 		try {
 			return (args.customFetch ?? fetch)(`${trimRight(args.url, "/")}${queryParams}`, args)
@@ -385,7 +384,7 @@ async function __<T extends keyof ResponseDataTypes>(args: RequestArgs & { metho
 }
 
 /** Generate query string from query object */
-export function queryString<T extends Obj<string> = Obj<string>>(obj: T, excludedValues: unknown[] = [undefined, null]) {
+export function getQueryString<T extends Obj<string> = Obj<string>>(obj: T, excludedValues: unknown[] = [undefined, null]) {
 	return Object.keys(obj)
 		.filter(k => /*obj.hasOwnProperty(k) &&*/ !excludedValues.includes(obj[k]))
 		.map(k => `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`)

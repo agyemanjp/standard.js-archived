@@ -1,3 +1,5 @@
+/* eslint-disable fp/no-unused-expression */
+/* eslint-disable fp/no-mutation */
 /* eslint-disable indent */
 /* eslint-disable brace-style */
 /* eslint-disable fp/no-rest-parameters */
@@ -162,29 +164,24 @@ export function deepMerge(...args: any[]) {
 	}, {}) as TUnionToIntersection<T[number]>
 )*/
 
+export const mergeDeep = (options?: { mergeArrays: boolean, undefinedOverwrites: boolean }) => <T extends IObject[]>(...objects: T) => objects.reduce((result, current) => {
+	Object.keys(current).forEach((key) => {
+		if (Array.isArray(result[key]) && Array.isArray(current[key])) {
+			result[key] = (options?.mergeArrays ?? false)
+				? Array.from(new Set((result[key] as unknown[]).concat(current[key])))
+				: current[key]
+		}
+		else if (isObject(result[key]) && isObject(current[key])) {
+			result[key] = mergeDeep(options)(result[key] as IObject, current[key] as IObject)
+		}
+		else {
+			if ((options?.undefinedOverwrites ?? false) || typeof current[key] !== "undefined")
+				result[key] = current[key]
+		}
+	})
 
-/*export const mergeDeep = (options?: { mergeArrays: boolean, undefinedOverwrites: boolean }) => (
-	<T extends IObject[]>(...objects: T) => objects.reduce((result, current) => {
-		// eslint-disable-next-line fp/no-unused-expression
-		Object.keys(current).forEach((key) => {
-			if (Array.isArray(result[key]) && Array.isArray(current[key])) {
-				// eslint-disable-next-line fp/no-mutation
-				result[key] = (options?.mergeArrays ?? false)
-					? Array.from(new Set((result[key] as unknown[]).concat(current[key])))
-					: current[key]
-			}
-			else if (isObject(result[key]) && isObject(current[key])) {
-				// eslint-disable-next-line fp/no-mutation
-				result[key] = mergeDeep(options)(result[key] as IObject, current[key] as IObject)
-			}
-			else {
-				if ((options?.undefinedOverwrites ?? false) || typeof current[key] !== "undefined")
-					result[key] = current[key]
-			}
-		})
-		return result
-	}, {}) as TUnionToIntersection<T[number]>
-)*/
+	return result
+}, {}) as TUnionToIntersection<T[number]>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface IObject { [key: string]: any; length?: never; }

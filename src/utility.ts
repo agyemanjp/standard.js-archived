@@ -476,4 +476,4 @@ export function isType<T extends Function>(payload: any, type: T): payload is T 
 	return getType(payload) === name || Boolean(payload && payload.constructor === type)
 }
 
-
+export const stringify = (x: unknown) => JSON.stringify(x, (_, val) => typeof val === "function" ? `[Function ${val.name}]` : val, 2)

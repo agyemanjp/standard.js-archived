@@ -30,7 +30,20 @@
 		"type": "git",
 		"url": "git+https://github.com/agyemanjp/standard.js.git"
 	},
-	"keywords": [],
+	"keywords": [
+		"standard",
+		"library",
+		"agyemanjp",
+		"collections",
+		"concurrency",
+		"datetime",
+		"functional",
+		"numeric",
+		"object",
+		"text",
+		"async",
+		"web"
+	],
 	"contributors": [
 		{
 			"name": "James Prempeh",
