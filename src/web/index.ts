@@ -349,8 +349,28 @@ function methodFn(args: RequestArgs, method: Method) {
 	async function f<R extends keyof ResponseDataTypes>(opts: { responseType: R }): Promise<ResponseDataTypes[R]>
 	async function f<R extends keyof ResponseDataTypes>(opts?: { responseType: R }) {
 		return opts
-			? __({ ...args, method }, opts.responseType)
+			? __(
+				{
+					...args,
+					...(opts.responseType === "json"
+						? {
+							headers: {
+								'Accept': 'application/json',
+								'Content-Type': 'application/json',
+								...args.headers
+							},
+
+						}
+						: {}
+					),
+					method
+				},
+				opts.responseType
+			)
+
 			: __({ ...args, method })
+
+
 	}
 
 	return f
