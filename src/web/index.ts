@@ -417,7 +417,7 @@ export type RequestArgs = Omit<RequestInit, "method"> & {
 	customFetch?: typeof fetch
 }
 
-type ResponseDataTypes = {
+export type ResponseDataTypes = {
 	"json": any
 	"text": string
 	"blob": Blob
