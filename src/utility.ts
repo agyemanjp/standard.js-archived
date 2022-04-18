@@ -93,6 +93,8 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 export type First<Arr extends Array<any>> = Arr[0]
 
 export type ToCamel<S extends string> = S extends `${infer head}_${infer tail}` ? `${head}${Capitalize<ToCamel<tail>>}` : S;
+export type Concat<A extends string, B extends string> = `${A}${B}`
+const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
 
 export type Merge<A, B> = (
 	undefined extends A
