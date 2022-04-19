@@ -12,7 +12,7 @@
 /* eslint-disable fp/no-mutation */
 /* eslint-disable fp/no-loops */
 
-import { ToCamel } from "../utility"
+import { Concat, ToCamel } from "../utility"
 import * as char from "./char"
 
 const whitespaceChars = ["\n", "\t", "\v", "\r"]
@@ -205,9 +205,10 @@ export const split = (str: string, arg: { [Symbol.split](string: string, limit?:
 	}
 }
 
+export const concat = <A extends string, B extends string>(a: A, b: B) => a.concat(b) as Concat<A, B>
 
-export class String extends global.String {
-	constructor(str: string) { super(str) }
+export class String<S extends string = string> extends global.String {
+	constructor(str: S) { super(str) }
 
 	protected wrap<T, A extends any[]>(fn: (str: string, ..._args: A) => T): (..._args: A) => T extends string ? String : T {
 		return (..._args: A) => {
@@ -246,4 +247,6 @@ export class String extends global.String {
 	// trimRight = this.wrap(trimRight)
 	plural = this.wrap(plural)
 	split = this.wrap(split)
+
+	append = <Str extends string>(str: Str) => concat(this.toString() as S, str)
 }
