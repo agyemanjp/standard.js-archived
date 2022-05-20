@@ -263,9 +263,9 @@ export async function* skipWhileAsync<T>(iterable: Iterable<T> | AsyncIterable<T
 	}
 }
 
+export function map<X, Y>(collection: Iterable<X>, projector: Projector<X, Y, number>): Iterable<Y>
 export function map<X, Y, K extends string = string>(collection: Obj<X, K>, projector: Projector<X, Y, K>): Obj<Y, K>
 export function map<X, Y>(collection: Obj<X>, projector: Projector<X, Y, string>): Obj<Y>
-export function map<X, Y>(collection: Iterable<X>, projector: Projector<X, Y, number>): Iterable<Y>
 export function map<X, Y>(collection: Iterable<X> | Obj<X>, projector: Projector<X, Y, any>) {
 	if (isIterable(collection)) {
 		return (function* () {
