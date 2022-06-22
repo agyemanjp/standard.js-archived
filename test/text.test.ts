@@ -6,7 +6,7 @@ import * as assert from "assert"
 import {
 	String, isWhitespace, isEmptyOrWhitespace,
 	toCamelCase, toSnakeCase, toDashCase, toTitleCase,
-	plural, trimLeft, trimRight
+	plural, trimLeft, trimRight, capitalize
 } from "../dist/text/string.js"
 import { CharASCII } from "../dist/text/char.js"
 
@@ -219,6 +219,7 @@ describe('snakeCase', function () {
 
 describe('titleCase', function () {
 	it('should return the title case of a string', function () {
+		assert.strictEqual(toTitleCase("userReadonly"), "User Readonly")
 		assert.strictEqual(toTitleCase('hello world'), 'Hello World')
 		assert.strictEqual(toTitleCase('Hello world'), 'Hello World')
 		assert.strictEqual(toTitleCase('hello World'), 'Hello World')
@@ -277,18 +278,19 @@ describe('titleCase', function () {
 	})
 })
 
-/*describe('pascalCase', function () {
-	it('should capitalize the first character in a string', function () {
+describe('capitalize', function () {
+	it('should capitalize the first character in a string and keep the rest unmodified', function () {
 		assert.strictEqual(capitalize('APPLE'), 'APPLE')
 		assert.strictEqual(capitalize('apple'), 'Apple')
-		assert.strictEqual(capitalize('FReemacBook'), 'FreeMacBook')
+		assert.strictEqual(capitalize('fReeMacBook'), 'FReeMacBook')
 		assert.strictEqual(capitalize('f'), 'F')
 		assert.strictEqual(capitalize(''), '')
 		assert.strictEqual(capitalize('*apple'), '*apple')
 		assert.strictEqual(capitalize(PRINTABLE_ASCII), PRINTABLE_ASCII)
+		assert.strictEqual(capitalize('oRaNgE'), 'ORaNgE')
 	})
 
-	it('should capitalize the first character in a string and keep the rest unmodified', function () {
+	it('should capitalize the first character in a string, and convert the rest to lowercase when passed the appropriate argument', function () {
 		assert.strictEqual(capitalize('apple', true), 'Apple')
 		assert.strictEqual(capitalize('APPLE', true), 'Apple')
 		assert.strictEqual(capitalize('яблоко', true), 'Яблоко')
@@ -296,10 +298,8 @@ describe('titleCase', function () {
 		assert.strictEqual(capitalize('', true), '')
 		assert.strictEqual(capitalize('100', true), '100')
 		assert.strictEqual(capitalize('  ', true), '  ')
-		assert.strictEqual(capitalize('oRaNgE', true), 'ORaNgE')
+		assert.strictEqual(capitalize('oRaNgE', true), 'Orange')
 	})
-
-
 
 	it('should not modify numbers', function () {
 		assert.strictEqual(capitalize('100'), '100')
@@ -308,12 +308,12 @@ describe('titleCase', function () {
 
 	it('should return an empty string for null or undefined', function () {
 		assert.strictEqual(capitalize(''), '')
-		assert.strictEqual(capitalize(undefined), '')
-		assert.strictEqual(capitalize(null), '')
-		assert.strictEqual(capitalize(undefined, true), '')
-		assert.strictEqual(capitalize(undefined, false), '')
+		// assert.strictEqual(capitalize(undefined), '')
+		// assert.strictEqual(capitalize(null), '')
+		// assert.strictEqual(capitalize(undefined, true), '')
+		// assert.strictEqual(capitalize(undefined, false), '')
 	})
-})*/
+})
 
 describe('dashCase', function () {
 	it('should return the dash case of a string', function () {

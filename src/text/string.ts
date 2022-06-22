@@ -97,11 +97,11 @@ export const tokenizeWords = function* (str: string, args?:
 export const getCase = (str: string): "upper" | "lower" | undefined => (str.toLowerCase() === str.toUpperCase()) ? undefined : isUpperCase(str) ? "upper" : "lower"
 export const isUpperCase = (str: string) => str.toUpperCase() === str.valueOf()
 export const isLowerCase = (str: string) => str.toLowerCase() === str.valueOf()
-export const capitalize = (str: string) => str[0].toUpperCase() + str.substring(1).toLowerCase()
+export const capitalize = (str: string, modifyRest = false) => (str[0] ?? "").toUpperCase() + (modifyRest ? str.substring(1).toLowerCase() : str.substring(1))
 export const toSnakeCase = (str: string) => [...tokenizeWords(str)].map(token => token.toLowerCase()).join("_")
 export const toDashCase = (str: string) => [...tokenizeWords(str)].map(token => token.toLowerCase()).join("-")
-export const toCamelCase = <S extends string = string>(str: S) => [...tokenizeWords(str)].map((word, index) => index > 0 ? capitalize(word) : word.toLowerCase()).join("") as ToCamel<S>
-export const toTitleCase = (str: string) => [...tokenizeWords(str, { sepChars: [" "] })].map(s => capitalize(s)).join(" ")
+export const toCamelCase = <S extends string = string>(str: S) => [...tokenizeWords(str)].map((word, index) => index > 0 ? capitalize(word, true) : word.toLowerCase()).join("") as ToCamel<S>
+export const toTitleCase = (str: string) => [...tokenizeWords(str, { sepChars: [" "] })].map(s => capitalize(s.toLowerCase())).join(" ")
 export const toSpaceCase = (str: string) => [...tokenizeWords(str)].join(" ")
 
 export const isWhitespace = (str: string): boolean => str.replace(/^\s+|\s+$/g, '').length === 0
