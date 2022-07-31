@@ -66,6 +66,9 @@ export type ExtractOptional<T> = { [k in OptionalKeys<T>]?: T[k] }
 export type KeysByType<T, K> = { [k in keyof T]: K extends T[k] ? k : never }[keyof T]
 export type ExtractByType<T, K> = { [k in KeysByType<T, K>]: T[k] }
 
+export type UnwrapArray<T> = T extends Array<infer X> ? X : T
+export type UnwrapPromise<P> = P extends Promise<infer T> ? T : P
+
 /** Checks and asserts checks that a value is of a type. */
 export type TypeGuard<A, B extends A> = (value: A) => value is B
 
@@ -119,7 +122,6 @@ export type Merge3<A, B, C> = Merge<A, Merge<B, C>>
 export type Merge4<A, B, C, D> = Merge<A, Merge<B, Merge<C, D>>>
 export type Merge5<A, B, C, D, E> = Merge<A, Merge<B, Merge<C, Merge<D, E>>>>
 // export type MergeReduce<A extends ReadonlyArray<any> = any[]> = Array<A["length"] extends 1 ? A[0] : Merge<A[0], MergeReduce<A>>>
-// type Unwrap<p> = p extends Promise<infer T> ? T : p extends Array<infer Y> ? Y : p
 // type M<a extends ReadonlyArray<any>> = Unwrap<MergeReduce<a>>
 // type test = M<[1, 2]>
 

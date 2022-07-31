@@ -69,12 +69,13 @@ export class Sequence<X> implements Iterable<X> {
 	/** Convert to another iterable container type */
 	to<C extends Iterable<X>>(container: { (items: Iterable<X>): C }) { return container([...this]) }
 
+	toArray() { return [...this] }
+
 	take(n: number) { return this.ctor(take(this, n)) }
 	skip(n: number) { return this.ctor(skip(this, n)) }
 
 	takeWhile(predicate: Predicate<X, number | void>) { return this.ctor(takeWhile(this, predicate)) }
 	skipWhile(predicate: Predicate<X, number | void>) { return this.ctor(skipWhile(this, predicate)) }
-
 
 	/** Get first element (or first element to satisfy a predicate, if supplied) of this sequence
 	 * @param predicate Optional predicate applied to the elements
@@ -585,7 +586,7 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 						? originalIdVector
 						: this._colVectors.get(_filter.fieldName as keyof T)
 					if (colVector === undefined) {
-						throw new Error(`Trying to apply a filter on column ${_filter.fieldName}, but no such column in the dataTable`)
+						throw new Error(`Trying to apply a filter on column ${String(_filter.fieldName)}, but no such column in the dataTable`)
 					}
 					const vector: number[] = colVector.filter(v => v !== undefined).map(val => Number.parseFloat(String(val)))
 					const columnMean = mean(vector)
@@ -666,7 +667,7 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 
 	sort(args: { columnName: /*typeof this.ROW_NUM_COL_NAME |*/ keyof T, order: SortOrder, options?: SortOptions }) {
 		if (args.columnName !== this.ROW_NUM_COL_NAME && this._colVectors.get(args.columnName) === undefined)
-			throw new Error(`Unknown column ${args.columnName}`)
+			throw new Error(`Unknown column ${String(args.columnName)}`)
 
 		const idColumnVectorSorted = [...this._idVector].sort(
 			createRanker<number>(rowNum => args.columnName === this.ROW_NUM_COL_NAME

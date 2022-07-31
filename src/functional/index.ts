@@ -7,24 +7,24 @@ import { Obj, ArgsType } from "../utility"
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => -1 | 0 | 1
-export type RankerAsync<X = unknown> = (a: X, b: X) => Promise<number>
+export type RankerAsync<X = unknown> = (a: X, b: X) => number | Promise<number>
 
 /** Return true if a and b are equal, otherwise returns false */
 export type Comparer<X = unknown> = (a: X, b: X) => boolean
-export type ComparerAsync<X = unknown> = (a: X, b: X) => Promise<boolean>
+export type ComparerAsync<X = unknown> = (a: X, b: X) => boolean | Promise<boolean>
 
 /** Computes a unique hash */
 export type Hasher<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y
-export type HasherAsync<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Promise<Y>
+export type HasherAsync<X = unknown, Y extends string | number | symbol = number> = (a?: X) => Y | Promise<Y>
 
 export type Projector<X = unknown, Y = unknown, I = number> = (value: X, index: I) => Y
 export type ProjectorAsync<X = unknown, Y = unknown, I = unknown> = (item: X, index: I) => Y | Promise<Y>
 
 export type Predicate<X = unknown, I = unknown> = (value: X, index: I) => boolean
-export type PredicateAsync<X = unknown, I = unknown> = (value: X, index: I) => Promise<boolean>
+export type PredicateAsync<X = unknown, I = unknown> = (value: X, index: I) => boolean | Promise<boolean>
 
 export type Reducer<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Y
-export type ReducerAsync<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Promise<Y>
+export type ReducerAsync<X = unknown, Y = unknown, I = unknown> = (prev: Y, current: X, index: I) => Y | Promise<Y>
 
 /** A function that does nothing */
 export function noop() { }
