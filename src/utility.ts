@@ -67,7 +67,14 @@ export type KeysByType<T, K> = { [k in keyof T]: K extends T[k] ? k : never }[ke
 export type ExtractByType<T, K> = { [k in KeysByType<T, K>]: T[k] }
 
 export type UnwrapArray<T> = T extends Array<infer X> ? X : T
+export type UnwrapArrayRecursive<A> = A extends unknown[] ? UnwrapArrayRecursive<A[number]> : A;
+
 export type UnwrapPromise<P> = P extends Promise<infer T> ? T : P
+export type UnwrapPromiseRecursive<P> = P extends Promise<infer T> ? UnwrapPromiseRecursive<T> : P
+
+const test_UnwrapArrayRecursive: TypeAssert<UnwrapArrayRecursive<number[][][]>, number> = "true"
+const test_UnwrapPromiseRecursive: TypeAssert<UnwrapPromiseRecursive<Promise<Promise<number>>>, number> = "true"
+
 
 /** Checks and asserts checks that a value is of a type. */
 export type TypeGuard<A, B extends A> = (value: A) => value is B
