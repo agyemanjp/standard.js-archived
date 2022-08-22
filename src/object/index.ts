@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { toCamelCase } from "../text"
-import { Tuple, Obj, Merge, isObject, isSymbol, ToCamel } from "../utility"
+import { Tuple, Obj, Merge, isObject, isSymbol, ToCamel, KeysToCamelCase } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): K[]
@@ -60,7 +60,7 @@ export function omit<T extends Obj, K extends keyof T>(obj: T, ..._keys: K[]): O
 }
 
 /** Return input object literal with properties keys converted to camel case */
-export function camelize<T extends Obj<any, string>>(obj: T): { [k in ToCamel<keyof T>]: T[k] } {
+export function camelize<T extends Obj<any, string>>(obj: T): KeysToCamelCase<T> {
 	return objectFromTuples(entries(obj).map(keyVal =>
 		new Tuple(toCamelCase(keyVal[0]), keyVal[1]))
 	) as any
