@@ -107,7 +107,10 @@ export type ToCamel<S extends string | number | symbol> = S extends `${infer hea
 	: S extends string
 	? Lowercase<S>
 	: S;
-export type Camelize<T extends Obj> = { [k in ToCamel<keyof T>]: T[k] }
+
+export type KeysToCamelCase<T> = {
+	[K in keyof T as ToCamel<string & K>]: T[K] extends {} ? KeysToCamelCase<T[K]> : T[K]
+}
 
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
