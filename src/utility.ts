@@ -102,15 +102,24 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
 
-export type ToCamel<S extends string | number | symbol> = S extends `${infer head}_${infer tail}`
+export type ToCamel<S extends string | number | symbol> = (S extends `${infer head}_${infer tail}`
 	? `${Lowercase<head>}${Capitalize<ToCamel<tail>>}`
 	: S extends string
-	? Lowercase<S>
-	: S;
-
+	? S extends `${infer head}${infer tail}`
+	? S
+	: Lowercase<S>
+	: S
+)
 export type KeysToCamelCase<T> = {
-	[K in keyof T as ToCamel<string & K>]: T[K] extends {} ? KeysToCamelCase<T[K]> : T[K]
+	[K in keyof T as ToCamel<string & K>]: T[K] extends Obj ? KeysToCamelCase<T[K]> : T[K]
 }
+// type Test = KeysToCamelCase<{
+// 	S3_CLOUDFRONT_URL: string;
+// 	DEV_EMAIL_ADDRESSES: string;
+// 	APP_NAME: string;
+// 	NODE_ENV: number;
+// 	areGood: any[]
+// }>
 
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
