@@ -65,6 +65,13 @@ export function camelize<T extends Obj<any, string>>(obj: T): KeysToCamelCase<T>
 		new Tuple(toCamelCase(keyVal[0]), keyVal[1]))
 	) as any
 }
+// const test = camelize({
+// 	S3_CLOUDFRONT_URL: "",
+// 	DEV_EMAIL_ADDRESSES: "",
+// 	APP_NAME: "string",
+// 	NODE_ENV: 1,
+// 	areGood: []
+// })
 
 /** Return a shallow clone of an object literal */
 export function shallowClone<T>(val: T): T {

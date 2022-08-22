@@ -89,9 +89,9 @@ export const Tuple = class <X, Y>  {
 
 export type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export type DigitNonZero = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-// export type Collection<T> = Iterable<T> | Generator<T>
-// export type CollectionAsync<T> = AsyncIterable<T> | AsyncGenerator<T> | Iterable<T> | Generator<T>
+export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+export type LowercaseChar = Lowercase<UppercaseChar>
+export type AlphabeticChar = UppercaseChar | LowercaseChar
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
@@ -102,12 +102,10 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
 
-export type ToCamel<S extends string | number | symbol> = (S extends `${infer head}_${infer tail}`
-	? `${Lowercase<head>}${Capitalize<ToCamel<tail>>}`
+export type ToCamel<S extends string | number | symbol> = (S extends `${infer head}_${infer char}${infer tail}`
+	? `${Lowercase<head>}${Uppercase<char>}${ToCamel<tail>}`
 	: S extends string
-	? S extends `${infer head}${infer tail}`
-	? S
-	: Lowercase<S>
+	? Lowercase<S>
 	: S
 )
 export type KeysToCamelCase<T> = {
