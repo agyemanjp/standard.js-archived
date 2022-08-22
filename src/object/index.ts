@@ -6,7 +6,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
+import { toCamelCase } from "../text"
+import { Tuple, Obj, Merge, isObject, isSymbol, ToCamel } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): K[]
@@ -56,6 +57,13 @@ export function omit<T extends Obj, K extends keyof T>(obj: T, ..._keys: K[]): O
 	// eslint-disable-next-line fp/no-unused-expression, fp/no-mutation, fp/no-delete
 	_keys.forEach(k => delete result[k])
 	return result
+}
+
+/** Return input object literal with properties keys converted to camel case */
+export function camelize<T extends Obj<any, string>>(obj: T): { [k in ToCamel<keyof T>]: T[k] } {
+	return objectFromTuples(entries(obj).map(keyVal =>
+		new Tuple(toCamelCase(keyVal[0]), keyVal[1]))
+	) as any
 }
 
 /** Return a shallow clone of an object literal */

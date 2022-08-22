@@ -102,7 +102,7 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
 
-export type ToCamel<S extends string> = S extends `${infer head}_${infer tail}` ? `${head}${Capitalize<ToCamel<tail>>}` : S;
+export type ToCamel<S extends string | number | symbol> = S extends `${infer head}_${infer tail}` ? `${Lowercase<head>}${Capitalize<ToCamel<tail>>}` : S extends string ? Lowercase<S> : S;
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
 
@@ -487,4 +487,10 @@ export function isType<T extends Function>(payload: any, type: T): payload is T 
 	return getType(payload) === name || Boolean(payload && payload.constructor === type)
 }
 
-export const stringify = (x: unknown) => JSON.stringify(x, (_, val) => typeof val === "function" ? `[Function ${val.name}]` : val, 2)
+export const stringify = (x: unknown) => JSON.stringify(x, (_, val) => val === undefined
+	? `<undefined>`
+	: typeof val === "function"
+		? `[Function ${val.name}]`
+		: val,
+	2
+)
