@@ -102,7 +102,13 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
 
-export type ToCamel<S extends string | number | symbol> = S extends `${infer head}_${infer tail}` ? `${Lowercase<head>}${Capitalize<ToCamel<tail>>}` : S extends string ? Lowercase<S> : S;
+export type ToCamel<S extends string | number | symbol> = S extends `${infer head}_${infer tail}`
+	? `${Lowercase<head>}${Capitalize<ToCamel<tail>>}`
+	: S extends string
+	? Lowercase<S>
+	: S;
+export type Camelize<T extends Obj> = { [k in ToCamel<keyof T>]: T[k] }
+
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
 
