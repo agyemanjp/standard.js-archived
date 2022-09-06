@@ -8,38 +8,15 @@
 /* eslint-disable brace-style */
 
 
-/*type IsAnyOld<T> = (T extends {} ? 1 : 0) extends (0 | 1)
-	? (0 | 1) extends (T extends {} ? 1 : 0)
-	? undefined extends T
-	? "false"
-	: "true"
-	: "false"
-	: "false"
-*/
-
 /** Tests for whether a type is exactly <any>. Fails for types that are extended by <unknown> */
-type IsAny<T> = ((Exclude<any, T> extends (never) ? 1 : 0) extends (0 | 1)
+export type IsAny<T> = ((Exclude<any, T> extends (never) ? 1 : 0) extends (0 | 1)
 	? (0 | 1) extends (Exclude<any, T> extends never ? 1 : 0)
 	? "false"
 	: "true"
 	: "true"
 )
 
-const test_any_any: IsAny<(any)> = "true"
-const test_any_union: IsAny<(string | undefined)> = "false"
-const test_any_never: IsAny<(never)> = "false"
-const test_any_undefined: IsAny<(undefined)> = "false"
-const test_any_obj: IsAny<({})> = "false"
-const test_any_num: IsAny<(number)> = "false"
-const test_any_arr: IsAny<(Array<any>)> = "false"
-const test_any_tuple: IsAny<[number, Array<any>]> = "false"
-const test_any_tuple_unknown: IsAny<[unknown, any]> = "false"
-
-// Failing
-// const test_any_unknown: IsAny<(unknown)> = "false"
-// const test_any_unknown_union: IsAny<(number | unknown)> = "false"
-
-
+/** Tests for whether a type is the same as another type. Fails for types that are extended by <unknown> */
 export type TypeAssert<T1, T2> = (
 	"true" extends IsAny<T1>
 	? "true" extends IsAny<T2>
@@ -68,13 +45,11 @@ export type ExtractByType<T, K> = { [k in KeysByType<T, K>]: T[k] }
 
 export type UnwrapArray<T> = T extends Array<infer X> ? X : T
 export type UnwrapArrayRecursive<A> = A extends unknown[] ? UnwrapArrayRecursive<A[number]> : A;
+const test_UnwrapArrayRecursive: TypeAssert<UnwrapArrayRecursive<number[][][]>, number> = "true"
 
 export type UnwrapPromise<P> = P extends Promise<infer T> ? T : P
 export type UnwrapPromiseRecursive<P> = P extends Promise<infer T> ? UnwrapPromiseRecursive<T> : P
-
-const test_UnwrapArrayRecursive: TypeAssert<UnwrapArrayRecursive<number[][][]>, number> = "true"
 const test_UnwrapPromiseRecursive: TypeAssert<UnwrapPromiseRecursive<Promise<Promise<number>>>, number> = "true"
-
 
 /** Checks and asserts checks that a value is of a type. */
 export type TypeGuard<A, B extends A> = (value: A) => value is B
@@ -92,6 +67,27 @@ export type DigitNonZero = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
 export type LowercaseChar = Lowercase<UppercaseChar>
 export type AlphabeticChar = UppercaseChar | LowercaseChar
+
+type Repeat<Str extends string, Count extends DigitNonZero, Sep extends string = " "> = Count extends 1
+	? Str
+	: `${Str}${Sep}${Repeat<Str, Decrement<Count>, Sep>}`
+const test_Repeat: TypeAssert<Repeat<"abc", 4, "_">, "abc_abc_abc_abc"> = "true"
+
+type UnionOfRepeats<Str extends string, Max extends DigitNonZero, Sep extends string = " "> = Max extends 1
+	? Str
+	: Str | `${Str}${Sep}${UnionOfRepeats<Str, Decrement<Max>, Sep>}`
+const test_UnionOfRepeats: TypeAssert<UnionOfRepeats<"abc", 3, ",">, "abc" | "abc,abc" | "abc,abc,abc"> = "true"
+
+type Decrement<N extends DigitNonZero> = (N extends 9 ? 8
+	: N extends 8 ? 7
+	: N extends 7 ? 6
+	: N extends 6 ? 5
+	: N extends 5 ? 4
+	: N extends 4 ? 3
+	: N extends 3 ? 2
+	: N extends 2 ? 1
+	: 1
+)
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
@@ -510,3 +506,13 @@ export const stringify = (x: unknown) => JSON.stringify(x, (_, val) => val === u
 		: val,
 	2
 )
+
+
+/*type IsAnyOld<T> = (T extends {} ? 1 : 0) extends (0 | 1)
+	? (0 | 1) extends (T extends {} ? 1 : 0)
+	? undefined extends T
+	? "false"
+	: "true"
+	: "false"
+	: "false"
+*/

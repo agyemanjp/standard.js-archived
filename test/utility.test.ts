@@ -7,10 +7,7 @@
 /* eslint-disable fp/no-unused-expression */
 
 import * as assert from "assert"
-import {
-	ExtractByType, TypeAssert, Merge, Merge1, Merge2, Merge3, hasValue,
-	isArray, isIterable
-} from "../dist/utility.js"
+import { ExtractByType, TypeAssert, IsAny, Merge1, Merge2, Merge3, hasValue, isArray, isIterable } from "../dist/utility.js"
 
 describe('hasValue', function () {
 	it('should return true for an empty array', function () {
@@ -216,6 +213,32 @@ describe('clone()', () => {
 
 
 //#region Type tests
+describe("IsAny", () => {
+	it("should reliably check for whether a type is any", () => {
+		// type IsAny<T> = ((Exclude<any, T> extends (never) ? 1 : 0) extends (0 | 1)
+		// 	? (0 | 1) extends (Exclude<any, T> extends never ? 1 : 0)
+		// 	? "false"
+		// 	: "true"
+		// 	: "true"
+		// )
+
+		const test_any_any: IsAny<(any)> = "true"
+		const test_any_union: IsAny<(string | undefined)> = "false"
+		const test_any_never: IsAny<(never)> = "false"
+		const test_any_undefined: IsAny<(undefined)> = "false"
+		const test_any_obj: IsAny<({})> = "false"
+		const test_any_num: IsAny<(number)> = "false"
+		const test_any_arr: IsAny<(Array<any>)> = "false"
+		const test_any_tuple: IsAny<[number, Array<any>]> = "false"
+		const test_any_tuple_unknown: IsAny<[unknown, any]> = "false"
+
+		const test_any_unknown: IsAny<(unknown)> = "true"
+		const test_any_unknown_union: IsAny<(number | unknown)> = "true"
+
+		assert.ok(true)
+	})
+
+})
 
 describe("TypeAssert", () => {
 	it("should return 'true' for identical union types", () => {
@@ -366,18 +389,15 @@ describe("IsIterable", () => {
 })
 
 
-/*
-const testMerge2: TypeAssert<Merge2<{ str: "str", num: 3 }, { str: "abc", num: undefined }>, { str: "abc", num: 3 }> = "true"
+/* const testMerge2: TypeAssert<Merge2<{ str: "str", num: 3 }, { str: "abc", num: undefined }>, { str: "abc", num: 3 }> = "true"
 
-const testMerge2_1: TypeAssert<Merge2<"c", "str">, "str"> = "true"
+	const testMerge2_1: TypeAssert<Merge2<"c", "str">, "str"> = "true"
 
-const testMerge3: TypeAssert<Merge3<"", { str: "str" }, { str: undefined, num: 1 }>, { str: "str", num: 1 }> = "true"
+	const testMerge3: TypeAssert<Merge3<"", { str: "str" }, { str: undefined, num: 1 }>, { str: "str", num: 1 }> = "true"
 
-const testMerge3_1: TypeAssert<Merge3<{}, {}, { str: "num" }>, { str: "num" }> = "true"
+	const testMerge3_1: TypeAssert<Merge3<{}, {}, { str: "num" }>, { str: "num" }> = "true"
 
-const test_TypeAssert_Any: TypeAssert<any, { str: "num" }> = "false"
+	const test_TypeAssert_Any: TypeAssert<any, { str: "num" }> = "false"
 */
-
-
 
 //#endregion

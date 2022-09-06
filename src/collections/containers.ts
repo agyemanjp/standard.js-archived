@@ -506,7 +506,7 @@ export class DataTable<T extends Obj = Obj> /*implements Table<T>*/ {
 	constructor(source: Iterable<T> | ColumnarData<T>, idVector?: Iterable<number>, rowNumColName = "rowNum") {
 		// eslint-disable-next-line fp/no-mutation, @typescript-eslint/no-explicit-any
 		this._colVectors = isIterable(source)
-			? new Dictionary(DataTable.rowsToColumns(source))
+			? new Dictionary(DataTable.rowsToColumns(source as Iterable<T>))
 			: new Dictionary(source)
 
 		// eslint-disable-next-line fp/no-mutation

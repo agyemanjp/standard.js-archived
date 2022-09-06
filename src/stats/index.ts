@@ -1,3 +1,4 @@
+/* eslint-disable fp/no-mutation */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable no-shadow */
 /* eslint-disable brace-style */
@@ -9,11 +10,10 @@ export function min(vector: Iterable<number>): number | undefined
 export function min<T>(vector: Iterable<T>, ranker: Ranker<T>): T | undefined
 export function min<T>(vector: Iterable<T> | Iterable<number>, ranker?: Ranker<unknown>) {
 	// eslint-disable-next-line fp/no-let
-	let min = undefined
+	let min = undefined as T | number | undefined
 	// eslint-disable-next-line fp/no-loops
 	for (const x of vector) {
-		if (min === undefined || (ranker && ranker(x, min) < 0) || (!ranker && x < min))
-			// eslint-disable-next-line fp/no-mutation
+		if (min === undefined || (ranker && ranker(x, (min as T | number)) < 0) || (!ranker && x < (min as T | number)))
 			min = x
 	}
 
