@@ -64,21 +64,31 @@ export const Tuple = class <X, Y>  {
 
 export type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 export type DigitNonZero = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
-export type LowercaseChar = Lowercase<UppercaseChar>
-export type AlphabeticChar = UppercaseChar | LowercaseChar
-
-type Repeat<Str extends string, Count extends DigitNonZero, Sep extends string = " "> = Count extends 1
-	? Str
-	: `${Str}${Sep}${Repeat<Str, Decrement<Count>, Sep>}`
-const test_Repeat: TypeAssert<Repeat<"abc", 4, "_">, "abc_abc_abc_abc"> = "true"
-
-type UnionOfRepeats<Str extends string, Max extends DigitNonZero, Sep extends string = " "> = Max extends 1
-	? Str
-	: Str | `${Str}${Sep}${UnionOfRepeats<Str, Decrement<Max>, Sep>}`
-const test_UnionOfRepeats: TypeAssert<UnionOfRepeats<"abc", 3, ",">, "abc" | "abc,abc" | "abc,abc,abc"> = "true"
-
-type Decrement<N extends DigitNonZero> = (N extends 9 ? 8
+export type Increment<N extends Digit> = (
+	N extends 0 ? 1
+	: N extends 1 ? 2
+	: N extends 2 ? 3
+	: N extends 3 ? 4
+	: N extends 4 ? 5
+	: N extends 5 ? 6
+	: N extends 6 ? 7
+	: N extends 7 ? 8
+	: N extends 8 ? 9
+	: 9
+)
+export type Decrement<N extends Digit> = (
+	N extends 9 ? 8
+	: N extends 8 ? 7
+	: N extends 7 ? 6
+	: N extends 6 ? 5
+	: N extends 5 ? 4
+	: N extends 4 ? 3
+	: N extends 3 ? 2
+	: N extends 2 ? 1
+	: N extends 1 ? 0
+	: 0
+)
+export type DecrementNonZero<N extends DigitNonZero> = (N extends 9 ? 8
 	: N extends 8 ? 7
 	: N extends 7 ? 6
 	: N extends 6 ? 5
@@ -88,6 +98,20 @@ type Decrement<N extends DigitNonZero> = (N extends 9 ? 8
 	: N extends 2 ? 1
 	: 1
 )
+
+export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+export type LowercaseChar = Lowercase<UppercaseChar>
+export type AlphabeticChar = UppercaseChar | LowercaseChar
+
+export type Repeat<Str extends string, Count extends DigitNonZero, Sep extends string = " "> = Count extends 1
+	? Str
+	: `${Str}${Sep}${Repeat<Str, DecrementNonZero<Count>, Sep>}`
+const test_Repeat: TypeAssert<Repeat<"abc", 4, "_">, "abc_abc_abc_abc"> = "true"
+
+export type UnionOfRepeats<Str extends string, Max extends DigitNonZero, Sep extends string = " "> = Max extends 1
+	? Str
+	: Str | `${Str}${Sep}${UnionOfRepeats<Str, DecrementNonZero<Max>, Sep>}`
+const test_UnionOfRepeats: TypeAssert<UnionOfRepeats<"abc", 3, ",">, "abc" | "abc,abc" | "abc,abc,abc"> = "true"
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
