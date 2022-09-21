@@ -9,6 +9,7 @@
 import * as assert from "assert"
 import { ExtractByType, TypeAssert, IsAny, Merge1, Merge2, Merge3, hasValue, isArray, isIterable } from "../dist/utility.js"
 
+
 describe('hasValue', function () {
 	it('should return true for an empty array', function () {
 		assert.equal(hasValue([]), true)
@@ -101,8 +102,7 @@ describe("isIterable", () => {
 	})
 })
 
-/*
-describe("Number Regex", function () {
+/* describe("Number Regex", function () {
 	var re = new RegExp("^(" + numberReSnippet + ")$")
 	it("Matches Java and JavaScript numbers", function () {
 		expect(re.test("1")).toBe(true)
