@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../text"
+import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../ascii"
 import { Tuple, Obj, Merge, isObject, isSymbol, ExtractByType } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
@@ -65,6 +65,7 @@ export function keysToCamelCase<T extends Obj<any, string>>(obj: T): KeysToCamel
 		new Tuple(camelCase(keyVal[0]), keyVal[1]))
 	) as any
 }
+
 /** Return input object literal with properties keys converted to dash case */
 export function keysToDashCase<T extends Obj<any, string>>(obj: T): KeysToDashCase<T> {
 	return objectFromTuples(entries(obj).map(keyVal =>

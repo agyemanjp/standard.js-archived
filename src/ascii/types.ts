@@ -1,19 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
-import { TypeAssert } from "../utility"
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { DecrementNonZero, DigitNonZero } from "../numeric"
-import { Obj } from "../utility"
+import { Digit, DigitNonZero, DecrementNonZero } from "../numeric"
+import { Obj, TypeAssert } from "../utility"
 
-export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
-export type LowercaseChar = Lowercase<UppercaseChar>
-export type AlphabeticChar = UppercaseChar | LowercaseChar
 
-export type UppercaseVowel = "A" | "E" | "I" | "O" | "U"
-export type LowercaseVowel = Lowercase<UppercaseVowel>
+export type CharUppercase = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+export type CharLowercase = Lowercase<CharUppercase>
+export type CharAlphabetic = CharUppercase | CharLowercase
+export type CharAlphaNumeric = CharAlphabetic | Digit
+export type CharSpecial = any
 
-export type UppercaseConsonant = | "B" | "C" | "D" | "F" | "G" | "H" | "J" | "K" | "L" | "M" | "N" | "P" | "Q" | "R" | "S" | "T" | "V" | "W" | "X" | "Y" | "Z"
-export type LowercaseConsonant = Lowercase<UppercaseConsonant>
+export type VowelUppercase = "A" | "E" | "I" | "O" | "U"
+export type VowelLowercase = Lowercase<VowelUppercase>
+export type Vowel = VowelUppercase | VowelLowercase
+export type ConsonantUppercase = | "B" | "C" | "D" | "F" | "G" | "H" | "J" | "K" | "L" | "M" | "N" | "P" | "Q" | "R" | "S" | "T" | "V" | "W" | "X" | "Y" | "Z"
+export type ConsonantLowercase = Lowercase<ConsonantUppercase>
+export type Consonant = ConsonantUppercase | ConsonantLowercase
 
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
@@ -40,19 +43,26 @@ export type CaseOf<S extends string> = (
 	? "upper"
 	: "lower"
 )
+export type InitialLower<S extends string> = S extends `${infer head}${infer tail}` ? `${Lowercase<head>}${tail}` : S
+export type InitialUpper<S extends string> = S extends `${infer head}${infer tail}` ? `${Uppercase<head>}${tail}` : S
+export type InitialOnlyCapital<S extends string> = S extends `${infer head}${infer tail}` ? `${Uppercase<head>}${Lowercase<tail>}` : S
 
-export type CamelCase<S extends string, PrevCase extends "upper" | "lower" | "none" = "upper"> = (
-	S extends `${infer head}${infer tail}`
-	? head extends " " | "_" | "-" | "."
-	? `${CamelCase<tail, "none">}`
-	: head extends UppercaseChar
-	? PrevCase extends "lower"
-	? `${head}${CamelCase<tail, CaseOf<head>>}`
-	: PrevCase extends "upper"
-	? `${Lowercase<head>}${CamelCase<tail, CaseOf<head>>}`
-	: `${Uppercase<head>}${CamelCase<tail, "upper">}` // PrevCase extends "separator"
-	: `${head}${CamelCase<tail, "lower">}` // head extends LowercaseChar
-	: S
+export type CamelCase<S extends string, PrevCase extends undefined | "upper" | "lower" | "none" = undefined> = (
+	PrevCase extends undefined
+	? InitialLower<CamelCase<S, "none">>
+	: (S extends `${infer head}${infer tail}`
+		? (head extends " " | "_" | "-" | "."
+			? `${CamelCase<tail, "none">}`
+			: (PrevCase extends "lower"
+				? `${head}${CamelCase<tail, CaseOf<head>>}`
+				: (PrevCase extends "upper"
+					? `${Lowercase<head>}${CamelCase<tail, CaseOf<head>>}`
+					: `${Uppercase<head>}${CamelCase<tail, "upper">}` // PrevCase extends "none" (separator)
+				)
+			)
+		)
+		: S
+	)
 )
 export type KeysToCamelCase<T> = {
 	[K in keyof T as CamelCase<string & K>]: T[K] extends Obj ? KeysToCamelCase<T[K]> : T[K]
@@ -64,7 +74,10 @@ const test_KeysToCamelCase: TypeAssert<
 		"DATABASE-URL": string;
 		APP_NAME: string;
 		NODE_ENV: number;
-		isGood: unknown[]
+		isGood: unknown[],
+		"get-x": any
+		"-get-x": any
+		"get-xYZ": any
 	}>,
 	{
 		s3CloudfrontUrl: string;
@@ -73,13 +86,15 @@ const test_KeysToCamelCase: TypeAssert<
 		appName: string;
 		nodeEnv: number;
 		isGood: unknown[];
+		getX: any;
+		getXyz: any;
 	}
 > = "true"
 
 export type DashCase<S extends string, PrevCase extends "upper" | "lower" = "upper"> = (S extends `${infer head}${infer tail}`
 	? head extends " " | "_" | "-" | "."
 	? `-${DashCase<tail, "upper">}`
-	: head extends UppercaseChar
+	: head extends CharUppercase
 	? PrevCase extends "lower"
 	? `-${Lowercase<head>}${DashCase<tail, "upper">}`
 	: `${Lowercase<head>}${DashCase<tail, "upper">}`
@@ -110,7 +125,7 @@ export type SnakeCase<S extends string, PrevCase extends "upper" | "lower" = "up
 	S extends `${infer head}${infer tail}`
 	? head extends " " | "-" | "_" | "."
 	? `_${SnakeCase<tail, "upper">}`
-	: head extends UppercaseChar
+	: head extends CharUppercase
 	? PrevCase extends "lower"
 	? `_${Lowercase<head>}${SnakeCase<tail, "upper">}`
 	: `${Lowercase<head>}${SnakeCase<tail, "upper">}`
@@ -137,12 +152,8 @@ const test_KeysToSnakeCase: TypeAssert<
 	}
 > = "true"
 
-export type InitCapCase<S extends string> = (S extends `${infer head}${infer tail}`
-	? `${Uppercase<head>}${Lowercase<tail>}`
-	: S
-)
 export type KeysToInitCapCase<T> = {
-	[K in keyof T as InitCapCase<string & K>]: T[K] extends Obj ? KeysToInitCapCase<T[K]> : T[K]
+	[K in keyof T as InitialOnlyCapital<string & K>]: T[K] extends Obj ? KeysToInitCapCase<T[K]> : T[K]
 }
 const test_KeysToInitCapCase: TypeAssert<
 	KeysToInitCapCase<{
@@ -160,12 +171,3 @@ const test_KeysToInitCapCase: TypeAssert<
 		Isgood: unknown[];
 	}
 > = "true"
-
-
-type X = KeysToSnakeCase<{
-	s3CloudfrontURL: string;
-	DEV_EMAIL_ADDRESSES: string;
-	"DATABASE-URL": string;
-	APP_NAME: string;
-	isGood: unknown[]
-}>

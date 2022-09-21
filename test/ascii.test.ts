@@ -7,8 +7,8 @@ import {
 	String, isWhitespace, isEmptyOrWhitespace,
 	camelCase, snakeCase, dashCase, titleCase,
 	plural, trimLeft, trimRight, initialCaps
-} from "../dist/text/string.js"
-import { CharASCII } from "../dist/text/char.js"
+} from "../dist/ascii/string.js"
+import { Char } from "../dist/ascii/char.js"
 
 // TODO: Test with XMLHTTPRequest capitalization variations (and other comented out cases)
 
