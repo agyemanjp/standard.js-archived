@@ -62,56 +62,6 @@ export const Tuple = class <X, Y>  {
 	constructor(x: X, y: Y) { return [x, y] as Tuple<X, Y> }
 } as { new <X, Y>(x: X, y: Y): [X, Y] }
 
-export type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-export type DigitNonZero = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-export type Increment<N extends Digit> = (
-	N extends 0 ? 1
-	: N extends 1 ? 2
-	: N extends 2 ? 3
-	: N extends 3 ? 4
-	: N extends 4 ? 5
-	: N extends 5 ? 6
-	: N extends 6 ? 7
-	: N extends 7 ? 8
-	: N extends 8 ? 9
-	: 9
-)
-export type Decrement<N extends Digit> = (
-	N extends 9 ? 8
-	: N extends 8 ? 7
-	: N extends 7 ? 6
-	: N extends 6 ? 5
-	: N extends 5 ? 4
-	: N extends 4 ? 3
-	: N extends 3 ? 2
-	: N extends 2 ? 1
-	: N extends 1 ? 0
-	: 0
-)
-export type DecrementNonZero<N extends DigitNonZero> = (N extends 9 ? 8
-	: N extends 8 ? 7
-	: N extends 7 ? 6
-	: N extends 6 ? 5
-	: N extends 5 ? 4
-	: N extends 4 ? 3
-	: N extends 3 ? 2
-	: N extends 2 ? 1
-	: 1
-)
-
-export type UppercaseChar = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
-export type LowercaseChar = Lowercase<UppercaseChar>
-export type AlphabeticChar = UppercaseChar | LowercaseChar
-
-export type Repeat<Str extends string, Count extends DigitNonZero, Sep extends string = " "> = Count extends 1
-	? Str
-	: `${Str}${Sep}${Repeat<Str, DecrementNonZero<Count>, Sep>}`
-const test_Repeat: TypeAssert<Repeat<"abc", 4, "_">, "abc_abc_abc_abc"> = "true"
-
-export type UnionOfRepeats<Str extends string, Max extends DigitNonZero, Sep extends string = " "> = Max extends 1
-	? Str
-	: Str | `${Str}${Sep}${UnionOfRepeats<Str, DecrementNonZero<Max>, Sep>}`
-const test_UnionOfRepeats: TypeAssert<UnionOfRepeats<"abc", 3, ",">, "abc" | "abc,abc" | "abc,abc,abc"> = "true"
 
 /** Type of tail of array */
 export type Tail<L extends ReadonlyArray<any>> = ((...t: L) => any) extends ((head: any, ...tail: infer LTail) => any) ? LTail : never
@@ -122,25 +72,6 @@ export type Last<Arr extends Array<any>> = Arr[Tail<Arr>["length"]]
 /** Type of first element of array */
 export type First<Arr extends Array<any>> = Arr[0]
 
-export type ToCamel<S extends string | number | symbol> = (S extends `${infer head}_${infer char}${infer tail}`
-	? `${Lowercase<head>}${Uppercase<char>}${ToCamel<tail>}`
-	: S extends string
-	? Lowercase<S>
-	: S
-)
-export type KeysToCamelCase<T> = {
-	[K in keyof T as ToCamel<string & K>]: T[K] extends Obj ? KeysToCamelCase<T[K]> : T[K]
-}
-// type Test = KeysToCamelCase<{
-// 	S3_CLOUDFRONT_URL: string;
-// 	DEV_EMAIL_ADDRESSES: string;
-// 	APP_NAME: string;
-// 	NODE_ENV: number;
-// 	areGood: any[]
-// }>
-
-export type Concat<A extends string, B extends string> = `${A}${B}`
-const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
 
 export type Merge<A, B> = (
 	undefined extends A

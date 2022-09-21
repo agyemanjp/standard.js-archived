@@ -47,7 +47,3 @@ export function isConsonant(char: string) {
 	return !isVowel(char)
 }
 
-// function validate(str: string) {
-// 	if (str.length > 1)
-// 		throw new Error(`Invalid char: must have unit length`)
-// }
