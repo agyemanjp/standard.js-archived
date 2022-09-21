@@ -18,6 +18,9 @@ export type LowercaseConsonant = Lowercase<UppercaseConsonant>
 export type Concat<A extends string, B extends string> = `${A}${B}`
 const test_concat: TypeAssert<Concat<"auth.com/:cat/api", "/:app/verify">, "auth.com/:cat/api/:app/verify"> = "true"
 
+export type TrimEnd<Str extends string, Ending extends string> = Str extends `${infer head}${Ending}` ? head : never
+export type TrimStart<Str extends string, Start extends string> = Str extends `${Start}${infer tail}` ? tail : never
+
 export type Repeat<Str extends string | number, Count extends DigitNonZero, Sep extends string = " "> = Count extends 1
 	? Str
 	: `${Str}${Sep}${Repeat<Str, DecrementNonZero<Count>, Sep>}`

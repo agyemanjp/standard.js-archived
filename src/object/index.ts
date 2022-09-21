@@ -6,8 +6,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase } from "../text"
-import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
+import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../text"
+import { Tuple, Obj, Merge, isObject, isSymbol, ExtractByType } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): string[]
@@ -78,6 +78,22 @@ export function keysToSnakeCase<T extends Obj<any, string>>(obj: T): KeysToSnake
 	) as any
 }
 
+export function prefixKeys<Objct extends Obj<any, string>, Pref extends string>(obj: Objct, prefix: Pref) {
+	return objectFromTuples(entries(obj).map(kv =>
+		new Tuple(`${prefix}${kv[0]}`, kv[1])
+	)) as any as { [key in `${Pref}${StringKeys<Objct>}`]: Objct[TrimStart<key, Pref>] }
+}
+export function suffixKeys<Objct extends Obj<any, string>, Suff extends string>(obj: Objct, suffix: Suff) {
+	return objectFromTuples(entries(obj).map(kv =>
+		new Tuple(`${kv[0]}${suffix}`, kv[1])
+	)) as any as { [key in `${StringKeys<Objct>}${Suff}`]: Objct[TrimEnd<key, Suff>] }
+}
+type StringKeys<O> = keyof O extends string ? keyof O : never
+
+// const pref = prefixKeys({ bool: true, num: 1, str: "" }, "prefix_")
+// const suff = suffixKeys({ bool: true, num: 1, str: "" }, "_suffix")
+
+// type X = StringKeys<{ x: 1, 2: 3 }>
 // const test = camelize({
 // 	S3_CLOUDFRONT_URL: "",
 // 	DEV_EMAIL_ADDRESSES: "",
