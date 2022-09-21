@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { camelCase, KeysToCamelCase } from "../text"
+import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase } from "../text"
 import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
@@ -60,11 +60,24 @@ export function omit<T extends Obj, K extends keyof T>(obj: T, ..._keys: K[]): O
 }
 
 /** Return input object literal with properties keys converted to camel case */
-export function camelize<T extends Obj<any, string>>(obj: T): KeysToCamelCase<T> {
+export function keysToCamelCase<T extends Obj<any, string>>(obj: T): KeysToCamelCase<T> {
 	return objectFromTuples(entries(obj).map(keyVal =>
 		new Tuple(camelCase(keyVal[0]), keyVal[1]))
 	) as any
 }
+/** Return input object literal with properties keys converted to dash case */
+export function keysToDashCase<T extends Obj<any, string>>(obj: T): KeysToDashCase<T> {
+	return objectFromTuples(entries(obj).map(keyVal =>
+		new Tuple(dashCase(keyVal[0]), keyVal[1]))
+	) as any
+}
+/** Return input object literal with properties keys converted to snake case */
+export function keysToSnakeCase<T extends Obj<any, string>>(obj: T): KeysToSnakeCase<T> {
+	return objectFromTuples(entries(obj).map(keyVal =>
+		new Tuple(snakeCase(keyVal[0]), keyVal[1]))
+	) as any
+}
+
 // const test = camelize({
 // 	S3_CLOUDFRONT_URL: "",
 // 	DEV_EMAIL_ADDRESSES: "",
