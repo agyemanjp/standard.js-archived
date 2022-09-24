@@ -33,8 +33,10 @@ export type Fx<Ret, Args extends any[]> = (...args: Args) => Ret
 export type ArgsType<F extends (...x: any[]) => any> = F extends (...x: infer A) => any ? A : never
 export type Primitive = number | string | bigint | boolean | symbol
 export type Obj<TValue = unknown, TKey extends string | number = string> = { [key in TKey]: TValue }
+export type ObjEmpty = { [k in never]: never };
 export type ValueOf<O> = O[keyof O]
 export type RecursivePartial<T> = { [P in keyof T]?: T[P] extends Record<string, unknown> ? RecursivePartial<T[P]> : T[P] }
+export type ReadonlyRecursive<T> = T extends Object ? Readonly<{ [key in keyof T]: ReadonlyRecursive<T[key]> }> : Readonly<T>
 export type RecursiveRequired<T> = { [P in keyof T]-?: Required<T[P]> }
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
 
