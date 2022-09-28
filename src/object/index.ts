@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../ascii"
-import { Tuple, Obj, Merge, isObject, isSymbol, ExtractByType } from "../utility"
+import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): string[]
