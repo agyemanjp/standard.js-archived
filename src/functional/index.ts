@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable fp/no-rest-parameters */
 /* eslint-disable brace-style */
-import { Obj, ArgsType } from "../utility"
+import { Obj, ArgsType } from "../utility.js"
 
 /** Return -1 if a is smaller than b; 0 if a & b are equal, and 1 if a is bigger than b */
 export type Ranker<X = unknown> = (a: X, b: X) => -1 | 0 | 1

@@ -6,10 +6,10 @@
 /* eslint-disable brace-style */
 
 
-import { Ranker, RankerAsync, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "../functional"
-import { Obj, Primitive, Tuple, TypeGuard, ExtractByType, hasValue, isIterable, isAsyncIterable } from "../utility"
-import { entries, objectFromTuples, objectFromTuplesAsync } from "../object"
-import { Zip, ZipAsync, IndexedAccess, Finite, Container } from "./types"
+import { Ranker, Reducer, ReducerAsync, Projector, ProjectorAsync, Predicate, PredicateAsync } from "../functional/index.js"
+import { Obj, Primitive, Tuple, TypeGuard, ExtractByType, hasValue, isIterable, isAsyncIterable } from "../utility.js"
+import { entries, objectFromTuples, objectFromTuplesAsync } from "../object/index.js"
+import { Zip, ZipAsync, IndexedAccess, Finite } from "./types.js"
 
 type UnwrapIterable1<T> = T extends Iterable<infer X> ? X : T
 type UnwrapIterable2<T> = T extends Iterable<infer X> ? UnwrapIterable1<X> : T

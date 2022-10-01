@@ -36,7 +36,7 @@ import {
 	except,
 	complement,
 	toArrayAsync
-} from "./combinators"
+} from "./combinators.js"
 
 import {
 	min,
@@ -44,7 +44,7 @@ import {
 	sum,
 	mean,
 	deviation
-} from "../stats"
+} from "../stats/index.js"
 
 import { Ranker, Predicate, PredicateAsync, Projector, ProjectorAsync, Reducer, ReducerAsync, createRanker } from "../functional"
 import { Tuple, Obj, isIterable, isAsyncIterable, hasValue } from "../utility"
@@ -53,7 +53,7 @@ import {
 	PagingOptions, SortOptions, FilterOptions,
 	Filter, FilterGroup, SortOrder,
 	ColumnarData
-} from "./types"
+} from "./types.js"
 
 
 

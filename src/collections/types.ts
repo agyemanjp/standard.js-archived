@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Predicate, PredicateAsync } from "../functional"
-import { Obj, ExtractByType, Primitive } from "../utility"
+import { Predicate, PredicateAsync } from "../functional/index.js"
+import { Obj, ExtractByType, Primitive } from "../utility.js"
 
 /** Collection that is finite (length known in advance) */
 export type Finite = | { readonly size: number } | { readonly length: number }

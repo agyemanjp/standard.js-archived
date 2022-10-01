@@ -13,8 +13,8 @@
 /* eslint-disable fp/no-mutation */
 /* eslint-disable fp/no-loops */
 
-import { CaseOf, SnakeCase, DashCase, CamelCase, Concat } from "./types"
-import { isConsonant, isVowel, isDigit, charFrom, Char } from "./char"
+import { CaseOf, SnakeCase, DashCase, CamelCase, Concat } from "./types.js"
+import { isConsonant, isVowel, isDigit, charFrom, Char } from "./char.js"
 
 const whitespaceChars = ["\n", "\t", "\v", "\r"]
 const wordTokenSeperatorChars = ["-", "_", "+", "^", "%", "=", " ", "	", "\\", "/", "\t", "\n", "*", "$", "#", "@", "&", "(", ")", "!"]

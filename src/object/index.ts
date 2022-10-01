@@ -6,8 +6,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../ascii"
-import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility"
+import { camelCase, dashCase, KeysToCamelCase, KeysToDashCase, KeysToSnakeCase, snakeCase, TrimEnd, TrimStart } from "../ascii/index.js"
+import { Tuple, Obj, Merge, isObject, isSymbol } from "../utility.js"
 
 export function keys<T extends Obj>(obj: T): (keyof T)[]
 export function keys<K extends string | number | symbol, V>(obj: Record<K, V>): string[]

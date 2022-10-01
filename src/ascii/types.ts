@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { Digit, DigitNonZero, DecrementNonZero } from "../numeric"
-import { Obj, TypeAssert } from "../utility"
+import { Digit, DigitNonZero, DecrementNonZero } from "../numeric/index.js"
+import { Obj, TypeAssert } from "../utility.js"
 
 
 export type CharUppercase = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"

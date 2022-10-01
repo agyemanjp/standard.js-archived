@@ -1,6 +1,6 @@
 /* eslint-disable brace-style */
-import { Digit } from "../numeric"
-import { Vowel, Consonant } from "./types"
+import { Digit } from "../numeric/index.js"
+import { Vowel, Consonant } from "./types.js"
 
 export function charFrom(charCode: number) {
 	if (charCode < 0)
