@@ -45,9 +45,16 @@ import {
 	mean,
 	deviation
 } from "../stats/index.js"
-
-import { Ranker, Predicate, PredicateAsync, Projector, ProjectorAsync, Reducer, ReducerAsync, createRanker } from "../functional"
-import { Tuple, Obj, isIterable, isAsyncIterable, hasValue } from "../utility"
+import {
+	Ranker,
+	Predicate,
+	PredicateAsync,
+	Projector,
+	ProjectorAsync,
+	Reducer, ReducerAsync,
+	createRanker
+} from "../functional/index.js"
+import { Tuple, Obj, isIterable, isAsyncIterable, hasValue } from "../utility.js"
 import {
 	Finite,
 	PagingOptions, SortOptions, FilterOptions,
