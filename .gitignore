@@ -1,8 +1,8 @@
 # package-lock.json
 
-dist/
-dist
-node_modules
+/tmp
+/dist
+node_modules/
 
 *.log
 *-report.json

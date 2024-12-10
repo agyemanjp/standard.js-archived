@@ -1,15 +1,15 @@
-name: Default
+name: Publish Patch Version
 
-on:
+on: 
   push:
+      branches: ['master']
+
+  workflow_dispatch:
+  repository_dispatch:
   
-  pull_request:
-    types: ['synchronize']
-
 jobs:
-  checks:
+  default:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,9 +24,12 @@ jobs:
       - name: Install dependencies
         run: bun deps
    
-      - name: Typecheck
-        run: bun typecheck
+      - name: Compile code
+        run: bun compile
 
-      - name: Test
-        run: bun test
-  
+      - name: Publish
+        run: bun pub:patch
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        
+

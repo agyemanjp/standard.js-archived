@@ -1,41 +1,36 @@
 {
 	"compilerOptions": {
-		"target": "es2015",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"traceResolution": false,
-		"declaration": true,
 		"lib": [
-			"es7",
-			"es6",
-			"es5",
-			"ES2018",
-			"dom",
-			"es2015.promise",
-			"scripthost",
-			"dom.iterable",
-			"esnext.asynciterable"
+			"ESNext"
 		],
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleDetection": "force",
+		"moduleResolution": "Bundler",
+		"allowJs": true,
+		// "allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
 		"strict": true,
 		"strictNullChecks": true,
 		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noUncheckedIndexedAccess": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"allowUnreachableCode": true,
+		"declaration": true,
 		"incremental": true,
-		"rootDirs": [
-			"./src",
-			"./src/functional",
-			"./src/collections",
-			"./src/datetime",
-			"./src/stats",
-			"./src/async",
-			"./src/object",
-			"./src/numeric",
-			"./src/utility",
-			"./src/text",
-		],
-		"outDir": "./dist",
+		"sourceMap": true,
+		// "preserveConstEnums": true,
+		// "experimentalDecorators": true,
 	},
 	"include": [
-		"./src",
+		"source",
+		"tests"
 	],
-	"exclude": []
+	"exclude": [
+		"node_modules"
+	]
 }
