@@ -1,84 +1,63 @@
 {
 	"name": "@agyemanjp/standard",
 	"version": "5.1.2",
-	"description": "Standard library for JavaScript/TypeScript",
+	"description": "Standard library",
 	"main": "index.js",
-	"types": "index.d.ts",
-	"type": "commonjs",
+	"types": "index.ts",
+	"type": "module",
 	"sideEffects": false,
 	"files": [
-		"/*",
-		"!*.tsbuildinfo"
+		"/*"
 	],
-	"scripts": {
-		"deps": "rm -rf ./node_modules package-lock.json && npm install",
-		"clean": "rm -rf dist/* .eslintcache *-report.json",
-		"lint": "eslint --ext ts --cache 'src/**'",
-		"lintci": "eslint --ext ts --output-file .lint.run.json --format json-standard --cache 'src/**'",
-		"compile:esm": "tsc --outDir dist/esm --module esnext",
-		"compile:cjs": "tsc --outDir dist --module commonjs",
-		"test": "mocha --require ts-node/register test/*.test.*",
-		"testci": "mocha --require ts-node/register test/*.test.* --reporter mocha-reporter-json-standard >| .test.run.json",
-		"build": "run-s clean lint compile:* test",
-		"pubstage": "cp package.json LICENSE README.md dist && echo '*.tsbuildinfo' > dist/esm/.npmignore && echo '{\"type\": \"module\"}' > dist/esm/package.json",
-		"package": "npm run pubstage && cd dist && npm publish --dry-run && cd ..",
-		"version:patch": "npm version patch && git push --follow-tags",
-		"version:minor": "npm version minor && git push --follow-tags",
-		"version:major": "npm version major && git push --follow-tags",
-		"publish:patch": "run-s build version:patch pubstage && cd dist && npm publish --access public && cd ..",
-		"publish:minor": "run-s build version:minor pubstage && cd dist && npm publish --access public && cd ..",
-		"publish:major": "run-s build version:major pubstage && cd dist && npm publish --access public && cd .."
-	},
+	"homepage": "https://github.com/agyemanjp/standard.js#readme",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/agyemanjp/standard.js.git"
+	},
+	"bugs": {
+		"url": "https://github.com/agyemanjp/standard.js/issues"
 	},
 	"keywords": [
 		"standard",
 		"library",
 		"agyemanjp",
+		"async",
 		"collections",
+		"color",
 		"concurrency",
 		"datetime",
+		"error",
 		"functional",
 		"numeric",
 		"object",
-		"text",
-		"async",
-		"web"
+		"text"
 	],
 	"contributors": [
 		{
 			"name": "James Prempeh",
 			"email": "agyemanjp@danfortsystems.com"
-		},
-		{
-			"name": "Arthur Plouet"
-		},
-		{
-			"name": "Diego Cisneros"
 		}
 	],
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/agyemanjp/standard.js/issues"
-	},
-	"homepage": "https://github.com/agyemanjp/standard.js#readme",
 	"devDependencies": {
-		"@types/assert": "^1.5.1",
-		"@types/mocha": "^7.0.2",
-		"@types/node": "^14.0.4",
-		"@types/source-map-support": "^0.5.1",
-		"@typescript-eslint/eslint-plugin": "^4.26.0",
-		"@typescript-eslint/parser": "^4.26.0",
-		"eslint": "^7.28.0",
-		"eslint-formatter-json-standard": "^1.0.0",
-		"eslint-plugin-fp": "^2.3.0",
-		"mocha": "^8.4.0",
-		"mocha-reporter-json-standard": "^1.0.0",
-		"npm-run-all": "^4.1.5",
-		"source-map-support": "^0.5.19",
-		"ts-node": "^9.0.0",
-		"typescript": "^4.8.2"
+		"@types/bun": "1.1.6",
+		"@types/source-map-support": "0.5.1",
+		"source-map-support": "0.5.19",
+		"typescript": "5.5.4"
+	},
+	"scripts": {
+		"deps": "rm -rf ./node_modules bun.lockb && bun install",
+		"clean": "rm -rf dist tmp tsconfig.tsbuildinfo",
+		"typecheck": "tsc --noEmit",
+		"compile": "tsc --outDir tmp && mkdir -p dist && cp -r tmp/source/* dist && rm -rf tmp",
+		"test": "bun test",
+		"ver:patch": "bun version patch && git push --follow-tags",
+		"ver:minor": "bun version minor && git push --follow-tags",
+		"ver:major": "bun version major && git push --follow-tags",
+		"pub:stage": "cp package.json LICENSE README.md dist",
+		"pub:preview": "bun pub:stage && cd dist && bun publish --dry-run && cd ..",
+		"pub:patch": "run-s clean compile ver:patch pub:stage && cd dist && bun publish --access public && cd ..",
+		"pub:minor": "run-s clean compile ver:minor pub:stage && cd dist && bun publish --access public && cd ..",
+		"pub:major": "run-s clean compile ver:major pub:stage && cd dist && bun publish --access public && cd .."
 	}
 }

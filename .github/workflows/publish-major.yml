@@ -1,14 +1,12 @@
-name: Default
+name: Publish
 
-on:
-  push:
-  pull_request:
-    types: ['synchronize']
-
+on: 
+  workflow_dispatch:
+  repository_dispatch:
+  
 jobs:
-  checks:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,9 +21,12 @@ jobs:
       - name: Install dependencies
         run: bun deps
    
-      - name: Typecheck
-        run: bun typecheck
+      - name: Compile code
+        run: bun compile
 
-      - name: Test
-        run: bun test
-  
+      - name: Publish
+        run: bun publish:major
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        
+

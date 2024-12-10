@@ -1,0 +1,27 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"formatter": {
+		"enabled": false
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"correctness": {
+				"useJsxKeyInIterable": "off"
+			},
+			"complexity": {
+				"useLiteralKeys": "off",
+				"noBannedTypes": "off"
+			},
+			"a11y": {
+				"noSvgWithoutTitle": "off"
+			},
+			"style": {
+				"noCommaOperator": "off"
+			}
+		}
+	},
+	"organizeImports": {
+		"enabled": false
+	}
+}
