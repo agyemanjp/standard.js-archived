@@ -19,6 +19,7 @@ jobs:
         run: |
           curl -fsSL https://bun.sh/install | bash
           export PATH="$HOME/.bun/bin:$PATH"
+          source /home/runner/.bashrc 
         
       - name: Install dependencies
         run: bun deps
