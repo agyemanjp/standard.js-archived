@@ -1,11 +1,11 @@
-name: Publish
+name: Publish Patch Version
 
 on: 
   workflow_dispatch:
   repository_dispatch:
   
 jobs:
-  build:
+  default:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,7 +16,7 @@ jobs:
       - name: Install Bun
         run: |
           curl -fsSL https://bun.sh/install | bash
-          export PATH="$HOME/.bun/bin:$PATH"
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
         
       - name: Install dependencies
         run: bun deps
@@ -25,7 +25,7 @@ jobs:
         run: bun compile
 
       - name: Publish
-        run: bun publish:patch
+        run: bun pub:patch
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
         
